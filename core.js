@@ -1,7 +1,7 @@
 // =========================================================================
 // CORE MODULE: ASTRONOMY, BODYGRAPH & GALACTIC LUCK GAUGE
 // =========================================================================
-window.EMBEDDED_GEMINI_KEY = "AIzaSyCVkX_XC917ldWczw8mFDh1NaVp0z5_X5E";
+window.EMBEDDED_GEMINI_KEY = "";
 window.MY_GATES = new Set([7,8,9,10,11,12,13,15,23,24,28,37,44,50,54,60,63]);
 window.EXALTED_GATES = new Set([12, 37, 28, 50]);
 window.DETRIMENT_GATES = new Set([13, 24, 44, 8, 9]);
