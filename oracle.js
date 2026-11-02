@@ -1,5 +1,5 @@
 // =========================================================================
-// MODULE 2: SEALED OLDMAN ORACLE MODULE (سازگار با کلیدهای نسل جدید AQ گوگل)
+// MODULE 2: SEALED OLDMAN ORACLE MODULE (مجهز به کشف خودکار مدل‌های جدید گوگل)
 // =========================================================================
 window.OldmanOracleModule = (function() {
   let cachedOracleModel = "";
@@ -23,15 +23,46 @@ window.OldmanOracleModule = (function() {
     const prov = window.getStore ? window.getStore("prov", "gemini") : "gemini";
     let lastErrorReason = "";
 
-    // ۱. فراخوانی مستقیم Google Gemini API (پشتیبانی از هر دو فرمت AQ و AIza)
     if (prov === "gemini" && apiKey && apiKey.trim().length > 10) {
       const cleanKey = apiKey.trim();
       const candidateModels = [];
       if (cachedOracleModel) candidateModels.push(cachedOracleModel);
-      ["gemini-2.0-flash", "gemini-2.5-flash", "gemini-1.5-flash"].forEach(m => {
+
+      // ۱. دریافت خودکار نام مدل‌های فعال از خود سرور گوگل (فقط بار اول)
+      if (!cachedOracleModel) {
+        try {
+          const listUrl = "https://generativelanguage.googleapis.com/v1beta/models?key=" + encodeURIComponent(cleanKey);
+          const listRes = await fetchWithTimeout(listUrl, {
+            method: "GET",
+            headers: { "x-goog-api-key": cleanKey }
+          }, 6000);
+
+          if (listRes.ok) {
+            const listData = await listRes.json();
+            if (listData && Array.isArray(listData.models)) {
+              const valid = listData.models
+                .filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes("generateContent"))
+                .map(m => m.name.replace("models/", ""))
+                .filter(n => n.includes("gemini") && !n.includes("vision") && !n.includes("embedding") && !n.includes("imagen") && !n.includes("tts") && !n.includes("audio"));
+
+              // اولویت با سریع‌ترین و جدیدترین مدل‌های Flash
+              valid.sort((a, b) => {
+                const score = name => (name.includes("flash") ? 10 : (name.includes("pro") ? 5 : 1));
+                return score(b) - score(a);
+              });
+
+              valid.forEach(m => { if (!candidateModels.includes(m)) candidateModels.push(m); });
+            }
+          }
+        } catch (e) {}
+      }
+
+      // لیست رزرو در صورتی که دریافت لیست با تاخیر مواجه شود
+      ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.0-flash", "gemini-2.0-flash-001", "gemini-flash-latest", "gemini-pro-latest"].forEach(m => {
         if (!candidateModels.includes(m)) candidateModels.push(m);
       });
 
+      // ۲. ارسال سوال به اولین مدل فعال
       for (let i = 0; i < candidateModels.length; i++) {
         const modelName = candidateModels[i];
         try {
@@ -50,7 +81,7 @@ window.OldmanOracleModule = (function() {
 
           const data = await res.json();
           if (res.ok && data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts[0]) {
-            cachedOracleModel = modelName;
+            cachedOracleModel = modelName; // ذخیره مدل موفق برای پاسخگویی فوری در دفعات بعد
             return { ok: true, text: data.candidates[0].content.parts[0].text.trim(), source: "Gemini (" + modelName + ")" };
           } else if (data && data.error) {
             lastErrorReason = data.error.message || ("کد خطا: " + res.status);
@@ -62,7 +93,7 @@ window.OldmanOracleModule = (function() {
       }
     }
 
-    // ۲. سوییچ خودکار روی موتور ابری پشتیبان در صورت قطع بودن فیلترشکن
+    // ۳. موتور ابری پشتیبان در صورت قطع بودن فیلترشکن
     try {
       const res2 = await fetchWithTimeout("https://text.pollinations.ai/openai", {
         method: "POST",
