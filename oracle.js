@@ -1,5 +1,5 @@
 // =========================================================================
-// MODULE 2: SEALED OLDMAN ORACLE MODULE (ماژول پلمب‌شده خلوتگاه پیرمرد)
+// MODULE 2: SEALED OLDMAN ORACLE MODULE (نسخه اصلاح‌شده و ضدخطا)
 // =========================================================================
 window.OldmanOracleModule = (function() {
   let cachedOracleModel = "";
@@ -7,33 +7,14 @@ window.OldmanOracleModule = (function() {
   let isBusy = false;
 
   async function callOldmanDedicatedAI(apiKey, promptText) {
-    const prov = window.getStore("prov", "gemini");
+    const prov = window.getStore ? window.getStore("prov", "gemini") : "gemini";
 
+    // ۱. تلاش با موتور Google Gemini (در صورت وجود کلید در تنظیمات)
     if (prov === "gemini" && apiKey && apiKey.length > 8) {
       const candidateModels = [];
       if (cachedOracleModel) candidateModels.push(cachedOracleModel);
 
-      try {
-        const listRes = await fetch("https://generativelanguage.googleapis.com/v1beta/models?key=" + encodeURIComponent(apiKey));
-        if (listRes.ok) {
-          const listData = await listRes.json();
-          if (listData && Array.isArray(listData.models)) {
-            const validModels = listData.models
-              .filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes("generateContent"))
-              .map(m => m.name.replace("models/", ""))
-              .filter(name => name.includes("gemini") && !name.includes("vision") && !name.includes("embedding") && !name.includes("imagen") && !name.includes("tts"));
-
-            validModels.sort((a, b) => {
-              const score = n => (n.includes("flash-latest") ? 10 : (n.includes("2.5-flash") ? 9 : (n.includes("2.0-flash") ? 8 : (n.includes("flash") ? 7 : 4))));
-              return score(b) - score(a);
-            });
-
-            validModels.forEach(m => { if (!candidateModels.includes(m)) candidateModels.push(m); });
-          }
-        }
-      } catch (e) {}
-
-      ["gemini-flash-latest", "gemini-2.0-flash", "gemini-1.5-flash-latest", "gemini-pro-latest", "gemini-2.5-flash"].forEach(m => {
+      ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-flash-latest", "gemini-1.5-flash-latest", "gemini-pro-latest"].forEach(m => {
         if (!candidateModels.includes(m)) candidateModels.push(m);
       });
 
@@ -57,9 +38,10 @@ window.OldmanOracleModule = (function() {
       }
     }
 
+    // ۲. موتور پشتیبان ابری اول (Pollinations Direct)
     try {
       const controller = new AbortController();
-      const tId = setTimeout(() => controller.abort(), 8500);
+      const tId = setTimeout(() => controller.abort(), 10000);
       const url = "https://text.pollinations.ai/" + encodeURIComponent(promptText) + "?model=openai&seed=" + Date.now();
       const res = await fetch(url, { signal: controller.signal });
       clearTimeout(tId);
@@ -71,9 +53,10 @@ window.OldmanOracleModule = (function() {
       }
     } catch (e) {}
 
+    // ۳. موتور پشتیبان ابری دوم (Pollinations POST)
     try {
       const controller2 = new AbortController();
-      const tId2 = setTimeout(() => controller2.abort(), 8500);
+      const tId2 = setTimeout(() => controller2.abort(), 10000);
       const res2 = await fetch("https://text.pollinations.ai/openai", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -104,45 +87,44 @@ window.OldmanOracleModule = (function() {
       } else {
         clearInterval(timer);
       }
-    }, 38);
+    }, 35);
   }
 
   async function askInternalDirect(apiKey, promptText) {
-    const res = await callOldmanDedicatedAI(apiKey, promptText);
-    return res;
+    return await callOldmanDedicatedAI(apiKey, promptText);
   }
 
   async function ask() {
     if (isBusy) return;
     const qInp = document.getElementById("oracleQuestionInput");
     const askBtn = document.getElementById("oracleAskBtn");
-    const btnTxt = document.getElementById("oracleBtnTxt");
+    const btnTxt = document.getElementById("oracleBtnTxt") || (askBtn ? askBtn.querySelector("span") : null) || askBtn;
     const listBox = document.getElementById("oracleAnswersList");
     const statusTag = document.getElementById("oracleStatusTag");
     const sanctuaryCard = document.getElementById("oldmanOracleSection");
 
-    const question = qInp.value.trim();
+    const question = qInp ? qInp.value.trim() : "";
     if (!question) {
       alert("شهریار عزیز، ابتدا پرسش یا زمزمه دلت را بنویس...");
       return;
     }
 
     isBusy = true;
-    askBtn.disabled = true;
-    sanctuaryCard.classList.add("thinking");
-    btnTxt.textContent = "🌌 پیرمرد در حال سکوت و شهود در بیکران کائنات...";
-    statusTag.textContent = "در حال دریافت الهام...";
+    if (askBtn) askBtn.disabled = true;
+    if (sanctuaryCard) sanctuaryCard.classList.add("thinking");
+    if (btnTxt) btnTxt.textContent = "🌌 پیرمرد در حال سکوت و شهود...";
+    if (statusTag) statusTag.textContent = "در حال دریافت الهام...";
 
-    const state = window.OLDMAN_STATE;
-    const pls = state.pls;
-    const act = state.act;
-    const mp = pls[2];
-    const sp = pls[0];
-    const apiKey = window.getStore("key", window.EMBEDDED_GEMINI_KEY);
+    const state = window.OLDMAN_STATE || {};
+    const pls = state.pls || (window.calcPlanets ? window.calcPlanets(new Date()) : [{gate:1},{gate:2},{gate:3}]);
+    const act = state.act || [];
+    const mp = pls[2] || { gate: 1 };
+    const sp = pls[0] || { gate: 1 };
+    const apiKey = window.getStore ? window.getStore("key", "") : "";
 
     const subtleMoods = act.length > 0 ? act.map(x => x.ch.mood).join(" و ") : "شفافیت آینه بی‌غبار و سکوت تماشاگر";
-    const sunEssence = window.GATE_THEMES[sp.gate] || "روشنایی آگاهی";
-    const moonEssence = window.GATE_THEMES[mp.gate] || "آرامش روح";
+    const sunEssence = (window.GATE_THEMES && window.GATE_THEMES[sp.gate]) ? window.GATE_THEMES[sp.gate] : "روشنایی آگاهی";
+    const moonEssence = (window.GATE_THEMES && window.GATE_THEMES[mp.gate]) ? window.GATE_THEMES[mp.gate] : "آرامش روح";
     const asksAboutChartExplicitly = /کانال|دروازه|پورت|چارت|درصد|آمپر|رفلکتور|هیومن/.test(question);
 
     const recentDialog = oracleMemory.length > 0 ? ("سابقه گفتگوی اخیر:\n" + oracleMemory.slice(-2).join("\n") + "\n\n") : "";
@@ -161,9 +143,9 @@ window.OldmanOracleModule = (function() {
 
     const aiRes = await callOldmanDedicatedAI(apiKey, fullOraclePrompt);
 
-    sanctuaryCard.classList.remove("thinking");
-    btnTxt.textContent = "✨ پرسش از پیرمرد کائنات";
-    askBtn.disabled = false;
+    if (sanctuaryCard) sanctuaryCard.classList.remove("thinking");
+    if (btnTxt) btnTxt.textContent = "✨ پرسش از پیرمرد";
+    if (askBtn) askBtn.disabled = false;
     isBusy = false;
 
     const tm = new Date().toLocaleTimeString("fa-IR", { hour: "2-digit", minute: "2-digit" });
@@ -179,21 +161,22 @@ window.OldmanOracleModule = (function() {
 
     msgDiv.appendChild(qHeader);
     msgDiv.appendChild(speechBody);
-    listBox.prepend(msgDiv);
+    if (listBox) listBox.prepend(msgDiv);
 
     if (aiRes.ok) {
-      statusTag.textContent = aiRes.source + " ✨";
+      if (statusTag) statusTag.textContent = aiRes.source + " ✨";
       oracleMemory.push("شهریار: " + question + " | پیرمرد: " + aiRes.text);
       typeWriter(speechBody, "🧙‍♂️ " + aiRes.text);
-      qInp.value = "";
+      if (qInp) qInp.value = "";
     } else {
-      statusTag.textContent = "نوسان اینترنت ⚠️";
-      speechBody.innerHTML = "🧙‍♂️ شهریار جان، امواج اینترنت یا فیلترشکن گوشی در این لحظه نوسان دارد؛ اتصال اینترنتت را چک کن و دوباره بپرس تا صدایم شفاف به تو برسد.";
+      if (statusTag) statusTag.textContent = "نیازمند کلید جدید یا اتصال ⚠️";
+      speechBody.innerHTML = "🧙‍♂️ شهریار جان، اگر کلید جمینای قبلی را در تنظیمات وارد کرده‌ای، گوگل به خاطر لو رفتن در گیت‌هاب آن را مسدود کرده است. یا در تنظیمات (⚙️) موتور اول را روی «ابری مستقیم» بگذار، و یا یک کلید جدید از Google AI Studio بگیر و در تنظیمات وارد کن.";
     }
   }
 
   function clear() {
-    document.getElementById("oracleAnswersList").innerHTML = "";
+    const listBox = document.getElementById("oracleAnswersList");
+    if (listBox) listBox.innerHTML = "";
     oracleMemory = [];
   }
 
