@@ -1,79 +1,89 @@
 // =========================================================================
-// MODULE 2: SEALED OLDMAN ORACLE MODULE (نسخه اصلاح‌شده و ضدخطا)
+// MODULE 2: SEALED OLDMAN ORACLE MODULE (سازگار با کلیدهای نسل جدید AQ گوگل)
 // =========================================================================
 window.OldmanOracleModule = (function() {
   let cachedOracleModel = "";
   let oracleMemory = [];
   let isBusy = false;
 
+  async function fetchWithTimeout(url, options, timeoutMs) {
+    const controller = new AbortController();
+    const tId = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const res = await fetch(url, { ...options, signal: controller.signal });
+      clearTimeout(tId);
+      return res;
+    } catch (err) {
+      clearTimeout(tId);
+      throw err;
+    }
+  }
+
   async function callOldmanDedicatedAI(apiKey, promptText) {
     const prov = window.getStore ? window.getStore("prov", "gemini") : "gemini";
+    let lastErrorReason = "";
 
-    // ۱. تلاش با موتور Google Gemini (در صورت وجود کلید در تنظیمات)
-    if (prov === "gemini" && apiKey && apiKey.length > 8) {
+    // ۱. فراخوانی مستقیم Google Gemini API (پشتیبانی از هر دو فرمت AQ و AIza)
+    if (prov === "gemini" && apiKey && apiKey.trim().length > 10) {
+      const cleanKey = apiKey.trim();
       const candidateModels = [];
       if (cachedOracleModel) candidateModels.push(cachedOracleModel);
-
-      ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-flash-latest", "gemini-1.5-flash-latest", "gemini-pro-latest"].forEach(m => {
+      ["gemini-2.0-flash", "gemini-2.5-flash", "gemini-1.5-flash"].forEach(m => {
         if (!candidateModels.includes(m)) candidateModels.push(m);
       });
 
       for (let i = 0; i < candidateModels.length; i++) {
         const modelName = candidateModels[i];
         try {
-          const res = await fetch("https://generativelanguage.googleapis.com/v1beta/models/" + modelName + ":generateContent?key=" + encodeURIComponent(apiKey), {
+          const url = "https://generativelanguage.googleapis.com/v1beta/models/" + modelName + ":generateContent?key=" + encodeURIComponent(cleanKey);
+          const res = await fetchWithTimeout(url, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+              "Content-Type": "application/json",
+              "x-goog-api-key": cleanKey
+            },
             body: JSON.stringify({
               contents: [{ parts: [{ text: promptText }] }],
               generationConfig: { temperature: 0.85 }
             })
-          });
+          }, 9000);
+
           const data = await res.json();
           if (res.ok && data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts[0]) {
             cachedOracleModel = modelName;
             return { ok: true, text: data.candidates[0].content.parts[0].text.trim(), source: "Gemini (" + modelName + ")" };
+          } else if (data && data.error) {
+            lastErrorReason = data.error.message || ("کد خطا: " + res.status);
           }
-        } catch (err) {}
+        } catch (err) {
+          lastErrorReason = "نوسان اینترنت یا فیلترشکن در اتصال به گوگل";
+          break;
+        }
       }
     }
 
-    // ۲. موتور پشتیبان ابری اول (Pollinations Direct)
+    // ۲. سوییچ خودکار روی موتور ابری پشتیبان در صورت قطع بودن فیلترشکن
     try {
-      const controller = new AbortController();
-      const tId = setTimeout(() => controller.abort(), 10000);
-      const url = "https://text.pollinations.ai/" + encodeURIComponent(promptText) + "?model=openai&seed=" + Date.now();
-      const res = await fetch(url, { signal: controller.signal });
-      clearTimeout(tId);
-      if (res.ok) {
-        const t = await res.text();
-        if (t && t.trim().length > 15 && !t.includes("<html")) {
-          return { ok: true, text: t.trim(), source: "خرد ابری زنده" };
-        }
-      }
-    } catch (e) {}
-
-    // ۳. موتور پشتیبان ابری دوم (Pollinations POST)
-    try {
-      const controller2 = new AbortController();
-      const tId2 = setTimeout(() => controller2.abort(), 10000);
-      const res2 = await fetch("https://text.pollinations.ai/openai", {
+      const res2 = await fetchWithTimeout("https://text.pollinations.ai/openai", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ model: "openai", messages: [{ role: "user", content: promptText }], seed: Date.now() }),
-        signal: controller2.signal
-      });
-      clearTimeout(tId2);
+        body: JSON.stringify({
+          model: "openai",
+          messages: [{ role: "user", content: promptText }],
+          seed: Date.now()
+        })
+      }, 9000);
+
       if (res2.ok) {
         const d2 = await res2.json();
         const txt2 = d2 && d2.choices && d2.choices[0] && d2.choices[0].message ? d2.choices[0].message.content : "";
-        if (txt2 && txt2.trim().length > 15) {
-          return { ok: true, text: txt2.trim(), source: "خرد ابری" };
+        if (txt2 && txt2.trim().length > 10) {
+          return { ok: true, text: txt2.trim(), source: "خرد ابری (پشتیبان)" };
         }
       }
     } catch (e) {}
 
-    return { ok: false };
+    return { ok: false, error: lastErrorReason || "عدم دریافت پاسخ از سرورها" };
   }
 
   function typeWriter(element, fullText) {
@@ -101,7 +111,6 @@ window.OldmanOracleModule = (function() {
     const btnTxt = document.getElementById("oracleBtnTxt") || (askBtn ? askBtn.querySelector("span") : null) || askBtn;
     const listBox = document.getElementById("oracleAnswersList");
     const statusTag = document.getElementById("oracleStatusTag");
-    const sanctuaryCard = document.getElementById("oldmanOracleSection");
 
     const question = qInp ? qInp.value.trim() : "";
     if (!question) {
@@ -111,7 +120,6 @@ window.OldmanOracleModule = (function() {
 
     isBusy = true;
     if (askBtn) askBtn.disabled = true;
-    if (sanctuaryCard) sanctuaryCard.classList.add("thinking");
     if (btnTxt) btnTxt.textContent = "🌌 پیرمرد در حال سکوت و شهود...";
     if (statusTag) statusTag.textContent = "در حال دریافت الهام...";
 
@@ -143,7 +151,6 @@ window.OldmanOracleModule = (function() {
 
     const aiRes = await callOldmanDedicatedAI(apiKey, fullOraclePrompt);
 
-    if (sanctuaryCard) sanctuaryCard.classList.remove("thinking");
     if (btnTxt) btnTxt.textContent = "✨ پرسش از پیرمرد";
     if (askBtn) askBtn.disabled = false;
     isBusy = false;
@@ -169,8 +176,8 @@ window.OldmanOracleModule = (function() {
       typeWriter(speechBody, "🧙‍♂️ " + aiRes.text);
       if (qInp) qInp.value = "";
     } else {
-      if (statusTag) statusTag.textContent = "نیازمند کلید جدید یا اتصال ⚠️";
-      speechBody.innerHTML = "🧙‍♂️ شهریار جان، اگر کلید جمینای قبلی را در تنظیمات وارد کرده‌ای، گوگل به خاطر لو رفتن در گیت‌هاب آن را مسدود کرده است. یا در تنظیمات (⚙️) موتور اول را روی «ابری مستقیم» بگذار، و یا یک کلید جدید از Google AI Studio بگیر و در تنظیمات وارد کن.";
+      if (statusTag) statusTag.textContent = "خطای اتصال ⚠️";
+      speechBody.innerHTML = "🧙‍♂️ شهریار جان، ارتباط برقرار نشد.<br/><span style='color:#fca5a5;font-size:0.78rem'>🔍 علت فنی: " + aiRes.error + "</span>";
     }
   }
 
