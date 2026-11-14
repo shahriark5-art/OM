@@ -1,6 +1,74 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#020617" />
+  <title>OLDMAN v1.3 | نسخه حرفه‌ای چندفایلی - شهریار</title>
+  <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="cosmic-dust"></div>
+  <div class="wrap">
+    <header>
+      <div class="logo">OLDMAN v1.3</div>
+      <div class="meta">
+        <span>کاربر: شهریار (Reflector 6/2)</span>
+        <span id="clockDisplay">--:--</span>
+      </div>
+    </header>
+
+    <!-- آمپر شانس -->
+    <div id="luckCardBox" class="luck-card">
+      <div class="luck-head">
+        <span class="luck-title">🧭 آمپر شانس کهکشانی (۰ تا ۱۰۰)</span>
+        <span id="trendPill" class="trend-pill">در حال سنجش...</span>
+      </div>
+      <div class="luck-mode-tabs">
+        <button id="modeBtn-total" class="mode-tab active" onclick="setLuckGaugeMode('total')">🎯 شانس کل</button>
+        <button id="modeBtn-wealth" class="mode-tab" onclick="setLuckGaugeMode('wealth')">💰 مالی</button>
+        <button id="modeBtn-love" class="mode-tab" onclick="setLuckGaugeMode('love')">❤️ روابط</button>
+        <button id="modeBtn-action" class="mode-tab" onclick="setLuckGaugeMode('action')">⚡ اقدام</button>
+      </div>
+      <div class="gauge-wrap" onclick="openModal('luckInspectModal')">
+        <svg class="gauge-svg" viewBox="0 0 240 138">
+          <path d="M 34 115 A 86 86 0 0 1 206 115" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="14" stroke-linecap="round"/>
+          <path d="M 34 115 A 86 86 0 0 1 65 49" fill="none" stroke="#ef4444" stroke-width="12" stroke-linecap="round"/>
+          <path d="M 65 49 A 86 86 0 0 1 156 37" fill="none" stroke="#f5c56b" stroke-width="12"/>
+          <path d="M 156 37 A 86 86 0 0 1 206 115" fill="none" stroke="#22c55e" stroke-width="12" stroke-linecap="round"/>
+          <g font-size="9" fill="#94a3b8" font-weight="700" text-anchor="middle">
+            <text x="19" y="118" fill="#ef4444">0</text><text x="34" y="68">20</text><text x="72" y="31">40</text><text x="120" y="18" fill="#f5c56b">50</text><text x="168" y="31">60</text><text x="206" y="68">80</text><text x="223" y="118" fill="#22c55e">100</text>
+          </g>
+          <g id="luckNeedle" class="needle" style="transform:rotate(0deg)">
+            <polygon id="needlePoly" points="120,32 116,115 124,115" fill="#f5c56b"/>
+            <circle cx="120" cy="115" r="8.5" fill="#0f172a" stroke="#f5c56b" stroke-width="3"/>
+          </g>
+          <text id="luckValTxt" x="120" y="95" text-anchor="middle" font-size="24" font-weight="900" fill="#ffffff">--%</text>
+          <text id="luckModeSubTitle" x="120" y="132" text-anchor="middle" font-size="9.5" fill="#94a3b8">شاخص کل هم‌زمانی</text>
+        </svg>
+        <div id="luckStatTxt" class="luck-status">در حال محاسبه...</div>
+        <button class="inspect-btn">🔍 کالبدشکافی عوامل</button>
+      </div>
+      <div class="sub-grid">
+        <div id="subBox-wealth" class="sub-item" onclick="setLuckGaugeMode('wealth')"><span class="sub-lbl">💰 مالی</span><b id="swVal" style="color:#f5c56b">--%</b><div class="bar-bg"><div id="swBar" class="bar-fill" style="width:50%;background:#f5c56b"></div></div></div>
+        <div id="subBox-love" class="sub-item" onclick="setLuckGaugeMode('love')"><span class="sub-lbl">❤️ روابط</span><b id="slVal" style="color:#f43f5e">--%</b><div class="bar-bg"><div id="slBar" class="bar-fill" style="width:50%;background:#f43f5e"></div></div></div>
+        <div id="subBox-action" class="sub-item" onclick="setLuckGaugeMode('action')"><span class="sub-lbl">⚡ اقدام</span><b id="svVal" style="color:#38bdf8">--%</b><div class="bar-bg"><div id="svBar" class="bar-fill" style="width:50%;background:#38bdf8"></div></div></div>
+        <div id="subBox-total" class="sub-item selected-sub" onclick="setLuckGaugeMode('total')"><span class="sub-lbl">👁️ شهود</span><b id="siVal" style="color:#22c55e">--%</b><div class="bar-bg"><div id="siBar" class="bar-fill" style="width:50%;background:#22c55e"></div></div></div>
+      </div>
+      <div class="wave-box">
+        <div class="wave-head"><span id="waveTitleLbl">📊 نوسان ۲۴ ساعت آینده</span><span id="peakBadge" style="color:#7dd3fc;font-weight:700"></span></div>
+        <div id="luckWaveBars" class="wave-bars"></div>
+        <div class="extremes-row">
+          <div id="goldenHourChip" class="extreme-chip gold-hr">🟢 اوج: ...</div>
+          <div id="cautionHourChip" class="extreme-chip red-hr">🔴 احتیاط: ...</div>
+        </div>
+      </div>
+    </div>
+
     <div class="banner">تطبیق چارت تولد شما ✨ چارت لحظه‌ای زمین</div>
 
-    <!-- بادی‌گراف حرفه‌ای (شبیه استاندارد انسانی) -->
+    <!-- بادی‌گراف حرفه‌ای (با جدول سیارات در بالا) -->
     <div class="bodygraph-container">
       <div class="bg-top-meta">
         <div class="bg-user-info">
@@ -9,7 +77,7 @@
           <div>No Definition | 6/2 Role Model</div>
         </div>
         <div id="bgPlanetSidebar" class="bg-planet-sidebar">
-          <!-- ستون جدول سیارات به صورت داینامیک پر می‌شود -->
+          <!-- جدول سیارات داینامیک -->
         </div>
       </div>
 
@@ -29,3 +97,140 @@
         <div id="capText" class="cap">در حال اسکن...</div>
       </div>
     </div>
+
+    <div id="timerBar" class="timer">⏱️ در حال محاسبه...</div>
+
+    <!-- خلوتگاه پیرمرد -->
+    <div id="oldmanOracleSection" class="card oldman-sanctuary">
+      <div class="c-head">
+        <span class="c-title">🧙‍♂️ خلوتگاه «پیرمرد»</span>
+        <span id="oracleStatusTag" style="font-size:0.68rem;color:#4ade80">آماده ✨</span>
+      </div>
+      <div class="oldman-avatar-row">
+        <div class="oldman-orb">🧙‍♂️</div>
+        <div class="oldman-intro">«شهریار جان، از ورای افلاک به حالِ تو می‌نگرم. پرسشی داری بپرس...»</div>
+      </div>
+      <textarea id="oracleQuestionInput" class="oracle-input" placeholder="سوال خود را بنویس..."></textarea>
+      <div class="oracle-btn-row">
+        <button id="oracleAskBtn" class="oracle-btn" onclick="window.OldmanOracleModule.ask()"><span>✨ پرسش از پیرمرد</span></button>
+        <button class="oracle-clear-btn" onclick="window.OldmanOracleModule.clear()">پاک‌سازی</button>
+      </div>
+      <div id="oracleAnswersList" class="oracle-history-box"></div>
+    </div>
+
+    <!-- دفترچه رویاهای ابری -->
+    <div id="dreamArchiveSection" class="card dream-card">
+      <div class="c-head">
+        <span class="c-title">🌙 دفترچه رویاها و گوگل درایو</span>
+        <span style="font-size:0.68rem;color:#38bdf8">☁️ ابری</span>
+      </div>
+      <div class="f-grp" style="margin-top:0">
+        <label>عنوان رویا:</label>
+        <input type="text" id="dreamTitleInp" class="lunar-inp" placeholder="مثلاً: پرواز..." style="width:100%" />
+      </div>
+      <div class="f-grp">
+        <label>شرح کامل متن خواب:</label>
+        <textarea id="dreamTextInp" class="dream-textarea" placeholder="دیشب دیدم که..."></textarea>
+      </div>
+      <div class="dream-btn-row">
+        <button id="dreamInterpretBtn" class="dream-action-btn" onclick="window.DreamArchiveModule.interpret()">🔮 تعبیر پیرمرد</button>
+        <button id="dreamSaveBtn" class="dream-action-btn cloud" onclick="window.DreamArchiveModule.saveToCloud()">☁️ بایگانی درایو</button>
+        <button class="dream-action-btn" onclick="window.DreamArchiveModule.loadFromCloud()" style="background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.2)">📖 کتابخانه</button>
+      </div>
+      <div id="dreamInterpretationOutput" class="dream-interp-box"></div>
+      <div id="dreamCloudListContainer" style="display:none;margin-top:10px">
+        <div style="font-size:0.75rem;color:#38bdf8;font-weight:700;margin-bottom:4px">📚 آرشیو رویاها:</div>
+        <div id="dreamCloudListBox" class="dream-list-scroll"></div>
+      </div>
+    </div>
+
+    <!-- رادار هواشناسی و فالگیر -->
+    <div class="card">
+      <div class="c-head"><span class="c-title">🌤️🔮 رادار آب‌وهوا و فالگیر</span><span id="srcTag" style="font-size:0.68rem;color:#4ade80">آماده ✅</span></div>
+      <div id="scrollBox" class="scroll-box"><div id="fcBase"></div><div id="fcDeep"></div></div>
+      <div class="hint"><span id="depthLevelIndicator">گام پایه</span><span>↕️ اسکرول</span></div>
+      <button id="deepExploreBtn" class="ai-btn" onclick="window.WeatherFortuneModule.exploreNext()"><span id="aiBtnTxt">🌤️ کلیک ۱: پیش‌بینی ۳ تا ۶ ساعت آینده</span></button>
+    </div>
+
+    <!-- کانال‌های فعال -->
+    <div class="card"><div class="c-head"><span class="c-title">⚡ کانال‌های فعال</span><span style="font-size:0.72rem;color:#38bdf8">● زنده</span></div><div id="chList"></div></div>
+
+    <!-- تقویم آینده -->
+    <div id="upcomingChannelsSection" class="card"><div class="c-head"><span class="c-title">📅 تقویم ۵ روز آینده</span></div><div id="upcomingListBox" class="upcoming-scroll"></div></div>
+
+    <!-- راهنمای اقدام -->
+    <div class="card"><div class="c-head"><span class="c-title">🚦 راهنمای اقدام</span></div><div class="row"><span class="do-t">🟢 عالی برای: </span><span id="doTxt"></span></div><div class="row"><span class="dont-t">🔴 پرهیز از: </span><span id="dontTxt"></span></div></div>
+
+    <!-- قطب‌نمای ۲۸ روزه -->
+    <div id="lunarTrackerSection" class="card">
+      <div class="c-head"><span class="c-title">🌕 قطب‌نمای ۲۸ روزه رفلکتور</span></div>
+      <div class="lunar-form"><input type="text" id="decisionTitleInp" class="lunar-inp" placeholder="عنوان تصمیم..." /><button class="lunar-add-btn" onclick="addLunarDecision()">+ ثبت</button></div>
+      <div id="lunarDecisionsList"></div>
+    </div>
+
+    <!-- جدول سیارات -->
+    <div class="card"><div class="c-head"><span class="c-title">🪐 سیارات لحظه‌ای</span></div><div id="pGrid" class="p-grid"></div></div>
+  </div>
+
+  <nav class="b-nav">
+    <button class="n-btn act" onclick="runApp(true)"><span>🔄</span><span>بروزرسانی</span></button>
+    <button class="n-btn" onclick="scrollToId('oldmanOracleSection')"><span>🧙‍♂️</span><span>پیرمرد</span></button>
+    <button class="n-btn" onclick="scrollToId('dreamArchiveSection')"><span>🌙</span><span>رویاها</span></button>
+    <button class="n-btn" onclick="scrollToId('upcomingChannelsSection')"><span>📅</span><span>آینده</span></button>
+    <button class="n-btn" onclick="openSetModal()"><span>⚙️</span><span>تنظیمات</span></button>
+  </nav>
+
+  <div id="luckInspectModal" class="modal">
+    <div class="m-box">
+      <h3 style="color:#f5c56b;font-size:0.95rem">🔍 کالبدشکافی عوامل شانس</h3>
+      <div id="luckFactorsList" style="margin-top:10px"></div>
+      <button class="close-btn" onclick="closeModal('luckInspectModal')">بستن</button>
+    </div>
+  </div>
+
+  <div id="setModal" class="modal">
+    <div class="m-box">
+      <h3 style="color:#f5c56b;font-size:0.95rem">⚙️ تنظیمات هوش مصنوعی</h3>
+      <div class="f-grp"><label>موتور اول:</label><select id="provSel"><option value="gemini">Google Gemini API</option><option value="pollinations">ابری مستقیم</option></select></div>
+      <div class="f-grp"><label>کلید API:</label><input type="text" id="keyInp" /></div>
+      <button class="s-btn" onclick="saveSet()">ذخیره</button>
+      <button class="close-btn" onclick="closeModal('setModal')">انصراف</button>
+    </div>
+  </div>
+
+  <script>
+    window.scrollToId = function(id) {
+      const el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    };
+
+    window.openModal = function(id) {
+      const modal = document.getElementById(id);
+      if (modal) modal.classList.add("open");
+    };
+
+    window.closeModal = function(id) {
+      const modal = document.getElementById(id);
+      if (modal) modal.classList.remove("open");
+    };
+
+    window.openSetModal = function() {
+      const provSel = document.getElementById("provSel");
+      const keyInp = document.getElementById("keyInp");
+      if (provSel && window.getStore) provSel.value = window.getStore("prov", "gemini");
+      if (keyInp && window.getStore) keyInp.value = window.getStore("key", "");
+      window.openModal('setModal');
+    };
+  </script>
+
+  <!-- بارگذاری فایل‌های ماژولار -->
+  <script src="core.js"></script>
+  <script src="oracle.js"></script>
+  <script src="weather.js"></script>
+  <script src="dreams.js"></script>
+  <script>
+    window.runApp(true);
+    setInterval(() => window.runApp(false), 60000);
+  </script>
+</body>
+</html>
