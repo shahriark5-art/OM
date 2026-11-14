@@ -1,5 +1,5 @@
 // =========================================================================
-// CORE MODULE: ASTRONOMY, BODYGRAPH & GALACTIC LUCK GAUGE
+// CORE MODULE: ASTRONOMY, INTERACTIVE BODYGRAPH & GALACTIC LUCK GAUGE
 // =========================================================================
 window.EMBEDDED_GEMINI_KEY = "";
 window.MY_GATES = new Set([7,8,9,10,11,12,13,15,23,24,28,37,44,50,54,60,63]);
@@ -10,6 +10,18 @@ window.NATAL_MOON_LON = 299.0;
 
 window.MANDALA = [41,19,13,49,30,55,37,63,22,36,25,17,21,51,42,3,27,24,2,23,8,20,16,35,45,12,15,52,39,53,62,56,31,33,7,4,29,59,40,64,47,6,46,18,48,57,32,50,28,44,1,43,14,34,9,5,26,11,10,58,38,54,61,60];
 
+window.CENTER_NAMES = {
+  head: { name: "مرکز تاج (Head)", role: "دریافت الهامات، پرسش‌های بنیادین و فشار ذهنی برای فهم هستی" },
+  ajna: { name: "مرکز آجنا (Ajna)", role: "پردازش ذهنی، مفهوم‌سازی، تحلیل و دسته‌بندی باورها" },
+  throat: { name: "مرکز گلو (Throat)", role: "تبلور، کلام، بیان حقیقت درونی و تبدیل انرژی به اقدام" },
+  g: { name: "مرکز جی / هویت (G Center)", role: "قطب‌نمای عشق، جهت‌گیری زندگی و حس اصالتِ بودن" },
+  heart: { name: "مرکز قلب / اراده (Heart/Ego)", role: "قدرت اراده، ارزش‌گذاری مادی و معنوی و وفای به عهد" },
+  spleen: { name: "مرکز طحال (Spleen)", role: "غریزه لحظه‌ای، شهود بدنی، سیستم ایمنی و تشخیص امنیت در اکنون" },
+  solar: { name: "مرکز شبکه خورشیدی (Solar Plexus)", role: "امواج عاطفی، لطافت احساسات، شور و اشتیاق انسانی" },
+  sacral: { name: "مرکز ساکرال (Sacral)", role: "نیروی حیات، استقامت کاری و موتور انرژی روزانه" },
+  root: { name: "مرکز ریشه (Root)", role: "فشار سازنده برای حرکت، تکامل و عبور از چالش‌های زمینی" }
+};
+
 window.GATE_THEMES = {
   1:"آفرینش و اصالت فردی", 2:"دریافت شهودی مسیر برتر", 3:"نظم نوین از دل آشوب", 4:"یافتن پاسخ در دل ابهام",
   5:"هم‌نوایی با ریتم طبیعی زمان", 6:"پالایش مرزهای صمیمیت و آرامش", 7:"رهبری خاموش و قطب‌نمای جمع", 8:"زیستن به عنوان الگوی اصیل",
@@ -17,7 +29,7 @@ window.GATE_THEMES = {
   13:"نگهبان خاطرات و شنونده رازها", 14:"جریان برکت در مسیر درست", 15:"تواضع و هماهنگی با تنوع انسان‌ها", 16:"ذوق و مهارت استادانه",
   17:"نگاه کل‌نگر و آینده‌بین", 18:"پالایش و شفای الگوهای کهنه", 19:"لطافت روح و درک نیاز هستی", 20:"بیداری و حضور محض در اکنون",
   21:"اقتدار و مدیریت خردمندانه", 22:"وقار، فیض الهی و گشودگی قلب", 23:"تراشیدن زواید و بیان حقیقت ناب", 24:"بازگشت روح به نقطه اشراق",
-  25:"معصومیت کودکانه و عشق بی‌چون‌وچرا", 26:"کیماگری ارزش و کلام نافذ", 27:"مهرورزی و پاسداری از حیات", 28:"جسارت زیستنِ با معنا",
+  25:"معصومیت کودکانه و عشق بی‌چون‌وچرا", 26:"کیمیاگری ارزش و کلام نافذ", 27:"مهرورزی و پاسداری از حیات", 28:"جسارت زیستنِ با معنا",
   29:"تعهد قلبی به جریان زندگی", 30:"آتش اشتیاق و تسلیم در برابر تقدیر", 31:"نفوذ کلام برخاسته از حقیقت", 32:"بویایی تیز برای تشخیص آنچه ماندگار است",
   33:"خلوت حکیمانه و ته‌نشین شدن تجربه", 34:"استقلال و اقتدار درونی", 35:"طعم تجربه و عبور از افق‌های تازه", 36:"نور خرد پس از تاریکی بحران",
   37:"گرمای پیمان و پیوند قلب‌ها", 38:"ایستادگی شرافتمندانه برای معنا", 39:"تکان دادن آب‌های راکد برای بیداری روح", 40:"آزادی اراده و استراحت پس از رنج",
@@ -44,7 +56,8 @@ window.GATE_FEELINGS = {
   45:"توجه به مسائل مالی، دارایی و مدیریت هزینه‌ها", 46:"حس خوش‌شانسی، هم‌زمانی‌های شیرین و قرار گرفتن در جای درست", 47:"کنار هم قرار گرفتن قطعات پازل فکری و رسیدن به آرامش ذهنی", 48:"حس عمیق شدن در یک موضوع و پختگی فکری",
   49:"حساسیت نسبت به انصاف و اصول اخلاقی در روابط", 50:"حس مسئولیت‌پذیری، حفظ چهارچوب‌ها و آرامش خانه", 51:"شجاعت بالا و آمادگی برای یک حرکت جسورانه", 52:"آرامش عمیق، سکون و توانایی نشستن و تمرکز طولانی",
   53:"انرژی و انگیزه برای استارت زدن یک برنامه نو", 54:"انگیزه قوی برای پیشرفت مالی و ارتقای جایگاه", 55:"نوسان لطیف روحی میان دلتنگی شاعرانه و شادی عمیق", 56:"میل به معاشرت، تعریف کردن خاطرات و گپ و گفت صمیمی",
-  57:"حس ششم فوق‌العاده تیز و دریافت هشدارها یا پیام‌های ظریف درونی", 58:"نشاط، سرزندگی و امید به بهتر شدن اوضاع", 59:"شکستن دیوارها و صمیمیت", 60:"تپش تحول در دل محدودیت"
+  57:"حس ششم فوق‌العاده تیز و دریافت هشدارها یا پیام‌های ظریف درونی", 58:"نشاط، سرزندگی و امید به بهتر شدن اوضاع", 59:"شکستن دیوارها و صمیمیت", 60:"تپش تحول در دل محدودیت",
+  61:"خیره شدن به راز سر به مهر هستی", 62:"نام‌گذاری دقیق بر پدیده‌ها", 63:"پرسش مقدس در آغاز راه", 64:"شفقِ روشنایی پس از حیرت"
 };
 
 window.DB = [
@@ -84,24 +97,12 @@ window.getStore = function(k, def) {
     const ls = localStorage.getItem("oldman_" + k);
     if (ls) return ls;
   } catch(e) {}
-  try {
-    if (window.name && window.name.startsWith("{")) {
-      const wn = JSON.parse(window.name);
-      if (wn[k]) return wn[k];
-    }
-  } catch(e) {}
   return window.memStore[k] || def;
 };
 
 window.setStore = function(k, v) {
   window.memStore[k] = v;
   try { localStorage.setItem("oldman_" + k, v); } catch(e) {}
-  try {
-    let wn = {};
-    if (window.name && window.name.startsWith("{")) wn = JSON.parse(window.name);
-    wn[k] = v;
-    window.name = JSON.stringify(wn);
-  } catch(e) {}
 };
 
 function norm(x) { return ((x % 360) + 360) % 360; }
@@ -171,46 +172,30 @@ window.calcPlanets = function(dt) {
   ];
   return raw.map(p => {
     const inf = deg2g(p.l);
-    return { n: p.n, s: p.s, lon: p.l, gate: inf.gate, line: inf.line, h: (inf.left / p.sp) * 24, wt: p.wt, fast: p.fast, isMoon: p.isMoon };
+    return { n: p.n, s: p.s, lon: p.l, gate: inf.gate, line: inf.line, h: (inf.left / p.sp) * 24, wt: p.wt, fast: p.fast, isMoon: Boolean(p.isMoon) };
   });
 };
 
 window.calcGalacticLuck = function(pls, act, dateObj = new Date()) {
-  const rad = Math.PI / 180;
   const factors = [];
-
-  let total = 45;
-  let wealth = 44;
-  let love = 45;
-  let action = 44;
-
+  let total = 45, wealth = 44, love = 45, action = 44;
   const moon = pls[2];
-  const sun = pls[0];
-  const venus = pls[6];
-  const mars = pls[7];
 
   let slowChannelCap = 0;
   act.forEach(x => {
     if (x.p.isMoon) {
       const boost = Math.round(x.ch.lb * 1.45);
-      total += boost;
-      wealth += x.ch.w * 1.1;
-      love += x.ch.l * 1.1;
-      action += x.ch.v * 1.1;
+      total += boost; wealth += x.ch.w * 1.1; love += x.ch.l * 1.1; action += x.ch.v * 1.1;
       factors.push({ sign: "+", val: "+" + boost + "%", text: "قفل مستقیم ماه در " + x.ch.name });
     } else if (x.p.fast) {
       const boost = Math.round(x.ch.lb * 0.85);
-      total += boost;
-      wealth += x.ch.w * 0.7;
-      love += x.ch.l * 0.7;
-      action += x.ch.v * 0.7;
+      total += boost; wealth += x.ch.w * 0.7; love += x.ch.l * 0.7; action += x.ch.v * 0.7;
       factors.push({ sign: "+", val: "+" + boost + "%", text: "کانال " + x.p.n + ": " + x.ch.name });
     } else {
       if (slowChannelCap < 10) {
         const b = Math.min(5, 10 - slowChannelCap);
         slowChannelCap += b;
-        total += b;
-        wealth += 4; love += 4; action += 4;
+        total += b; wealth += 4; love += 4; action += 4;
         factors.push({ sign: "+", val: "+" + b + "%", text: "بستر فصلی " + x.p.n });
       }
     }
@@ -238,7 +223,7 @@ window.calcGalacticLuck = function(pls, act, dateObj = new Date()) {
 
   if (moon.line === 2 || moon.line === 6) {
     total += 12; love += 12; wealth += 10; action += 10;
-    factors.push({ sign: "+", val: "+12%", text: "هم‌فرکانسی خط ماه (خط " + moon.line + ") با پروفایل ۶/۲[span_0](start_span)[span_0](end_span)" });
+    factors.push({ sign: "+", val: "+12%", text: "هم‌فرکانسی خط ماه (خط " + moon.line + ") با پروفایل ۶/۲" });
   } else if (moon.line === 3) {
     total -= 10; wealth -= 14; action -= 6;
     factors.push({ sign: "-", val: "-10%", text: "ماه در خط ۳ (فاز آزمون و خطا)" });
@@ -249,13 +234,7 @@ window.calcGalacticLuck = function(pls, act, dateObj = new Date()) {
   total += diurnalWave;
 
   const clamp = (v, min = 4, max = 99) => Math.max(min, Math.min(max, Math.round(v)));
-  return {
-    total: clamp(total, 5, 98),
-    wealth: clamp(wealth, 5, 98),
-    love: clamp(love, 5, 98),
-    action: clamp(action, 5, 98),
-    factors: factors
-  };
+  return { total: clamp(total, 5, 98), wealth: clamp(wealth, 5, 98), love: clamp(love, 5, 98), action: clamp(action, 5, 98), factors };
 };
 
 window.setLuckGaugeMode = function(mode) {
@@ -271,7 +250,22 @@ window.setLuckGaugeMode = function(mode) {
   }
 };
 
-function getStatusTextForScore(score, mode) {
+// =========================================================================
+// تابع کلیدی تغییر فیلتر بادی‌گراف («کل سیارات» / «فقط ماه»)
+// =========================================================================
+window.setBgFilter = function(mode) {
+  window.setStore("bgFilter", mode);
+  const allBtn = document.getElementById("filterAllBtn");
+  const moonBtn = document.getElementById("filterMoonBtn");
+  if (allBtn) allBtn.className = "bg-filter-btn" + (mode === "all" ? " active" : "");
+  if (moonBtn) moonBtn.className = "bg-filter-btn" + (mode === "moon" ? " active" : "");
+
+  if (window.OLDMAN_STATE) {
+    renderBodyGraph(window.OLDMAN_STATE.pls, window.OLDMAN_STATE.act);
+  }
+};
+
+function getStatusTextForScore(score) {
   if (score >= 80) return "🔥 سبقت کهکشانی: اوج هم‌زمانی و اقبال بالا!";
   if (score >= 62) return "✨ جریان موافق: دور موتور بالا و فرصت‌ساز";
   if (score >= 42) return "🟢 تعادل پایدار: مناسب کارهای روتین و متمرکز";
@@ -293,28 +287,19 @@ function updateLuckGaugeUI(now, pls, act) {
   const lk3h = window.calcGalacticLuck(f3hPls, f3hAct, f3hDate);
 
   const currentVal = lk[mode];
-  const futureVal = lk3h[mode];
-  const delta = futureVal - currentVal;
+  const delta = lk3h[mode] - currentVal;
 
   const trendEl = document.getElementById("trendPill");
-  if (delta >= 4) {
-    trendEl.className = "trend-pill up";
-    trendEl.textContent = "📈 صعودی (+" + delta + "٪)";
-  } else if (delta <= -4) {
-    trendEl.className = "trend-pill down";
-    trendEl.textContent = "📉 نزولی (" + delta + "٪)";
-  } else {
-    trendEl.className = "trend-pill";
-    trendEl.textContent = "⚖️ پایدار";
-  }
+  if (delta >= 4) { trendEl.className = "trend-pill up"; trendEl.textContent = "📈 صعودی (+" + delta + "٪)"; }
+  else if (delta <= -4) { trendEl.className = "trend-pill down"; trendEl.textContent = "📉 نزولی (" + delta + "٪)"; }
+  else { trendEl.className = "trend-pill"; trendEl.textContent = "⚖️ پایدار"; }
 
   const modeColors = { total: "#22c55e", wealth: "#f5c56b", love: "#f43f5e", action: "#38bdf8" };
-
   const ang = -90 + (currentVal / 100) * 180;
   document.getElementById("luckNeedle").style.transform = "rotate(" + ang + "deg)";
   document.getElementById("needlePoly").setAttribute("fill", modeColors[mode]);
   document.getElementById("luckValTxt").textContent = currentVal + "%";
-  document.getElementById("luckStatTxt").textContent = getStatusTextForScore(currentVal, mode);
+  document.getElementById("luckStatTxt").textContent = getStatusTextForScore(currentVal);
 
   document.getElementById("swVal").textContent = lk.wealth + "%"; document.getElementById("swBar").style.width = lk.wealth + "%";
   document.getElementById("slVal").textContent = lk.love + "%"; document.getElementById("slBar").style.width = lk.love + "%";
@@ -322,10 +307,12 @@ function updateLuckGaugeUI(now, pls, act) {
   document.getElementById("siVal").textContent = lk.total + "%"; document.getElementById("siBar").style.width = lk.total + "%";
 
   const fBox = document.getElementById("luckFactorsList");
-  fBox.innerHTML = "";
-  lk.factors.forEach(f => {
-    fBox.innerHTML += '<div class="factor-row ' + (f.sign === "+" ? "pos" : "neg") + '"><span>' + f.text + '</span><b>' + f.val + '</b></div>';
-  });
+  if (fBox) {
+    fBox.innerHTML = "";
+    lk.factors.forEach(f => {
+      fBox.innerHTML += '<div class="factor-row ' + (f.sign === "+" ? "pos" : "neg") + '"><span>' + f.text + '</span><b>' + f.val + '</b></div>';
+    });
+  }
 
   render24hLuckWave(now, mode);
   return lk;
@@ -333,17 +320,18 @@ function updateLuckGaugeUI(now, pls, act) {
 
 function render24hLuckWave(now, mode) {
   const waveContainer = document.getElementById("luckWaveBars");
+  if (!waveContainer) return;
   waveContainer.innerHTML = "";
-  let bestScore = -1, worstScore = 101;
-  let bestTimeStr = "", worstTimeStr = "";
+  let bestScore = -1, worstScore = 101, bestTimeStr = "", worstTimeStr = "";
 
   for (let h = 0; h <= 22; h += 2) {
     const fDate = new Date(now.getTime() + h * 3600000);
     const fPls = window.calcPlanets(fDate);
-    const tMap = new Map();
-    fPls.forEach(p => { if (!tMap.has(p.gate)) tMap.set(p.gate, p); });
     const fAct = [];
-    window.DB.forEach(ch => { if (tMap.has(ch.g2)) fAct.push({ ch, p: tMap.get(ch.g2) }); });
+    window.DB.forEach(ch => {
+      const tp = fPls.find(p => p.gate === ch.g2);
+      if (tp) fAct.push({ ch, p: tp });
+    });
     const fLk = window.calcGalacticLuck(fPls, fAct, fDate);
     const val = fLk[mode];
 
@@ -360,8 +348,31 @@ function render24hLuckWave(now, mode) {
   document.getElementById("cautionHourChip").textContent = "🔴 احتیاط: " + worstTimeStr;
 }
 
+function setupInteractiveCenters() {
+  Object.keys(window.CENTER_NAMES).forEach(cKey => {
+    const el = document.getElementById("c-" + cKey);
+    if (el && !el.dataset.bound) {
+      el.dataset.bound = "1";
+      el.style.cursor = "pointer";
+      el.addEventListener("click", () => {
+        const info = window.CENTER_NAMES[cKey];
+        const isLit = el.getAttribute("class").includes("on-");
+        const statusStr = isLit ? "⚡ فعال‌شده توسط ترانزیت فعلی" : "🌕 باز و آینه‌ای (دریافت‌کننده ناب انرژی محیط)";
+        const capEl = document.getElementById("capText");
+        if (capEl) {
+          capEl.innerHTML = "<span style='color:#38bdf8'>" + info.name + ":</span> " + statusStr + "<br/><span style='font-size:0.74rem;color:#cbd5e1;font-weight:400'>" + info.role + "</span>";
+        }
+      });
+    }
+  });
+}
+
 function renderBodyGraph(pls, act) {
+  setupInteractiveCenters();
   const mode = window.getStore("bgFilter", "all");
+  const moon = pls[2];
+  const capEl = document.getElementById("capText");
+
   document.querySelectorAll(".c-shape").forEach(el => el.setAttribute("class", "c-shape"));
   document.querySelectorAll(".ch-line").forEach(el => {
     const isNatalHalf = el.id && window.DB.some(c => c.svg === el.id);
@@ -369,25 +380,135 @@ function renderBodyGraph(pls, act) {
   });
 
   const activeCenters = new Set();
-  act.forEach(x => {
-    const isMoonActive = x.p.isMoon;
-    if (mode === "all" || (mode === "moon" && isMoonActive)) {
+  const moonActiveChannels = act.filter(x => x.p.isMoon || moon.gate === x.ch.g2);
+
+  if (mode === "moon") {
+    moonActiveChannels.forEach(x => {
+      x.ch.c.forEach(cn => activeCenters.add(cn));
+      const lineEl = document.getElementById(x.ch.svg);
+      if (lineEl) lineEl.setAttribute("class", "ch-line active-moon");
+    });
+
+    activeCenters.forEach(cName => {
+      const cEl = document.getElementById("c-" + cName);
+      if (cEl) cEl.setAttribute("class", "c-shape on-blue");
+    });
+
+    const moonTheme = window.GATE_THEMES[moon.gate] || "سکوت و شهود";
+    const moonNatRes = window.MY_GATES.has(moon.gate) ? " (هم‌نوا با دروازه تولد شما ✨)" : "";
+    if (moonActiveChannels.length > 0) {
+      capEl.innerHTML = "🌙 قفل مستقیم ماه: <b>" + moonActiveChannels.map(x => x.ch.name).join(" | ") + "</b><br/><span style='font-size:0.75rem;color:#7dd3fc'>ماه در دروازه " + moon.gate + "." + moon.line + " («" + moonTheme + "») تا " + window.fmtH(moon.h) + "</span>";
+    } else {
+      capEl.innerHTML = "🌙 ماه در دروازه <b>" + moon.gate + "." + moon.line + "</b>" + moonNatRes + "<br/><span style='font-size:0.75rem;color:#7dd3fc'>تم فعلی ماه: «" + moonTheme + "» (بدون قفل کانال | خروج تا " + window.fmtH(moon.h) + ")</span>";
+    }
+  } else {
+    act.forEach(x => {
       x.ch.c.forEach(cn => activeCenters.add(cn));
       const lineEl = document.getElementById(x.ch.svg);
       if (lineEl) {
-        lineEl.setAttribute("class", "ch-line " + (isMoonActive && mode === "moon" ? "active-moon" : "active-em"));
+        lineEl.setAttribute("class", "ch-line " + (x.p.isMoon ? "active-moon" : "active-em"));
       }
-    }
-  });
+    });
 
-  activeCenters.forEach(cName => {
-    const cEl = document.getElementById("c-" + cName);
-    if (cEl) {
-      let col = "on-gold";
-      if (cName === "head" || cName === "ajna" || cName === "throat") col = "on-blue";
-      if (cName === "sacral" || cName === "root") col = "on-red";
-      cEl.setAttribute("class", "c-shape " + col);
+    activeCenters.forEach(cName => {
+      const cEl = document.getElementById("c-" + cName);
+      if (cEl) {
+        let col = "on-gold";
+        if (cName === "head" || cName === "ajna" || cName === "throat") col = "on-blue";
+        if (cName === "sacral" || cName === "root") col = "on-red";
+        cEl.setAttribute("class", "c-shape " + col);
+      }
+    });
+
+    if (act.length > 0) {
+      capEl.textContent = act.map(x => x.ch.name).join(" | ");
+    } else {
+      capEl.textContent = "میدان باز و آینه‌ای رفلکتور (هیچ کانالی قفل نیست)";
     }
+  }
+}
+
+function renderUpcoming5Days(now) {
+  const box = document.getElementById("upcomingListBox");
+  if (!box) return;
+  box.innerHTML = "";
+  const seen = new Set();
+  const events = [];
+
+  for (let h = 1; h <= 120; h += 2) {
+    const dt = new Date(now.getTime() + h * 3600000);
+    const pls = window.calcPlanets(dt);
+    const moon = pls[2];
+    window.DB.forEach(ch => {
+      if (moon.gate === ch.g2) {
+        const key = ch.id + "-" + Math.floor(h / 18);
+        if (!seen.has(key)) {
+          seen.add(key);
+          events.push({ h, dt, ch, p: moon });
+        }
+      }
+    });
+  }
+
+  if (events.length === 0) {
+    box.innerHTML = '<div style="color:#94a3b8;font-size:0.78rem;text-align:center;padding:8px">در ۵ روز آینده قفل جدیدی توسط ماه رصد نشد.</div>';
+    return;
+  }
+
+  events.slice(0, 8).forEach(ev => {
+    const dayStr = ev.dt.toLocaleDateString("fa-IR", { weekday: "long", month: "short", day: "numeric" });
+    const timeStr = ev.dt.toLocaleTimeString("fa-IR", { hour: "2-digit", minute: "2-digit" });
+    box.innerHTML +=
+      '<div class="up-item">' +
+        '<div class="up-top"><span>🌙 ' + ev.ch.name + '</span><span class="up-badge">' + window.fmtH(ev.h) + '</span></div>' +
+        '<div class="up-time">📅 ' + dayStr + ' ساعت ' + timeStr + ' — ' + ev.ch.fc + '</div>' +
+      '</div>';
+  });
+}
+
+window.addLunarDecision = function() {
+  const inp = document.getElementById("decisionTitleInp");
+  if (!inp || !inp.value.trim()) return;
+  let list = [];
+  try { list = JSON.parse(window.getStore("decisions", "[]")); } catch(e) {}
+  list.unshift({ title: inp.value.trim(), start: Date.now() });
+  window.setStore("decisions", JSON.stringify(list));
+  inp.value = "";
+  renderLunarDecisions();
+};
+
+window.removeLunarDecision = function(idx) {
+  let list = [];
+  try { list = JSON.parse(window.getStore("decisions", "[]")); } catch(e) {}
+  list.splice(idx, 1);
+  window.setStore("decisions", JSON.stringify(list));
+  renderLunarDecisions();
+};
+
+function renderLunarDecisions() {
+  const box = document.getElementById("lunarDecisionsList");
+  if (!box) return;
+  let list = [];
+  try { list = JSON.parse(window.getStore("decisions", "[]")); } catch(e) {}
+  if (list.length === 0) {
+    box.innerHTML = '<div style="color:#94a3b8;font-size:0.75rem;text-align:center;padding:6px">هنوز تصمیمی برای چرخه ۲۸ روزه ماه ثبت نکرده‌اید.</div>';
+    return;
+  }
+  box.innerHTML = "";
+  list.forEach((d, idx) => {
+    const elapsedDays = Math.min(28, Math.floor((Date.now() - d.start) / 86400000) + 1);
+    const pct = Math.min(100, Math.round((elapsedDays / 28) * 100));
+    box.innerHTML +=
+      '<div class="lunar-item">' +
+        '<div style="display:flex;justify-content:space-between;margin-bottom:4px">' +
+          '<b style="color:#fde68a">🌕 ' + d.title + '</b>' +
+          '<span onclick="removeLunarDecision(' + idx + ')" style="color:#fca5a5;cursor:pointer;font-size:0.7rem">حذف ✕</span>' +
+        '</div>' +
+        '<div style="display:flex;justify-content:space-between;font-size:0.72rem;color:#cbd5e1">' +
+          '<span>روز ' + elapsedDays + ' از ۲۸ روز</span><span>' + pct + '%</span>' +
+        '</div>' +
+        '<div class="bar-bg"><div class="bar-fill" style="width:' + pct + '%;background:#38bdf8"></div></div>' +
+      '</div>';
   });
 }
 
@@ -397,28 +518,33 @@ window.runApp = function(resetDeep) {
   const pls = window.calcPlanets(now);
 
   const tMap = new Map();
-  let minH = 999999, nextP = pls[2];
+  let minH = 999999;
   pls.forEach(p => {
-    if (!tMap.has(p.gate) || p.h < tMap.get(p.gate).h) tMap.set(p.gate, p);
-    if (p.h < minH) { minH = p.h; nextP = p; }
+    if (p.isMoon || !tMap.has(p.gate) || p.h < tMap.get(p.gate).h) {
+      tMap.set(p.gate, p);
+    }
+    if (p.h < minH) minH = p.h;
   });
   document.getElementById("timerBar").textContent = "⏱️ زمان تغییر بعدی: " + window.fmtH(minH);
 
   const act = [];
   window.DB.forEach(ch => {
-    if (tMap.has(ch.g2)) {
-      const tp = tMap.get(ch.g2);
-      act.push({ ch, p: tp });
+    const moonMatch = pls.find(p => p.isMoon && p.gate === ch.g2);
+    if (moonMatch) {
+      act.push({ ch, p: moonMatch });
+    } else if (tMap.has(ch.g2)) {
+      act.push({ ch, p: tMap.get(ch.g2) });
     }
   });
 
   renderBodyGraph(pls, act);
   const lk = updateLuckGaugeUI(now, pls, act);
+  renderUpcoming5Days(now);
+  renderLunarDecisions();
 
   const box = document.getElementById("chList");
   box.innerHTML = "";
   if (act.length > 0) {
-    document.getElementById("capText").textContent = act.map(x => x.ch.name).join(" | ");
     act.forEach(x => {
       box.innerHTML += '<div class="ch-item"><div class="ch-top"><span>⚡ ' + x.ch.name + '</span><span class="exp">فعال تا ' + window.fmtH(x.p.h) + '</span></div><div style="font-size:0.77rem;color:#cbd5e1">توسط <b>' + x.p.n + ' (' + x.p.s + ')</b> در پورت ' + x.ch.g2 + '.' + x.p.line + '</div></div>';
     });
@@ -426,7 +552,6 @@ window.runApp = function(resetDeep) {
     document.getElementById("doTxt").textContent = act.map(x => x.ch.doT).join(" | ");
     document.getElementById("dontTxt").textContent = act.map(x => x.ch.dontT).join(" | ");
   } else {
-    document.getElementById("capText").textContent = "میدان باز آینه‌ای رفلکتور";
     box.innerHTML = '<div class="ch-item"><div class="ch-top"><span>🌕 رفلکتور خالص</span></div></div>';
     document.getElementById("fcBase").textContent = "فضای روحی صاف، سبک و آینه‌ای.";
     document.getElementById("doTxt").textContent = "مشاهده بی‌طرفانه و استراحت.";
@@ -446,7 +571,7 @@ window.runApp = function(resetDeep) {
 };
 
 window.openModal = function(id) { document.getElementById(id).classList.add("open"); };
-window.closeModal = function(id) { document.getElementById(id).classList.add("open") ? document.getElementById(id).classList.remove("open") : document.getElementById(id).classList.remove("open"); };
+window.closeModal = function(id) { document.getElementById(id).classList.remove("open"); };
 window.saveSet = function() {
   const p = document.getElementById("provSel").value;
   const k = document.getElementById("keyInp").value.trim();
