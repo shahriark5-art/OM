@@ -3,149 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="theme-color" content="#050711" />
-  <title>OLDMAN v1.3 | نسخه چندفایلی گیت‌هاب - شهریار</title>
+  <meta name="theme-color" content="#02040a" />
+  <title>OLDMAN v1.3 | نسخه حرفه‌ای چندفایلی - شهریار</title>
   <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Vazirmatn', Tahoma, sans-serif; -webkit-tap-highlight-color: transparent; }
-    body {
-      background-color: #04060f;
-      background-image:
-        radial-gradient(circle at 15% 15%, rgba(56, 189, 248, 0.16) 0%, transparent 42%),
-        radial-gradient(circle at 85% 25%, rgba(245, 197, 107, 0.14) 0%, transparent 48%),
-        radial-gradient(circle at 50% 60%, rgba(139, 92, 246, 0.14) 0%, transparent 55%),
-        radial-gradient(circle at 20% 85%, rgba(236, 72, 153, 0.08) 0%, transparent 45%);
-      color: #f1f5f9;
-      min-height: 100vh;
-      padding-bottom: 98px;
-      overflow-x: hidden;
-    }
-    .cosmic-dust {
-      position: fixed; inset: 0; pointer-events: none;
-      background-image: radial-gradient(1.5px 1.5px at 30px 45px, #fff, transparent), radial-gradient(1px 1px at 110px 160px, #f5c56b, transparent), radial-gradient(1.5px 1.5px at 240px 90px, #38bdf8, transparent);
-      background-size: 360px 360px; opacity: 0.45; z-index: 0;
-    }
-    .wrap { position: relative; z-index: 1; max-width: 480px; margin: 0 auto; padding: 15px; }
-    header { text-align: center; margin-bottom: 10px; }
-    .logo {
-      font-size: 1.9rem; font-weight: 900; letter-spacing: 2.5px;
-      background: linear-gradient(135deg, #fff8dc 0%, #f5c56b 50%, #d97706 100%);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      filter: drop-shadow(0 0 18px rgba(245, 197, 107, 0.35));
-    }
-    .meta { display: flex; justify-content: space-between; font-size: 0.8rem; color: #94a3b8; margin-top: 4px; padding: 0 6px; }
-    .luck-card {
-      background: linear-gradient(180deg, rgba(16, 23, 44, 0.94) 0%, rgba(9, 13, 28, 0.92) 100%);
-      border: 1px solid rgba(245, 197, 107, 0.35); border-radius: 22px; padding: 13px 14px 15px; margin: 10px 0 12px; box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
-    }
-    .luck-head { display: flex; justify-content: space-between; align-items: center; font-size: 0.78rem; margin-bottom: 6px; flex-wrap: wrap; gap: 4px; }
-    .luck-title { color: #f5c56b; font-weight: 800; display: flex; align-items: center; gap: 5px; }
-    .trend-pill { font-size: 0.68rem; padding: 3px 9px; border-radius: 999px; font-weight: 700; background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.35); color: #7dd3fc; }
-    .luck-mode-tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin: 6px 0 8px; }
-    .mode-tab { background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); color: #94a3b8; font-size: 0.68rem; padding: 6px 4px; border-radius: 10px; cursor: pointer; text-align: center; }
-    .mode-tab.active { background: linear-gradient(135deg, rgba(245, 197, 107, 0.24), rgba(56, 189, 248, 0.2)); border-color: #f5c56b; color: #fff; font-weight: 800; }
-    .gauge-wrap { display: flex; flex-direction: column; align-items: center; cursor: pointer; position: relative; }
-    svg.gauge-svg { width: 245px; height: 142px; overflow: visible; }
-    .needle { transition: transform 0.95s cubic-bezier(0.22, 1, 0.36, 1); transform-origin: 120px 115px; }
-    .luck-status { font-size: 0.81rem; font-weight: 800; color: #fde68a; text-align: center; margin-top: 2px; }
-    .inspect-btn { margin-top: 5px; font-size: 0.68rem; color: #7dd3fc; background: rgba(56, 189, 248, 0.1); border: 1px dashed rgba(56, 189, 248, 0.4); padding: 3px 10px; border-radius: 99px; cursor: pointer; }
-    .sub-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(255, 255, 255, 0.08); }
-    .sub-item { background: rgba(255, 255, 255, 0.04); border-radius: 8px; padding: 5px; text-align: center; font-size: 0.68rem; cursor: pointer; border: 1px solid transparent; }
-    .sub-item.selected-sub { border-color: rgba(245, 197, 107, 0.5); background: rgba(245, 197, 107, 0.08); }
-    .sub-lbl { color: #94a3b8; display: block; margin-bottom: 2px; }
-    .bar-bg { width: 100%; height: 4px; background: rgba(255, 255, 255, 0.1); border-radius: 4px; overflow: hidden; margin-top: 3px; }
-    .bar-fill { height: 100%; border-radius: 4px; transition: width 0.6s ease; }
-    .wave-box { margin-top: 10px; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,0.1); }
-    .wave-head { display: flex; justify-content: space-between; font-size: 0.7rem; color: #cbd5e1; margin-bottom: 6px; }
-    .wave-bars { display: flex; align-items: flex-end; justify-content: space-between; height: 46px; gap: 3px; padding: 0 2px; }
-    .w-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; }
-    .w-bar { width: 100%; border-radius: 3px 3px 0 0; }
-    .w-lbl { font-size: 0.56rem; color: #94a3b8; }
-    .extremes-row { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 8px; }
-    .extreme-chip { font-size: 0.68rem; padding: 5px 8px; border-radius: 8px; text-align: center; font-weight: 700; }
-    .extreme-chip.gold-hr { background: rgba(34, 197, 94, 0.12); border: 1px solid rgba(34, 197, 94, 0.35); color: #4ade80; }
-    .extreme-chip.red-hr { background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.35); color: #fca5a5; }
-    .banner { display: block; text-align: center; margin: 6px auto 10px; padding: 6px 14px; border-radius: 999px; background: rgba(20, 27, 48, 0.9); border: 1px solid rgba(245, 197, 107, 0.3); font-size: 0.78rem; color: #fde68a; }
-    .bg-filter-row { display: flex; justify-content: center; gap: 6px; margin-bottom: 6px; }
-    .bg-filter-btn { background: rgba(255,255,255,0.06); border: 1px solid rgba(245,197,107,0.25); color: #94a3b8; font-size: 0.72rem; padding: 4px 12px; border-radius: 99px; cursor: pointer; }
-    .bg-filter-btn.active { background: rgba(245,197,107,0.2); border-color: #f5c56b; color: #f5c56b; font-weight: 700; }
-    .bg-box { display: flex; flex-direction: column; align-items: center; margin: 4px 0 12px; }
-    svg.bg { width: 230px; height: 290px; filter: drop-shadow(0 0 18px rgba(56, 189, 248, 0.16)); }
-    .c-shape { fill: rgba(15, 23, 42, 0.85); stroke: rgba(148, 163, 184, 0.45); stroke-width: 2; transition: 0.3s; }
-    .c-shape.on-blue { fill: rgba(56, 189, 248, 0.28); stroke: #38bdf8; filter: drop-shadow(0 0 8px #38bdf8); }
-    .c-shape.on-gold { fill: rgba(245, 197, 107, 0.28); stroke: #f5c56b; filter: drop-shadow(0 0 8px #f5c56b); }
-    .c-shape.on-red { fill: rgba(239, 68, 68, 0.28); stroke: #ef4444; filter: drop-shadow(0 0 8px #ef4444); }
-    .ch-line { stroke: rgba(148, 163, 184, 0.2); stroke-width: 3.5; fill: none; stroke-linecap: round; }
-    .ch-line.natal { stroke: rgba(245, 197, 107, 0.4); stroke-dasharray: 4 3; }
-    .ch-line.active-em { stroke: #ef4444; stroke-width: 5.5; stroke-dasharray: none; filter: drop-shadow(0 0 8px #ef4444); }
-    .ch-line.active-moon { stroke: #38bdf8; stroke-width: 6; stroke-dasharray: none; filter: drop-shadow(0 0 10px #38bdf8); }
-    .cap { font-size: 0.85rem; color: #f5c56b; margin-top: 5px; font-weight: 700; text-align: center; }
-    .timer { text-align: center; padding: 9px 12px; border-radius: 999px; background: rgba(24, 31, 56, 0.9); border: 1px solid rgba(245, 197, 107, 0.3); margin-bottom: 12px; font-size: 0.83rem; color: #fef08a; font-weight: 600; }
-    .card { background: rgba(14, 19, 36, 0.86); backdrop-filter: blur(12px); border: 1px solid rgba(245, 197, 107, 0.26); border-radius: 18px; padding: 14px 15px; margin-bottom: 13px; box-shadow: 0 8px 24px rgba(0,0,0,0.45); }
-    .c-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); gap: 6px; }
-    .c-title { font-size: 0.89rem; font-weight: 800; color: #f5c56b; }
-    .ch-item { background: rgba(255, 255, 255, 0.05); border-right: 3px solid #ef4444; border-radius: 8px; padding: 9px; margin-top: 8px; font-size: 0.82rem; }
-    .ch-top { display: flex; justify-content: space-between; font-weight: 700; margin-bottom: 4px; }
-    .exp { font-size: 0.74rem; color: #fca5a5; }
-    .oldman-sanctuary { background: radial-gradient(circle at 50% 0%, rgba(139, 92, 246, 0.22) 0%, rgba(20, 16, 42, 0.95) 65%, rgba(8, 11, 24, 0.98) 100%); border: 1.5px solid rgba(245, 197, 107, 0.55); border-radius: 22px; padding: 16px 15px; box-shadow: 0 12px 35px rgba(0, 0, 0, 0.65); }
-    .oldman-avatar-row { display: flex; align-items: center; gap: 11px; margin-bottom: 10px; }
-    .oldman-orb { width: 44px; height: 44px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #fef08a, #f59e0b 55%, #581c87 100%); display: flex; align-items: center; justify-content: center; font-size: 1.45rem; box-shadow: 0 0 18px rgba(245, 197, 107, 0.55); flex-shrink: 0; }
-    .oldman-intro { font-size: 0.77rem; color: #e2e8f0; line-height: 1.65; }
-    .oracle-input { width: 100%; min-height: 74px; padding: 11px 13px; border-radius: 14px; background: rgba(5, 8, 18, 0.88); border: 1px solid rgba(245, 197, 107, 0.38); color: #ffffff; font-size: 0.84rem; line-height: 1.7; resize: vertical; }
-    .oracle-btn-row { display: flex; gap: 7px; margin-top: 9px; }
-    .oracle-btn { flex: 1; padding: 11px 14px; border-radius: 12px; border: 1px solid rgba(245, 197, 107, 0.65); background: linear-gradient(135deg, #f5c56b 0%, #d97706 100%); color: #050711; font-size: 0.85rem; font-weight: 900; cursor: pointer; }
-    .oracle-clear-btn { padding: 11px 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.14); background: rgba(255,255,255,0.05); color: #94a3b8; font-size: 0.75rem; cursor: pointer; }
-    .oracle-history-box { max-height: 330px; overflow-y: auto; margin-top: 10px; padding-right: 2px; }
-    .oracle-msg { background: linear-gradient(160deg, rgba(16, 20, 42, 0.92) 0%, rgba(9, 12, 26, 0.95) 100%); border-right: 3.5px solid #f5c56b; border-radius: 12px; padding: 13px 14px; margin-top: 10px; font-size: 0.86rem; line-height: 1.95; color: #fef3c7; text-align: justify; }
-    .oracle-q { font-size: 0.76rem; color: #93c5fd; font-weight: 700; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px dashed rgba(255,255,255,0.12); display: flex; justify-content: space-between; }
-    .oracle-speech { color: #fef9c3; font-weight: 400; }
-    .dream-card { background: radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.15) 0%, rgba(15, 23, 42, 0.95) 70%); border: 1.5px solid rgba(56, 189, 248, 0.45); border-radius: 20px; padding: 15px; margin-bottom: 13px; }
-    .dream-textarea { width: 100%; min-height: 85px; padding: 11px 12px; border-radius: 12px; background: rgba(6, 9, 20, 0.85); border: 1px solid rgba(56, 189, 248, 0.35); color: #ffffff; font-size: 0.84rem; line-height: 1.7; resize: vertical; margin-top: 6px; }
-    .dream-btn-row { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
-    .dream-action-btn { flex: 1; padding: 10px; border-radius: 10px; border: 1px solid rgba(56, 189, 248, 0.5); background: linear-gradient(135deg, rgba(14, 116, 144, 0.7), rgba(30, 58, 138, 0.9)); color: #fff; font-size: 0.78rem; font-weight: 800; cursor: pointer; text-align: center; }
-    .dream-action-btn.cloud { background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); border-color: #38bdf8; }
-    .dream-interp-box { background: rgba(14, 24, 48, 0.85); border-right: 3px solid #38bdf8; border-radius: 10px; padding: 10px 12px; margin-top: 8px; font-size: 0.81rem; line-height: 1.8; color: #e0f2fe; display: none; }
-    .dream-list-scroll { max-height: 240px; overflow-y: auto; margin-top: 10px; padding-right: 2px; }
-    .dream-item-card { background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 10px; padding: 10px; margin-top: 7px; font-size: 0.78rem; }
-    .upcoming-scroll { max-height: 250px; overflow-y: auto; padding-right: 2px; }
-    .up-item { background: rgba(255, 255, 255, 0.04); border-right: 3px solid #38bdf8; border-radius: 9px; padding: 9px 11px; margin-top: 8px; font-size: 0.8rem; }
-    .up-top { display: flex; justify-content: space-between; align-items: center; font-weight: 700; color: #f5c56b; margin-bottom: 4px; }
-    .up-time { font-size: 0.75rem; color: #e2e8f0; line-height: 1.6; }
-    .up-badge { font-size: 0.68rem; background: rgba(56, 189, 248, 0.16); color: #7dd3fc; padding: 2px 7px; border-radius: 99px; }
-    .scroll-box { max-height: 280px; overflow-y: auto; padding: 11px 13px; background: rgba(6, 10, 22, 0.78); border: 1px solid rgba(245, 197, 107, 0.24); border-radius: 12px; font-size: 0.84rem; line-height: 1.85; color: #e2e8f0; text-align: justify; }
-    .deep-item { margin-top: 12px; padding: 11px 12px; border-radius: 11px; background: rgba(14, 28, 54, 0.7); border-right: 3.5px solid #38bdf8; color: #e0f2fe; }
-    .deep-item.weather-live { border-right-color: #38bdf8; background: linear-gradient(145deg, rgba(12, 32, 58, 0.78), rgba(8, 16, 34, 0.88)); }
-    .deep-item.fortune-live { border-right-color: #c084fc; background: linear-gradient(145deg, rgba(46, 16, 78, 0.82), rgba(18, 12, 38, 0.92)); color: #fae8ff; }
-    .deep-head { font-size: 0.75rem; font-weight: 800; color: #7dd3fc; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; }
-    .hint { font-size: 0.68rem; color: #94a3b8; display: flex; justify-content: space-between; margin-top: 6px; }
-    .ai-btn { width: 100%; margin-top: 8px; padding: 12px; border-radius: 11px; border: 1px solid rgba(56, 189, 248, 0.55); background: linear-gradient(135deg, rgba(14, 116, 144, 0.65), rgba(30, 58, 138, 0.85)); color: #ffffff; font-size: 0.83rem; font-weight: 800; cursor: pointer; }
-    .ai-btn.fortune-mode { border-color: rgba(245, 197, 107, 0.7); background: linear-gradient(135deg, #581c87 0%, #7e22ce 50%, #b45309 100%); color: #fef08a; }
-    .lunar-form { display: flex; gap: 6px; margin-bottom: 8px; }
-    .lunar-inp { flex: 1; padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(245, 197, 107, 0.35); background: #080c1a; color: #fff; font-size: 0.8rem; }
-    .lunar-add-btn { padding: 8px 12px; border-radius: 8px; border: none; background: #f5c56b; color: #000; font-weight: 800; font-size: 0.78rem; cursor: pointer; }
-    .lunar-item { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 9px; margin-top: 7px; font-size: 0.78rem; }
-    .row { margin-top: 8px; font-size: 0.83rem; line-height: 1.65; }
-    .do-t { color: #22c55e; font-weight: 700; }
-    .dont-t { color: #ef4444; font-weight: 700; }
-    .p-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 8px; }
-    .p-chip { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 6px; font-size: 0.74rem; display: flex; justify-content: space-between; }
-    .p-chip.hit { border-color: #ef4444; background: rgba(239, 68, 68, 0.15); }
-    .p-chip.natal-res { border-color: rgba(245, 197, 107, 0.55); background: rgba(245, 197, 107, 0.08); }
-    .b-nav { position: fixed; bottom: 0; left: 0; right: 0; max-width: 480px; margin: 0 auto; background: rgba(8, 12, 24, 0.96); backdrop-filter: blur(14px); border-top: 1px solid rgba(245, 197, 107, 0.25); display: flex; justify-content: space-around; padding: 8px 4px 12px; z-index: 20; }
-    .n-btn { background: none; border: none; color: #94a3b8; font-size: 0.7rem; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; }
-    .n-btn.act { color: #f5c56b; font-weight: 700; }
-    .modal { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.84); z-index: 50; align-items: center; justify-content: center; padding: 16px; }
-    .modal.open { display: flex; }
-    .m-box { background: #0f1629; border: 1px solid rgba(245, 197, 107, 0.4); border-radius: 16px; width: 100%; max-width: 420px; padding: 16px; color: #f1f5f9; max-height: 85vh; overflow-y: auto; }
-    .f-grp { margin-top: 10px; }
-    .f-grp label { display: block; font-size: 0.78rem; color: #f5c56b; margin-bottom: 4px; }
-    .f-grp select, .f-grp input { width: 100%; padding: 9px; border-radius: 8px; background: #080c1a; color: #ffffff; border: 1px solid rgba(245, 197, 107, 0.35); font-size: 0.8rem; }
-    .s-btn { margin-top: 12px; width: 100%; padding: 10px; border-radius: 9px; border: none; background: #f5c56b; color: #000000; font-weight: 800; cursor: pointer; }
-    .close-btn { margin-top: 8px; width: 100%; padding: 8px; border-radius: 9px; border: 1px solid rgba(255,255,255,0.2); background: transparent; color: #cbd5e1; font-size: 0.78rem; cursor: pointer; }
-    .factor-row { display: flex; justify-content: space-between; padding: 7px 9px; border-radius: 8px; margin-top: 6px; font-size: 0.77rem; background: rgba(255,255,255,0.04); }
-    .factor-row.pos { border-right: 3px solid #22c55e; color: #dcfce7; }
-    .factor-row.neg { border-right: 3px solid #ef4444; color: #fee2e2; }
-  </style>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="cosmic-dust"></div>
@@ -324,7 +185,6 @@
   </div>
 
   <script>
-    // توابع کمکی برای ناوبری و دکمه‌های پایین صفحه
     window.scrollToId = function(id) {
       const el = document.getElementById(id);
       if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -349,7 +209,7 @@
     };
   </script>
 
-  <!-- بارگذاری فایل‌های جاوااسکریپت ماژولار جداگانه -->
+  <!-- بارگذاری فایل‌های ماژولار جداگانه -->
   <script src="core.js"></script>
   <script src="oracle.js"></script>
   <script src="weather.js"></script>
