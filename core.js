@@ -1,5 +1,5 @@
 // =========================================================================
-// CORE MODULE: ASTRONOMY, INTERACTIVE BODYGRAPH & GALACTIC LUCK GAUGE
+// CORE MODULE: ASTRONOMY, INTERACTIVE BODYGRAPH, LUCK GAUGE & ADVANCED CHANNELS
 // =========================================================================
 window.EMBEDDED_GEMINI_KEY = "";
 window.MY_GATES = new Set([7,8,9,10,11,12,13,15,23,24,28,37,44,50,54,60,63]);
@@ -9,6 +9,66 @@ window.NATAL_SUN_LON = 41.5;
 window.NATAL_MOON_LON = 299.0;
 
 window.MANDALA = [41,19,13,49,30,55,37,63,22,36,25,17,21,51,42,3,27,24,2,23,8,20,16,35,45,12,15,52,39,53,62,56,31,33,7,4,29,59,40,64,47,6,46,18,48,57,32,50,28,44,1,43,14,34,9,5,26,11,10,58,38,54,61,60];
+
+// تزریق استایل‌های پیشرفته برای بخش کانال‌های فعال
+(function injectChannelStyles() {
+  if (document.getElementById("adv-channel-styles")) return;
+  const st = document.createElement("style");
+  st.id = "adv-channel-styles";
+  st.textContent = `
+    .aura-shift-banner {
+      background: linear-gradient(135deg, rgba(56,189,248,0.16), rgba(245,197,107,0.14));
+      border: 1px solid rgba(245,197,107,0.4);
+      border-radius: 12px; padding: 9px 11px; margin-bottom: 10px;
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+      font-size: 0.78rem; font-weight: 800; color: #fef08a;
+    }
+    .aura-shift-sub { font-size: 0.7rem; color: #cbd5e1; font-weight: 400; margin-top: 3px; }
+    .ch-card-adv {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-right: 3.5px solid #ef4444;
+      border-radius: 12px; padding: 10px 11px; margin-top: 9px;
+      transition: all 0.25s ease; cursor: pointer;
+    }
+    .ch-card-adv.moon-ch { border-right-color: #38bdf8; background: rgba(56, 189, 248, 0.06); }
+    .ch-fuel-bg { width: 100%; height: 5px; background: rgba(255,255,255,0.1); border-radius: 6px; overflow: hidden; margin: 7px 0 4px; }
+    .ch-fuel-fill { height: 100%; border-radius: 6px; transition: width 0.5s ease; }
+    .ch-drawer {
+      display: none; margin-top: 9px; padding-top: 9px;
+      border-top: 1px dashed rgba(255,255,255,0.14);
+      font-size: 0.76rem; line-height: 1.75; color: #e2e8f0;
+    }
+    .ch-drawer.open { display: block; }
+    .ch-tag-row { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 6px; }
+    .ch-mini-badge { background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12); padding: 2px 8px; border-radius: 99px; font-size: 0.68rem; color: #93c5fd; }
+    .ch-sg-box { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 6px; }
+    .ch-shadow { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.28); border-radius: 8px; padding: 6px; font-size: 0.71rem; color: #fecaca; }
+    .ch-gift { background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.28); border-radius: 8px; padding: 6px; font-size: 0.71rem; color: #bbf7d0; }
+    .ch-ask-btn {
+      width: 100%; margin-top: 8px; padding: 8px 10px; border-radius: 9px;
+      border: 1px solid rgba(245,197,107,0.5);
+      background: linear-gradient(135deg, rgba(245,197,107,0.2), rgba(217,119,6,0.25));
+      color: #fde68a; font-size: 0.75rem; font-weight: 800; cursor: pointer;
+    }
+    .ch-ai-reply {
+      display: none; margin-top: 8px; padding: 9px 10px; border-radius: 9px;
+      background: rgba(10, 14, 29, 0.92); border-right: 3px solid #f5c56b;
+      color: #fef3c7; font-size: 0.77rem; line-height: 1.85; text-align: justify;
+    }
+    .near-miss-box {
+      margin-top: 11px; padding: 9px 11px; border-radius: 11px;
+      background: rgba(56, 189, 248, 0.05); border: 1px dashed rgba(56, 189, 248, 0.35);
+      font-size: 0.75rem; color: #bae6fd;
+    }
+    .open-mirror-card {
+      background: radial-gradient(circle at 50% 0%, rgba(56,189,248,0.15), rgba(15,23,42,0.9));
+      border: 1px solid rgba(56,189,248,0.4); border-radius: 14px; padding: 12px;
+      font-size: 0.8rem; line-height: 1.8; color: #e0f2fe;
+    }
+  `;
+  document.head.appendChild(st);
+})();
 
 window.CENTER_NAMES = {
   head: { name: "مرکز تاج (Head)", role: "دریافت الهامات، پرسش‌های بنیادین و فشار ذهنی برای فهم هستی" },
@@ -20,6 +80,22 @@ window.CENTER_NAMES = {
   solar: { name: "مرکز شبکه خورشیدی (Solar Plexus)", role: "امواج عاطفی، لطافت احساسات، شور و اشتیاق انسانی" },
   sacral: { name: "مرکز ساکرال (Sacral)", role: "نیروی حیات، استقامت کاری و موتور انرژی روزانه" },
   root: { name: "مرکز ریشه (Root)", role: "فشار سازنده برای حرکت، تکامل و عبور از چالش‌های زمینی" }
+};
+
+window.PLANET_VIBES = {
+  "ماه": "حسی شهودی، موجی، لطیف و سریع‌التغییر (ساعت‌شمار روح رفلکتور)",
+  "خورشید": "انرژی کانونی، درخشان، هویت‌بخش و بسیار پررنگ در آگاهی امروز",
+  "زمین": "لنگری باثبات، زمینی، واقعی و متمرکز بر تعادل جسم و زندگی روزمره",
+  "عطارد": "ذهنی، کلامی، تحلیلی و مناسب برای پیام‌رسانی، گفتگو و یادگیری",
+  "زهره": "مغناطیسی، عاطفی، ارزش‌محور و هماهنگ‌کننده روابط و زیبایی‌ها",
+  "مریخ": "آتشین، جسور، پرشتاب و دارای نیروی پیش‌ران قوی (نیازمند مدیریت خشم و عجله)",
+  "مشتری": "گسترش‌دهنده، پربرکت، خوش‌بین و آورنده شانس و فرصت‌های کلان",
+  "زحل": "ساختارمند، جدی، استادانه و نیازمند نظم، تعهد و صبوری",
+  "اورانوس": "غافلگیرکننده، بیدارگر، نوآور و شکننده الگوهای تکراری",
+  "نپتون": "شهودی، رویایی، الهامی و لطیف (نیازمند پرهیز از ابهام و توهم)",
+  "پلوتو": "عمیق، دگرگون‌کننده، ریشه‌ای و بسیار پرقدرت",
+  "گره شمالی": "جهت‌دهنده به سمت مسیر تکامل و آینده",
+  "گره جنوبی": "متکی بر استعدادهای کهن و تجربه‌های پخته گذشته"
 };
 
 window.GATE_THEMES = {
@@ -61,25 +137,25 @@ window.GATE_FEELINGS = {
 };
 
 window.DB = [
-  {id:"28-38",g1:28,g2:38,name:"کانال ۲۸-۳۸ (مبارز هدفمند)",mood:"ایستادگی شرافتمندانه، جسارت رویارویی با حقیقت و یافتن معنا در دل چالش‌ها",c:["spleen","root"],svg:"ch-28-38",lb:14,w:8,l:2,v:18,i:16,fc:"در حال حاضر موجی از استقامت، جسارت و تمرکز درونی در فضای زندگی شما جاری است.",doT:"حل مسائل دشوار، ورزش و تخلیه انرژی.",dontT:"درگیر شدن در جروبحث‌های فرسایشی."},
-  {id:"61-24",g1:24,g2:61,name:"کانال ۶۱-۲۴ (آگاهی و تفکر)",mood:"اشراق درونی، سکوت پر رمز و راز و دریافت الهامات مستقیم از سرچشمه هستی",c:["head","ajna"],svg:"ch-61-24",lb:12,w:6,l:8,v:8,i:22,fc:"ذهن شما در این ساعات بسیار الهام‌گیر و عمیق است و ایده‌های ناب ناگهان به دلتان خطور می‌کنند.",doT:"مطالعه، مدیتیشن، یادداشت الهامات.",dontT:"نشخوار فکری بی‌پایان."},
-  {id:"63-4",g1:63,g2:4,name:"کانال ۶۳-۴ (منطق)",mood:"بصیرت شفاف، دیدن نظم هندسی کائنات و شکافتن پرده ابهام با خرد",c:["head","ajna"],svg:"ch-63-4",lb:12,w:14,l:4,v:12,i:14,fc:"دیدی بسیار شفاف، منطقی و آینده‌نگر دارید.",doT:"بررسی فنی پروژه‌ها.",dontT:"تعمیم دادن شک و تردید."},
-  {id:"11-56",g1:11,g2:56,name:"کانال ۱۱-۵۶ (روایت‌گری)",mood:"سیر و سلوک در خاطرات، تمثیل‌پردازی شاعرانه",c:["ajna","throat"],svg:"ch-11-56",lb:14,w:10,l:18,v:16,i:12,fc:"مناسب گفتگو و اشتراک‌گذاری ایده‌ها.",doT:"گفتگوهای صمیمی.",dontT:"دادن قول‌های اجرایی."},
-  {id:"43-23",g1:23,g2:43,name:"کانال ۴۳-۲۳ (نبوغ و ساختاردهی)",mood:"کلام برنده و ناب",c:["ajna","throat"],svg:"ch-43-23",lb:15,w:16,l:8,v:18,i:18,fc:"راه‌حل‌های ساده و هوشمندانه برای کارهای پیچیده.",doT:"ساده‌سازی کارها.",dontT:"بیان دیدگاه‌های انقلابی."},
-  {id:"12-22",g1:12,g2:22,name:"کانال ۱۲-۲۲ (گشودگی اجتماعی)",mood:"لطافت شاعرانه و وقار عاطفی",c:["throat","solar"],svg:"ch-12-22",lb:18,w:14,l:26,v:18,i:14,fc:"جذابیت کلامی و نفوذ عاطفی بالا.",doT:"تعاملات اجتماعی.",dontT:"صحبت در کلافگی."},
-  {id:"8-1",g1:8,g2:1,name:"کانال ۱-۸ (الهام‌بخشی)",mood:"درخشش فردیت اصیل",c:["throat","g"],svg:"ch-8-1",lb:14,w:14,l:14,v:18,i:14,fc:"اصالت فردی و الهام‌بخشی به دیگران.",doT:"ارائه سبک شخصی.",dontT:"تقلید از دیگران."},
-  {id:"31-7",g1:7,g2:31,name:"کانال ۷-۳۱ (هدایت آینده)",mood:"آرامشِ راهنما",c:["throat","g"],svg:"ch-31-7",lb:15,w:16,l:14,v:18,i:14,fc:"استقبال دیگران از راهنمایی شما.",doT:"مدیریت و برنامه‌ریزی.",dontT:"تحمیل نظر."},
-  {id:"33-13",g1:13,g2:33,name:"کانال ۱۳-۳۳ (شاهد خردمند)",mood:"سکوتِ شاهد کهنسال",c:["throat","g"],svg:"ch-33-13",lb:12,w:8,l:14,v:10,i:18,fc:"زمان خلوت آگاهانه و استخراج حکمت.",doT:"مرور درس‌های گذشته.",dontT:"شتاب‌زدگی."},
-  {id:"10-20",g1:10,g2:20,name:"کانال ۱۰-۲۰ (بیداری در اکنون)",mood:"بیداری محض در لحظه اکنون",c:["g","throat"],svg:"ch-10-20",lb:14,w:10,l:16,v:16,i:18,fc:"انرژی حضور آرام در لحظه حال.",doT:"زندگی در اکنون.",dontT:"نگرانی درباره آینده."},
-  {id:"10-34",g1:10,g2:34,name:"کانال ۱۰-۳۴ (قدرت فردی)",mood:"استقلال روح",c:["g","sacral"],svg:"ch-10-34",lb:16,w:18,l:8,v:24,i:14,fc:"انرژی بدنی بالا برای پیگیری امور.",doT:"کارهای نیازمند انرژی.",dontT:"خستگی مفرط."},
-  {id:"10-57",g1:10,g2:57,name:"کانال ۱۰-۵۷ (شهود زنده)",mood:"گوش سپردن به نجوای غریزه",c:["g","spleen"],svg:"ch-10-57",lb:16,w:14,l:14,v:12,i:26,fc:"حس ششم قوی در لحظه.",doT:"اعتماد به حس درونی.",dontT:"نادیده گرفتن شهود."},
-  {id:"15-5",g1:15,g2:5,name:"کانال ۵-۱۵ (ریتم طبیعی)",mood:"جاری شدن با رودخانه زمان",c:["g","sacral"],svg:"ch-15-5",lb:14,w:14,l:16,v:14,i:16,fc:"هماهنگی با ریتم طبیعت.",doT:"تنظیم روتین.",dontT:"عجله کردن."},
-  {id:"37-40",g1:37,g2:40,name:"کانال ۳۷-۴۰ (جامعه و توافق)",mood:"گرمای عهد و پیمان",c:["solar","heart"],svg:"ch-37-40",lb:18,w:18,l:24,v:14,i:14,fc:"رفاقت و توافق‌های منصفانه.",doT:"دورهمی صمیمی.",dontT:"قرارداد یک‌طرفه."},
-  {id:"9-52",g1:9,g2:52,name:"کانال ۹-۵۲ (تمرکز عمیق)",mood:"وقار و سکون کوه",c:["sacral","root"],svg:"ch-9-52",lb:13,w:16,l:6,v:16,i:14,fc:"تمرکز عمیق روی جزئیات.",doT:"مطالعه و تحلیل.",dontT:"چندکارگی."},
-  {id:"44-26",g1:44,g2:26,name:"کانال ۲۶-۴۴ (شمّ اقتصادی)",mood:"تیزبینی در شناخت ارزش‌ها",c:["spleen","heart"],svg:"ch-44-26",lb:20,w:28,l:12,v:20,i:20,fc:"شمّ اقتصادی قوی.",doT:"مذاکرات تجاری.",dontT:"خرید هیجانی."},
-  {id:"50-27",g1:50,g2:27,name:"کانال ۲۷-۵۰ (مراقبت و ارزش‌ها)",mood:"شفقت و پاسداری از حیات",c:["spleen","sacral"],svg:"ch-50-27",lb:16,w:14,l:22,v:14,i:18,fc:"حس حمایت و توجه به سلامت.",doT:"حمایت معنوی.",dontT:"پذیرفتن بار دیگران."},
-  {id:"3-60",g1:60,g2:3,name:"کانال ۳-۶۰ (جهش و نوآوری)",mood:"تولد نور از دل تنگنا",c:["root","sacral"],svg:"ch-3-60",lb:14,w:14,l:8,v:16,i:18,fc:"انرژی تحول و نوآوری.",doT:"صبوری.",dontT:"مقاومت در برابر تغییر."},
-  {id:"32-54",g1:54,g2:32,name:"کانال ۳۲-۵۴ (دگرگونی و صعود)",mood:"کیمیاگری صعود و ماندگاری",c:["spleen","root"],svg:"ch-32-54",lb:19,w:26,l:10,v:22,i:20,fc:"انرژی پیشرفت مالی بلندمدت.",doT:"برنامه‌ریزی بلندمدت.",dontT:"سودهای یک‌شبه."}
+  {id:"28-38",g1:28,g2:38,name:"کانال ۲۸-۳۸ (مبارز هدفمند)",mood:"ایستادگی شرافتمندانه، جسارت رویارویی با حقیقت و یافتن معنا در دل چالش‌ها",c:["spleen","root"],svg:"ch-28-38",lb:14,w:8,l:2,v:18,i:16,fc:"در حال حاضر موجی از استقامت، جسارت و تمرکز درونی در فضای زندگی شما جاری است.",doT:"حل مسائل دشوار، ورزش و تخلیه انرژی.",dontT:"درگیر شدن در جروبحث‌های فرسایشی.",shadow:"لجبازی بی‌مورد یا جنگیدن بر سر اهداف کم‌ارزش",gift:"شجاعت بی‌نظیر برای ایستادن پای حقیقت و عبور از موانع بزرگ"},
+  {id:"61-24",g1:24,g2:61,name:"کانال ۶۱-۲۴ (آگاهی و تفکر)",mood:"اشراق درونی، سکوت پر رمز و راز و دریافت الهامات مستقیم از سرچشمه هستی",c:["head","ajna"],svg:"ch-61-24",lb:12,w:6,l:8,v:8,i:22,fc:"ذهن شما در این ساعات بسیار الهام‌گیر و عمیق است و ایده‌های ناب ناگهان به دلتان خطور می‌کنند.",doT:"مطالعه، مدیتیشن، یادداشت الهامات.",dontT:"نشخوار فکری بی‌پایان.",shadow:"کلافگی ذهنی از تکرار یک فکر و اصرار بر فهم فوری همه چیز",gift:"فرود آمدن ناگهانی یک الهام ناب در لحظه سکوت"},
+  {id:"63-4",g1:63,g2:4,name:"کانال ۶۳-۴ (منطق)",mood:"بصیرت شفاف، دیدن نظم هندسی کائنات و شکافتن پرده ابهام با خرد",c:["head","ajna"],svg:"ch-63-4",lb:12,w:14,l:4,v:12,i:14,fc:"دیدی بسیار شفاف، منطقی و آینده‌نگر دارید.",doT:"بررسی فنی پروژه‌ها.",dontT:"تعمیم دادن شک و تردید.",shadow:"وسواس فکری و شک کردن به خود و روابط شخصی",gift:"تیزهوشی استثنایی در یافتن الگوهای منطقی و حل مسائل فنی"},
+  {id:"11-56",g1:11,g2:56,name:"کانال ۱۱-۵۶ (روایت‌گری)",mood:"سیر و سلوک در خاطرات، تمثیل‌پردازی شاعرانه",c:["ajna","throat"],svg:"ch-11-56",lb:14,w:10,l:18,v:16,i:12,fc:"مناسب گفتگو و اشتراک‌گذاری ایده‌ها.",doT:"گفتگوهای صمیمی.",dontT:"دادن قول‌های اجرایی.",shadow:"پراکندهگویی یا تبدیل کردن ایده‌های خام به تعهدات سنگین",gift:"طلسم کردن مخاطب با روایت‌های شیرین، الهام‌بخش و تصویرساز"},
+  {id:"43-23",g1:23,g2:43,name:"کانال ۴۳-۲۳ (نبوغ و ساختاردهی)",mood:"کلام برنده و ناب",c:["ajna","throat"],svg:"ch-43-23",lb:15,w:16,l:8,v:18,i:18,fc:"راه‌حل‌های ساده و هوشمندانه برای کارهای پیچیده.",doT:"ساده‌سازی کارها.",dontT:"بیان دیدگاه‌های انقلابی.",shadow:"گفتن حرف درست در زمان نامناسب که باعث سوءتفاهم شود",gift:"بیان یک بینش نبوغ‌آمیز به ساده‌ترین و موثرترین شکل ممکن"},
+  {id:"12-22",g1:12,g2:22,name:"کانال ۱۲-۲۲ (گشودگی اجتماعی)",mood:"لطافت شاعرانه و وقار عاطفی",c:["throat","solar"],svg:"ch-12-22",lb:18,w:14,l:26,v:18,i:14,fc:"جذابیت کلامی و نفوذ عاطفی بالا.",doT:"تعاملات اجتماعی.",dontT:"صحبت در کلافگی.",shadow:"مجبور کردن خود به معاشرت وقتی حوصله نداری",gift:"وقار، کاریزمای جادویی و نفوذ کلام مستقیم بر قلب دیگران"},
+  {id:"8-1",g1:8,g2:1,name:"کانال ۱-۸ (الهام‌بخشی)",mood:"درخشش فردیت اصیل",c:["throat","g"],svg:"ch-8-1",lb:14,w:14,l:14,v:18,i:14,fc:"اصالت فردی و الهام‌بخشی به دیگران.",doT:"ارائه سبک شخصی.",dontT:"تقلید از دیگران.",shadow:"نگرانی از دیده نشدن یا همرنگ شدن با جماعت",gift:"درخشش اصالت شخصی و تبدیل شدن به الگوی الهام‌بخش"},
+  {id:"31-7",g1:7,g2:31,name:"کانال ۷-۳۱ (هدایت آینده)",mood:"آرامشِ راهنما",c:["throat","g"],svg:"ch-31-7",lb:15,w:16,l:14,v:18,i:14,fc:"استقبال دیگران از راهنمایی شما.",doT:"مدیریت و برنامه‌ریزی.",dontT:"تحمیل نظر.",shadow:"تلاش برای کنترل دیگران بدون اینکه نظر تو را خواسته باشند",gift:"رهبری طبیعی، دوراندیشی و نفوذ کلام مقتدرانه در جمع"},
+  {id:"33-13",g1:13,g2:33,name:"کانال ۱۳-۳۳ (شاهد خردمند)",mood:"سکوتِ شاهد کهنسال",c:["throat","g"],svg:"ch-33-13",lb:12,w:8,l:14,v:10,i:18,fc:"زمان خلوت آگاهانه و استخراج حکمت.",doT:"مرور درس‌های گذشته.",dontT:"شتاب‌زدگی.",shadow:"غرق شدن در حسرت گذشته یا افشای رازها پیش از پخته شدن",gift:"تبدیل کردن تجربیات گذشته به گنجینه‌ای از حکمت و آرامش"},
+  {id:"10-20",g1:10,g2:20,name:"کانال ۱۰-۲۰ (بیداری در اکنون)",mood:"بیداری محض در لحظه اکنون",c:["g","throat"],svg:"ch-10-20",lb:14,w:10,l:16,v:16,i:18,fc:"انرژی حضور آرام در لحظه حال.",doT:"زندگی در اکنون.",dontT:"نگرانی درباره آینده.",shadow:"قضاوت کردن خود یا شرطی شدن توسط توقعات دیگران",gift:"حضور بیدار، اصیل و رها در لحظه اکنون و عشق به خویشتن"},
+  {id:"10-34",g1:10,g2:34,name:"کانال ۱۰-۳۴ (قدرت فردی)",mood:"استقلال روح",c:["g","sacral"],svg:"ch-10-34",lb:16,w:18,l:8,v:24,i:14,fc:"انرژی بدنی بالا برای پیگیری امور.",doT:"کارهای نیازمند انرژی.",dontT:"خستگی مفرط.",shadow:"تحمیل کردن ریتم تند خود به دیگران یا کار کردن تا مرز فرسودگی",gift:"قدرت بدنی و استقلال درونی بالا برای پیشبرد اهداف شخصی"},
+  {id:"10-57",g1:10,g2:57,name:"کانال ۱۰-۵۷ (شهود زنده)",mood:"گوش سپردن به نجوای غریزه",c:["g","spleen"],svg:"ch-10-57",lb:16,w:14,l:14,v:12,i:26,fc:"حس ششم قوی در لحظه.",doT:"اعتماد به حس درونی.",dontT:"نادیده گرفتن شهود.",shadow:"ترس از آینده و نادیده گرفتن هشدارهای ظریف بدن",gift:"حس ششم آینه‌ای و تصمیم‌گیری بی‌نقص در کسری از ثانیه"},
+  {id:"15-5",g1:15,g2:5,name:"کانال ۵-۱۵ (ریتم طبیعی)",mood:"جاری شدن با رودخانه زمان",c:["g","sacral"],svg:"ch-15-5",lb:14,w:14,l:16,v:14,i:16,fc:"هماهنگی با ریتم طبیعت.",doT:"تنظیم روتین.",dontT:"عجله کردن.",shadow:"بی‌نظمی شدید یا تقلا برای جلو زدن از زمان طبیعی کارها",gift:"قرار گرفتن در جریان سینکرونیسیتی (هم‌زمانی) و مغناطیس شخصی بالا"},
+  {id:"37-40",g1:37,g2:40,name:"کانال ۳۷-۴۰ (جامعه و توافق)",mood:"گرمای عهد و پیمان",c:["solar","heart"],svg:"ch-37-40",lb:18,w:18,l:24,v:14,i:14,fc:"رفاقت و توافق‌های منصفانه.",doT:"دورهمی صمیمی.",dontT:"قرارداد یک‌طرفه.",shadow:"فداکاری بیش از حد و رنجش از قدرناشناسی دیگران",gift:"بستن پیمان‌های منصفانه، پربرکت و تجربه گرمای اصیل رفاقت"},
+  {id:"9-52",g1:9,g2:52,name:"کانال ۹-۵۲ (تمرکز عمیق)",mood:"وقار و سکون کوه",c:["sacral","root"],svg:"ch-9-52",lb:13,w:16,l:6,v:16,i:14,fc:"تمرکز عمیق روی جزئیات.",doT:"مطالعه و تحلیل.",dontT:"چندکارگی.",shadow:"بی‌قراری بدنی و پریدن از یک کار نیمه‌تمام به کار دیگر",gift:"سکون پرقدرت و تمرکز لیزری برای به سرانجام رساندن کارهای دقیق"},
+  {id:"44-26",g1:44,g2:26,name:"کانال ۲۶-۴۴ (شمّ اقتصادی)",mood:"تیزبینی در شناخت ارزش‌ها",c:["spleen","heart"],svg:"ch-44-26",lb:20,w:28,l:12,v:20,i:20,fc:"شمّ اقتصادی قوی.",doT:"مذاکرات تجاری.",dontT:"خرید هیجانی.",shadow:"اغراق در مذاکره یا تصمیم‌گیری مالی از روی ترس",gift:"شمّ اقتصادی تیز، تشخیص سریع اعتبار افراد و مذاکره برنده"},
+  {id:"50-27",g1:50,g2:27,name:"کانال ۲۷-۵۰ (مراقبت و ارزش‌ها)",mood:"شفقت و پاسداری از حیات",c:["spleen","sacral"],svg:"ch-50-27",lb:16,w:14,l:22,v:14,i:18,fc:"حس حمایت و توجه به سلامت.",doT:"حمایت معنوی.",dontT:"پذیرفتن بار دیگران.",shadow:"به دوش کشیدن بار مسئولیت کسانی که خودشان تلاش نمی‌کنند",gift:"مراقبت خردمندانه، تغذیه سالم روح و جسم و ایجاد امنیت پایدار"},
+  {id:"3-60",g1:60,g2:3,name:"کانال ۳-۶۰ (جهش و نوآوری)",mood:"تولد نور از دل تنگنا",c:["root","sacral"],svg:"ch-3-60",lb:14,w:14,l:8,v:16,i:18,fc:"انرژی تحول و نوآوری.",doT:"صبوری.",dontT:"مقاومت در برابر تغییر.",shadow:"افسردگی یا کلافگی از کند پیش رفتن کارها در دوره گذار",gift:"جهش کوانتومی و خلق یک نظم کاملاً نو در زمان درست"},
+  {id:"32-54",g1:54,g2:32,name:"کانال ۳۲-۵۴ (دگرگونی و صعود)",mood:"کیمیاگری صعود و ماندگاری",c:["spleen","root"],svg:"ch-32-54",lb:19,w:26,l:10,v:22,i:20,fc:"انرژی پیشرفت مالی بلندمدت.",doT:"برنامه‌ریزی بلندمدت.",dontT:"سودهای یک‌شبه.",shadow:"طمع و شتاب‌زدگی برای رسیدن به نتیجه مالی یک‌شبه",gift:"تشخیص غریزی پروژه‌های ماندگار و صعود پله‌پله به سمت ثروت"}
 ];
 
 window.memStore = { prov: "gemini", key: window.EMBEDDED_GEMINI_KEY, decisions: "[]", bgFilter: "all", luckMode: "total" };
@@ -172,7 +248,10 @@ window.calcPlanets = function(dt) {
   ];
   return raw.map(p => {
     const inf = deg2g(p.l);
-    return { n: p.n, s: p.s, lon: p.l, gate: inf.gate, line: inf.line, h: (inf.left / p.sp) * 24, wt: p.wt, fast: p.fast, isMoon: Boolean(p.isMoon) };
+    const totalGateHours = (5.625 / p.sp) * 24;
+    const hoursLeft = (inf.left / p.sp) * 24;
+    const pctLeft = Math.max(4, Math.min(100, Math.round((hoursLeft / totalGateHours) * 100)));
+    return { n: p.n, s: p.s, lon: p.l, gate: inf.gate, line: inf.line, h: hoursLeft, totalH: totalGateHours, pctLeft: pctLeft, wt: p.wt, fast: p.fast, isMoon: Boolean(p.isMoon) };
   });
 };
 
@@ -250,9 +329,6 @@ window.setLuckGaugeMode = function(mode) {
   }
 };
 
-// =========================================================================
-// تابع کلیدی تغییر فیلتر بادی‌گراف («کل سیارات» / «فقط ماه»)
-// =========================================================================
 window.setBgFilter = function(mode) {
   window.setStore("bgFilter", mode);
   const allBtn = document.getElementById("filterAllBtn");
@@ -428,6 +504,192 @@ function renderBodyGraph(pls, act) {
   }
 }
 
+// =========================================================================
+// ۵ و ۶ و ۱ و ۲ و ۳ و ۴: سیستم پیشرفته کانال‌های فعال
+// =========================================================================
+function computeAuraShift(act) {
+  if (!act || act.length === 0) {
+    return {
+      icon: "🌕",
+      title: "هاله فعلی: رفلکتور خالص و آینه‌ای",
+      desc: "هیچ مرکز قرضی فعالی وجود ندارد؛ در سبک‌ترین، شفاف‌ترین و مشاهده‌گرترین حالت طبیعی خود قرار داری."
+    };
+  }
+  const centers = new Set();
+  act.forEach(x => x.ch.c.forEach(c => centers.add(c)));
+
+  const hasSacral = centers.has("sacral");
+  const hasThroat = centers.has("throat");
+  const hasMotorToThroat = act.some(x => x.ch.c.includes("throat") && (x.ch.c.includes("solar") || x.ch.c.includes("heart") || x.ch.c.includes("sacral") || x.ch.c.includes("root")));
+
+  if (hasSacral && hasThroat) {
+    return {
+      icon: "⚡🗣️",
+      title: "تغییر موقت هاله: فاز منیفستینگ-ژنراتور (MG)",
+      desc: "هم موتور ساکرال روشن است و هم مرکز گلو؛ سرعت عمل، استقامت کاری و قدرت به ثمر رساندن کارها در اوج است."
+    };
+  }
+  if (hasSacral) {
+    return {
+      icon: "⚡",
+      title: "تغییر موقت هاله: فاز ژنراتور (موتور حیات روشن)",
+      desc: "مرکز ساکرال شما موقتاً شارژ شده؛ زمان عالی برای کارهای اجرایی، پیگیری پروژه‌ها و فعالیت فیزیکی."
+    };
+  }
+  if (hasMotorToThroat || hasThroat) {
+    return {
+      icon: "🗣️",
+      title: "تغییر موقت هاله: فاز منیفستور / بیانگر",
+      desc: "مرکز گلو فعال است؛ کلامت نفوذ بالایی دارد و برای گفتگو، مذاکره و آغازگری در جمع عالی است."
+    };
+  }
+  return {
+    icon: "👁️",
+    title: "تغییر موقت هاله: فاز پروژکتور (دیدِ عمیق و هدایتگر)",
+    desc: "مراکز آگاهی و شهود روشن شده‌اند؛ بهترین زمان برای تحلیل، برنامه‌ریزی، مشاوره و دیدن تصویر بزرگ‌تر."
+  };
+}
+
+function findNextNearMissChannel(now) {
+  for (let m = 15; m <= 720; m += 15) {
+    const dt = new Date(now.getTime() + m * 60000);
+    const pls = window.calcPlanets(dt);
+    const moon = pls[2];
+    for (let i = 0; i < window.DB.length; i++) {
+      const ch = window.DB[i];
+      if (moon.gate === ch.g2) {
+        const nowMoon = window.calcPlanets(now)[2];
+        if (nowMoon.gate !== ch.g2) {
+          return { ch, hoursUntil: m / 60, dt };
+        }
+      }
+    }
+  }
+  return null;
+}
+
+window.toggleChannelDrawer = function(idx) {
+  const dr = document.getElementById("ch-drawer-" + idx);
+  if (dr) dr.classList.toggle("open");
+};
+
+window.askOldmanAboutChannel = async function(ev, idx, chId, planetName, hoursLeftStr) {
+  if (ev) ev.stopPropagation();
+  const replyBox = document.getElementById("ch-ai-reply-" + idx);
+  const btn = document.getElementById("ch-ask-btn-" + idx);
+  if (!replyBox || !btn) return;
+
+  const chObj = window.DB.find(c => c.id === chId);
+  if (!chObj) return;
+
+  replyBox.style.display = "block";
+  replyBox.innerHTML = "🧙‍♂️ پیرمرد در حال سنجش نحوه استفاده از این موج انرژی...";
+  btn.disabled = true;
+
+  const apiKey = window.getStore ? window.getStore("key", "") : "";
+  const prompt =
+    "تو «پیرمرد» حکیم هستی و با شهریار صحبت می‌کنی. " +
+    "در این لحظه در چارت شهریار «" + chObj.name + "» توسط سیاره «" + planetName + "» به مدت «" + hoursLeftStr + "» روشن شده است. " +
+    "حس و حال این کانال: «" + chObj.mood + "»؛ سایه آن «" + chObj.shadow + "» و هدیه آن «" + chObj.gift + "» است. " +
+    "در ۳ جمله بسیار کاربردی، گرم و دقیق به شهریار بگو در این ساعاتی که این موتور انرژی در وجودش روشن است، دقیقاً چه کاری انجام دهد تا بیشترین بهره مادی، روحی یا ارتباطی را ببرد و از چه تله‌ای پرهیز کند.";
+
+  let txt = "";
+  if (window.OldmanOracleModule && window.OldmanOracleModule.askInternalDirect) {
+    const res = await window.OldmanOracleModule.askInternalDirect(apiKey, prompt);
+    if (res && res.ok) txt = res.text;
+  }
+
+  if (!txt) {
+    txt = "شهریار جان، تا زمانی که این موج توسط " + planetName + " در وجودت روشن است، روی «" + chObj.gift + "» تمرکز کن و کارهای مرتبط با «" + chObj.doT + "» را جلو ببر. فقط مراقب تله «" + chObj.shadow + "» باش.";
+  }
+
+  replyBox.innerHTML = "<b>🧙‍♂️ نسخه پیرمرد برای این کانال:</b><br/>" + txt.replace(/\n/g, "<br/>");
+  btn.disabled = false;
+};
+
+function renderActiveChannelsSection(now, pls, act) {
+  const box = document.getElementById("chList");
+  if (!box) return;
+  box.innerHTML = "";
+
+  // ۱. بنر تغییر موقت هاله (Temporary Aura Shift)
+  const aura = computeAuraShift(act);
+  let html =
+    '<div class="aura-shift-banner">' +
+      '<div>' +
+        '<div>' + aura.icon + ' ' + aura.title + '</div>' +
+        '<div class="aura-shift-sub">' + aura.desc + '</div>' +
+      '</div>' +
+    '</div>';
+
+  // ۲. لیست کارت‌های تعاملی کانال‌های فعال یا کارت میدان باز
+  if (act.length > 0) {
+    act.forEach((x, idx) => {
+      const isUrgent = x.p.h < 0.75;
+      const fuelColor = isUrgent ? "#ef4444" : (x.p.isMoon ? "#38bdf8" : "#22c55e");
+      const c1Name = (window.CENTER_NAMES[x.ch.c[0]] && window.CENTER_NAMES[x.ch.c[0]].name) || x.ch.c[0];
+      const c2Name = (window.CENTER_NAMES[x.ch.c[1]] && window.CENTER_NAMES[x.ch.c[1]].name) || x.ch.c[1];
+      const pVibe = window.PLANET_VIBES[x.p.n] || "انرژی کیهانی فعال";
+      const timeRemainingStr = window.fmtH(x.p.h);
+
+      html +=
+        '<div class="ch-card-adv' + (x.p.isMoon ? " moon-ch" : "") + '" onclick="toggleChannelDrawer(' + idx + ')">' +
+          '<div class="ch-top">' +
+            '<span>' + (x.p.isMoon ? "🌙 " : "⚡ ") + x.ch.name + '</span>' +
+            '<span class="exp" style="color:' + (isUrgent ? "#fca5a5" : "#fde68a") + '">' + (isUrgent ? "⏳ رو به اتمام: " : "فعال تا ") + timeRemainingStr + '</span>' +
+          '</div>' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;font-size:0.75rem;color:#cbd5e1">' +
+            '<span>توسط <b>' + x.p.n + ' (' + x.p.s + ')</b> در دروازه ' + x.ch.g2 + '.' + x.p.line + '</span>' +
+            '<span style="font-size:0.68rem;color:#7dd3fc">🔍 لمس برای کالبدشکافی ▾</span>' +
+          '</div>' +
+          '<div class="ch-fuel-bg" title="شارژ باقی‌مانده حضور سیاره در این دروازه">' +
+            '<div class="ch-fuel-fill" style="width:' + x.p.pctLeft + '%;background:' + fuelColor + '"></div>' +
+          '</div>' +
+          '<div id="ch-drawer-' + idx + '" class="ch-drawer">' +
+            '<div class="ch-tag-row">' +
+              '<span class="ch-mini-badge">🔗 پیوند: ' + c1Name + ' ⬅️ ' + c2Name + '</span>' +
+              '<span class="ch-mini-badge">🪐 شارژ دروازه: ' + x.p.pctLeft + '%</span>' +
+            '</div>' +
+            '<div style="margin-bottom:6px;color:#e0f2fe"><b>🎨 طعم سیاره (' + x.p.n + '):</b> ' + pVibe + '</div>' +
+            '<div class="ch-sg-box">' +
+              '<div class="ch-shadow"><b>⚠️ تله و سایه:</b><br/>' + (x.ch.shadow || x.ch.dontT) + '</div>' +
+              '<div class="ch-gift"><b>✨ هدیه و اوج:</b><br/>' + (x.ch.gift || x.ch.doT) + '</div>' +
+            '</div>' +
+            '<button id="ch-ask-btn-' + idx + '" class="ch-ask-btn" onclick="askOldmanAboutChannel(event, ' + idx + ', \'' + x.ch.id + '\', \'' + x.p.n + '\', \'' + timeRemainingStr + '\')">🧙‍♂️ از پیرمرد بپرس با این انرژی چکار کنم؟</button>' +
+            '<div id="ch-ai-reply-' + idx + '" class="ch-ai-reply" onclick="event.stopPropagation()"></div>' +
+          '</div>' +
+        '</div>';
+    });
+  } else {
+    // حالت ۶: ماه تنها در میدان باز آینه‌ای
+    const moon = pls[2];
+    const mTheme = window.GATE_THEMES[moon.gate] || "حضور آگاهانه";
+    const mFeel = window.GATE_FEELINGS[moon.gate] || "آرامش و سبکی روح";
+    html +=
+      '<div class="open-mirror-card">' +
+        '<div style="font-weight:800;color:#7dd3fc;margin-bottom:4px">🌕 ماه در میدان باز آینه‌ای (دروازه ' + moon.gate + '.' + moon.line + ')</div>' +
+        '<div>در این ساعت هیچ کانالی قفل نیست و هاله تو کاملاً باز و شفاف است. ماه در دروازه <b>' + moon.gate + '</b> فیلتری از <b>«' + mTheme + '»</b> روی آینه روح تو انداخته است.</div>' +
+        '<div style="margin-top:6px;font-size:0.75rem;color:#fde68a">✨ حس غالب فضا: ' + mFeel + ' (تغییر دروازه ماه تا ' + window.fmtH(moon.h) + ')</div>' +
+      '</div>';
+  }
+
+  // ۴. رادار دروازه‌های در آستانه قفل شدن (Near-Miss Radar)
+  const near = findNextNearMissChannel(now);
+  if (near) {
+    const lockClock = near.dt.toLocaleTimeString("fa-IR", { hour: "2-digit", minute: "2-digit" });
+    html +=
+      '<div class="near-miss-box">' +
+        '<div style="display:flex;justify-content:space-between;font-weight:800;color:#38bdf8;margin-bottom:3px">' +
+          '<span>📡 رادار موج بعدی: در آستانه قفل شدن</span>' +
+          '<span>ساعت ' + lockClock + ' (' + window.fmtH(near.hoursUntil) + ')</span>' +
+        '</div>' +
+        '<div>ماه به زودی وارد دروازه <b>' + near.ch.g2 + '</b> می‌شود و <b>«' + near.ch.name + '»</b> را روشن خواهد کرد.</div>' +
+      '</div>';
+  }
+
+  box.innerHTML = html;
+}
+
 function renderUpcoming5Days(now) {
   const box = document.getElementById("upcomingListBox");
   if (!box) return;
@@ -539,20 +801,15 @@ window.runApp = function(resetDeep) {
 
   renderBodyGraph(pls, act);
   const lk = updateLuckGaugeUI(now, pls, act);
+  renderActiveChannelsSection(now, pls, act);
   renderUpcoming5Days(now);
   renderLunarDecisions();
 
-  const box = document.getElementById("chList");
-  box.innerHTML = "";
   if (act.length > 0) {
-    act.forEach(x => {
-      box.innerHTML += '<div class="ch-item"><div class="ch-top"><span>⚡ ' + x.ch.name + '</span><span class="exp">فعال تا ' + window.fmtH(x.p.h) + '</span></div><div style="font-size:0.77rem;color:#cbd5e1">توسط <b>' + x.p.n + ' (' + x.p.s + ')</b> در پورت ' + x.ch.g2 + '.' + x.p.line + '</div></div>';
-    });
     document.getElementById("fcBase").textContent = act.map(x => x.ch.fc).join(" ");
     document.getElementById("doTxt").textContent = act.map(x => x.ch.doT).join(" | ");
     document.getElementById("dontTxt").textContent = act.map(x => x.ch.dontT).join(" | ");
   } else {
-    box.innerHTML = '<div class="ch-item"><div class="ch-top"><span>🌕 رفلکتور خالص</span></div></div>';
     document.getElementById("fcBase").textContent = "فضای روحی صاف، سبک و آینه‌ای.";
     document.getElementById("doTxt").textContent = "مشاهده بی‌طرفانه و استراحت.";
     document.getElementById("dontTxt").textContent = "تصمیم‌گیری عجولانه.";
