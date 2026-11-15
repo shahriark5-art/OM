@@ -229,7 +229,7 @@
   <script src="oracle.js"></script>
   <script src="weather.js"></script>
   <script src="dreams.js"></script>
-  <script>
+    <script>
     const origRunApp = window.runApp;
     window.runApp = function(resetDeep) {
       if (typeof origRunApp === "function") {
@@ -247,5 +247,6 @@
     window.runApp(true);
     setInterval(() => window.runApp(false), 60000);
   </script>
+
 </body>
 </html>
