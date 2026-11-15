@@ -13,24 +13,67 @@ window.LunarCompassModule = (function() {
   };
 
   (function injectLunarStyles() {
-    if (document.getElementById("lunar-compass-styles")) return;
+    const oldSt = document.getElementById("lunar-compass-styles");
+    if (oldSt) oldSt.remove();
+
     const st = document.createElement("style");
     st.id = "lunar-compass-styles";
     st.textContent = `
       .lunar-pro-card {
         background: radial-gradient(circle at 50% 0%, rgba(245, 197, 107, 0.14) 0%, rgba(12, 18, 36, 0.95) 72%);
         border: 1.5px solid rgba(245, 197, 107, 0.45);
-        border-radius: 20px; padding: 16px; margin-bottom: 15px;
+        border-radius: 20px; padding: 15px; margin-bottom: 15px;
         box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6);
+        box-sizing: border-box; overflow: hidden;
+      }
+      .lunar-pro-card .c-head {
+        display: flex !important; justify-content: space-between !important;
+        align-items: center !important; gap: 6px !important; margin-bottom: 10px !important;
+      }
+      .lunar-pro-card .c-title {
+        font-size: 0.82rem !important; font-weight: 900 !important;
+        color: #f5c56b !important; line-height: 1.4 !important;
+      }
+      .lunar-head-badge {
+        font-size: 0.66rem; color: #fde68a; background: rgba(245, 197, 107, 0.12);
+        border: 1px solid rgba(245, 197, 107, 0.3); padding: 2px 8px;
+        border-radius: 99px; white-space: nowrap; flex-shrink: 0;
       }
       .lunar-add-box {
         background: rgba(4, 7, 16, 0.75); border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 14px; padding: 11px; margin-bottom: 12px;
+        border-radius: 14px; padding: 12px; margin-bottom: 12px; box-sizing: border-box;
       }
-      .lunar-form-row { display: flex; gap: 6px; margin-top: 7px; }
+      .lunar-form-stack {
+        display: flex; flex-direction: column; gap: 8px; margin-top: 8px; width: 100%;
+      }
+      .lunar-full-inp {
+        width: 100% !important; box-sizing: border-box !important;
+        padding: 10px 12px !important; border-radius: 10px !important;
+        border: 1px solid rgba(255, 255, 255, 0.16) !important;
+        background: rgba(15, 23, 42, 0.9) !important; color: #ffffff !important;
+        font-family: inherit !important; font-size: 0.8rem !important;
+      }
+      .lunar-full-inp:focus {
+        outline: none !important; border-color: #f5c56b !important;
+      }
+      .lunar-bottom-actions {
+        display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%;
+      }
       .lunar-cat-sel {
-        padding: 9px 8px; border-radius: 9px; border: 1px solid rgba(245, 197, 107, 0.35);
-        background: #060a17; color: #fde68a; font-size: 0.76rem; font-weight: 700;
+        width: 100% !important; box-sizing: border-box !important;
+        padding: 9px 10px !important; border-radius: 10px !important;
+        border: 1px solid rgba(245, 197, 107, 0.4) !important;
+        background: #090e20 !important; color: #fde68a !important;
+        font-family: inherit !important; font-size: 0.76rem !important; font-weight: 700 !important;
+      }
+      .lunar-submit-btn {
+        width: 100% !important; box-sizing: border-box !important;
+        padding: 9px 12px !important; border-radius: 10px !important;
+        border: none !important;
+        background: linear-gradient(135deg, #f5c56b, #d97706) !important;
+        color: #020617 !important; font-family: inherit !important;
+        font-size: 0.78rem !important; font-weight: 900 !important;
+        cursor: pointer !important; text-align: center !important;
       }
       .lunar-dec-card {
         background: rgba(15, 23, 42, 0.88); border: 1px solid rgba(255, 255, 255, 0.1);
@@ -40,7 +83,7 @@ window.LunarCompassModule = (function() {
       .lunar-dec-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; cursor: pointer; }
       .lunar-cat-badge {
         font-size: 0.66rem; padding: 2px 8px; border-radius: 99px;
-        background: rgba(255, 255, 255, 0.07); color: #e2e8f0; display: inline-block; margin-top: 3px;
+        background: rgba(255, 255, 255, 0.07); color: #e2e8f0; display: inline-block; margin-top: 4px;
       }
       .lunar-milestones {
         display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px;
@@ -61,7 +104,7 @@ window.LunarCompassModule = (function() {
         border-top: 1px dashed rgba(255, 255, 255, 0.14); font-size: 0.77rem;
       }
       .lunar-drawer.open { display: block; }
-      .lunar-note-row { display: flex; gap: 6px; margin-top: 7px; }
+      .lunar-note-stack { display: flex; flex-direction: column; gap: 6px; margin-top: 7px; }
       .lunar-note-item {
         background: rgba(255, 255, 255, 0.03); border-right: 2.5px solid #38bdf8;
         border-radius: 7px; padding: 6px 8px; margin-top: 5px; font-size: 0.73rem; color: #cbd5e1;
@@ -70,7 +113,7 @@ window.LunarCompassModule = (function() {
         width: 100%; margin-top: 9px; padding: 9px; border-radius: 10px;
         border: 1px solid rgba(245, 197, 107, 0.6);
         background: linear-gradient(135deg, rgba(245, 197, 107, 0.22), rgba(56, 189, 248, 0.2));
-        color: #fef08a; font-size: 0.76rem; font-weight: 900; cursor: pointer;
+        color: #fef08a; font-family: inherit; font-size: 0.76rem; font-weight: 900; cursor: pointer;
       }
       .lunar-ai-box {
         display: none; margin-top: 8px; padding: 9px 10px; border-radius: 10px;
@@ -99,7 +142,6 @@ window.LunarCompassModule = (function() {
     }
   }
 
-  // اسکنر نجومی ۲۸ روزه برای یافتن بهترین زمان تصمیم‌گیری و روز هشدار
   function scanDecisionWindows(dec) {
     const startMs = dec.start || Date.now();
     const nowMs = Date.now();
@@ -123,11 +165,10 @@ window.LunarCompassModule = (function() {
       };
     }
 
-    // اسکن گام‌به‌گام هر ۶ ساعت در طول چرخه
     for (let t = scanFrom; t <= scanTo; t += 6 * 3600000) {
       const dt = new Date(t);
       const hr = dt.getHours();
-      if (hr < 8 || hr > 22) continue; // فقط ساعات بیداری و مناسب اقدام
+      if (hr < 8 || hr > 22) continue;
 
       const pls = window.calcPlanets(dt);
       const moon = pls[2];
@@ -158,7 +199,7 @@ window.LunarCompassModule = (function() {
       }
 
       const daysFromStart = (t - startMs) / 86400000;
-      if (daysFromStart >= 7) score += 5; // پختگی بیشتر پس از ربع اول ماه
+      if (daysFromStart >= 7) score += 5;
 
       const finalScore = Math.min(99, Math.max(5, Math.round(score)));
       const daysLeft = Math.max(0, Math.ceil((t - nowMs) / 86400000));
@@ -434,9 +475,9 @@ window.LunarCompassModule = (function() {
 
             '<div id="lunar-dec-drawer-' + idx + '" class="lunar-drawer' + (openIdx === idx ? " open" : "") + '" onclick="event.stopPropagation()">' +
               '<div style="font-size:0.73rem;color:#fde68a;font-weight:700">📝 ثبت حس و نشانه امروز درباره این تصمیم:</div>' +
-              '<div class="lunar-note-row">' +
-                '<input type="text" id="lunar-note-inp-' + idx + '" class="lunar-inp" placeholder="امروز حس کردم که..." />' +
-                '<button class="lunar-add-btn" onclick="window.addLunarJournalNote(event, ' + idx + ')">ثبت یادداشت</button>' +
+              '<div class="lunar-note-stack">' +
+                '<input type="text" id="lunar-note-inp-' + idx + '" class="lunar-full-inp" placeholder="امروز حس کردم که..." />' +
+                '<button class="lunar-submit-btn" onclick="window.addLunarJournalNote(event, ' + idx + ')">+ ثبت یادداشت روزانه</button>' +
               '</div>' +
               '<div id="lunar-notes-list-' + idx + '">' + notesHtml + '</div>' +
               '<button id="lunar-ai-btn-' + idx + '" class="lunar-ai-btn" onclick="window.askLunarAI(event, ' + idx + ')">🧙‍♂️ مشورت با پیرمرد درباره بهترین روز این تصمیم</button>' +
@@ -449,20 +490,22 @@ window.LunarCompassModule = (function() {
     mount.innerHTML =
       '<div id="lunarTrackerSection" class="lunar-pro-card">' +
         '<div class="c-head">' +
-          '<span class="c-title">🌕 قطب‌نمای ۲۸ روزه و زمان‌سنج تصمیم رفلکتور</span>' +
-          '<span style="font-size:0.68rem;color:#fde68a">⏱️ هوشمند</span>' +
+          '<span class="c-title">🌕 قطب‌نمای ۲۸ روزه و زمان‌سنج تصمیم</span>' +
+          '<span class="lunar-head-badge">⏱️ رفلکتور هوشمند</span>' +
         '</div>' +
         '<div class="lunar-add-box">' +
           '<div style="font-size:0.74rem;color:#cbd5e1">یک تصمیم مهم ثبت کن تا بهترین روز و ساعت اتخاذ تصمیم محاسبه شود:</div>' +
-          '<div class="lunar-form-row">' +
-            '<input type="text" id="proDecisionTitleInp" class="lunar-inp" placeholder="مثلاً: سرمایه‌گذاری، قرارداد، سفر..." />' +
-            '<select id="proDecisionCatSel" class="lunar-cat-sel">' +
-              '<option value="wealth">💰 مالی</option>' +
-              '<option value="action">⚡ اقدام</option>' +
-              '<option value="love">❤️ روابط</option>' +
-              '<option value="total">👁️ کلی</option>' +
-            '</select>' +
-            '<button class="lunar-add-btn" onclick="window.addProLunarDecision()">+ ثبت</button>' +
+          '<div class="lunar-form-stack">' +
+            '<input type="text" id="proDecisionTitleInp" class="lunar-full-inp" placeholder="مثلاً: سرمایه‌گذاری، قرارداد، خرید، سفر..." />' +
+            '<div class="lunar-bottom-actions">' +
+              '<select id="proDecisionCatSel" class="lunar-cat-sel">' +
+                '<option value="wealth">💰 مالی و معامله</option>' +
+                '<option value="action">⚡ اقدام و پروژه</option>' +
+                '<option value="love">❤️ روابط و پیمان</option>' +
+                '<option va‌lue="total">👁️ کلی و شهودی</option>' +
+              '</select>' +
+              '<button class="lunar-submit-btn" onclick="window.addProLunarDecision()">+ ثبت در چرخه</button>' +
+            '</div>' +
           '</div>' +
         '</div>' +
         '<div id="proLunarDecisionsList">' + cardsHtml + '</div>' +
