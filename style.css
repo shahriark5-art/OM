@@ -259,3 +259,76 @@ svg.bg { width: 225px; height: 285px; filter: drop-shadow(0 0 18px rgba(56, 189,
   font-size: 0.72rem;
   padding: 8px 10px;
 }
+/* ========================================================================= */
+/* COSMIC RITUAL & DUAL THUMB SENSORS (v1.5)                                 */
+/* ========================================================================= */
+
+/* دکمه‌های نامرئی دو طرف گلو در کنار بادی‌گراف */
+.ritual-sensor-left, .ritual-sensor-right {
+  position: absolute;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  z-index: 30;
+  opacity: 0; /* کاملاً نامرئی */
+  touch-action: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.ritual-sensor-left {
+  top: 35%;
+  left: 6px;
+}
+.ritual-sensor-right {
+  top: 35%;
+  right: 6px;
+}
+
+/* افکت نورانی و هاله‌ای زمان لمس */
+.ritual-sensor-left.active-touch, .ritual-sensor-right.active-touch {
+  opacity: 1;
+  background: radial-gradient(circle, rgba(245, 197, 107, 0.45) 0%, rgba(56, 189, 248, 0.2) 60%, transparent 80%);
+  box-shadow: 0 0 25px rgba(245, 197, 107, 0.8);
+  animation: pulseTouch 1.2s infinite alternate;
+}
+
+@keyframes pulseTouch {
+  0% { transform: scale(0.95); opacity: 0.6; }
+  100% { transform: scale(1.15); opacity: 1; }
+}
+
+/* استایل ستاره جایگزین در بالای بادی‌گراف */
+.cosmic-star-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 16px;
+  border-radius: 99px;
+  background: linear-gradient(135deg, rgba(245, 197, 107, 0.25), rgba(56, 189, 248, 0.25));
+  border: 1.5px solid #f5c56b;
+  color: #fef08a;
+  font-size: 0.85rem;
+  font-weight: 900;
+  box-shadow: 0 0 20px rgba(245, 197, 107, 0.6);
+  animation: starPulse 1.5s infinite alternate;
+}
+
+@keyframes starPulse {
+  0% { transform: scale(1); text-shadow: 0 0 5px #fff; }
+  100% { transform: scale(1.06); text-shadow: 0 0 15px #f5c56b; }
+}
+
+/* حالت ابرانرژی (روشن شدن کل چارت در زمان لمس هم‌زمان) */
+.bg-box.supernova-active .c-shape {
+  fill: rgba(245, 197, 107, 0.45) !important;
+  stroke: #f5c56b !important;
+  stroke-width: 2.5px !important;
+  filter: drop-shadow(0 0 8px rgba(245, 197, 107, 0.8));
+}
+.bg-box.supernova-active .ch-line {
+  stroke: #38bdf8 !important;
+  stroke-width: 3.5px !important;
+  opacity: 1 !important;
+  filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.9));
+}
