@@ -1,5 +1,5 @@
 // =========================================================================
-// MODULE 6: 28-DAY REFLECTOR LUNAR COMPASS & DECISION TIME-MACHINE v1.4
+// MODULE 6: 28-DAY REFLECTOR LUNAR COMPASS & DECISION TIME-MACHINE v1.4.1
 // =========================================================================
 window.LunarCompassModule = (function() {
   let activeTab = "active"; // 'active' | 'archived'
@@ -162,6 +162,12 @@ window.LunarCompassModule = (function() {
         background: rgba(34, 197, 94, 0.15); color: #bbf7d0;
         font-family: inherit; font-size: 0.73rem; font-weight: 800; cursor: pointer;
       }
+      .lunar-delete-btn {
+        width: 100%; margin-top: 7px; padding: 8px; border-radius: 9px;
+        border: 1px solid rgba(239, 68, 68, 0.4);
+        background: rgba(239, 68, 68, 0.1); color: #fca5a5;
+        font-family: inherit; font-size: 0.72rem; font-weight: 700; cursor: pointer;
+      }
       .lunar-ai-box {
         display: none; margin-top: 8px; padding: 9px 10px; border-radius: 10px;
         background: rgba(5, 8, 18, 0.95); border-right: 3px solid #f5c56b;
@@ -204,7 +210,6 @@ window.LunarCompassModule = (function() {
     return "⏳ " + diffDays + " روز دیگر";
   }
 
-  // محاسبه ۴ پنجره زمانی استاندارد در طول ۲۸ روز بر اساس ساعت‌های ثابت بیداری
   function scanDecisionWindows(dec) {
     const startMs = dec.start || Date.now();
     const cat = CATEGORIES[dec.cat] || CATEGORIES.total;
@@ -214,10 +219,10 @@ window.LunarCompassModule = (function() {
     startDayZero.setHours(0, 0, 0, 0);
     const baseMs = startDayZero.getTime();
 
-    let starterBest = null; // روز ۱ تا ۷
-    let midPeakBest = null; // روز ۸ تا ۲۰
-    let finalBest   = null; // روز ۲۱ تا ۲۸
-    let cautionDay  = null; // پایین‌ترین امتیاز در روزهای پیش رو
+    let starterBest = null;
+    let midPeakBest = null;
+    let finalBest   = null;
+    let cautionDay  = null;
 
     const slotHours = [10, 14, 18, 21];
 
@@ -351,10 +356,12 @@ window.LunarCompassModule = (function() {
 
   window.removeProLunarDecision = function(ev, idx) {
     if (ev) ev.stopPropagation();
-    const list = getDecisions();
-    list.splice(idx, 1);
-    saveDecisions(list);
-    render();
+    if (confirm("آیا از حذف این تصمیم مطمئن هستید؟")) {
+      const list = getDecisions();
+      list.splice(idx, 1);
+      saveDecisions(list);
+      render();
+    }
   };
 
   window.toggleLunarDecDrawer = function(idx) {
@@ -537,7 +544,6 @@ window.LunarCompassModule = (function() {
           const ms3 = elapsedDays >= 21 ? "done" : (elapsedDays >= 14 ? "current" : "");
           const ms4 = elapsedDays >= 28 ? "done" : (elapsedDays >= 21 ? "current" : "");
 
-          // محاسبه نبض رضایت روزانه
           const pulses = Array.isArray(d.pulses) ? d.pulses : [];
           const posCount = pulses.filter(p => p.mood === "pos").length;
           const clarityPct = pulses.length > 0 ? Math.round((posCount / pulses.length) * 100) : null;
@@ -556,9 +562,8 @@ window.LunarCompassModule = (function() {
                   '<div style="font-size:0.88rem;font-weight:900;color:#fef08a">' + d.title + '</div>' +
                   '<span class="lunar-badge">' + catInfo.label + '</span> ' +
                   '<span class="lunar-badge" style="color:#7dd3fc">روز ' + elapsedDays + ' از ۲۸ (' + pct + '٪)</span>' +
-                  (clarityPct !== null ? ' <span class="lunar-badge" style="color:#4ade80">💚 رضایت درونی: ' + clarityPct + '٪</span>' : '') +
+                  (clarityPct !== null ? ' <span class="lunar-badge" style="color:#4ade80">💚 رضایت درون: ' + clarityPct + '٪</span>' : '') +
                 '</div>' +
-                '<span onclick="window.removeProLunarDecision(event, ' + realIdx + ')" style="color:#fca5a5;cursor:pointer;font-size:0.78rem;padding:2px 6px" title="حذف">✕</span>' +
               '</div>' +
 
               '<div class="bar-bg" style="margin-top:8px;height:6px"><div class="bar-fill" style="width:' + pct + '%;background:' + catInfo.color + '"></div></div>' +
@@ -623,7 +628,7 @@ window.LunarCompassModule = (function() {
                 '</div>' +
               '</div>' +
 
-              '<button class="tools-toggle-btn" onclick="window.toggleLunarDecDrawer(' + realIdx + ')">📝 یادداشت روزانه، مشورت پیرمرد و نهایی‌سازی (' + notesArr.length + ' یادداشت) ▾</button>' +
+              '<button class="tools-toggle-btn" onclick="window.toggleLunarDecDrawer(' + realIdx + ')">📝 یادداشت روزانه، مشورت پیرمرد، تثبیت یا حذف (' + notesArr.length + ' یادداشت) ▾</button>' +
 
               '<div id="lunar-dec-drawer-' + realIdx + '" class="lunar-drawer' + (openIdx === realIdx ? " open" : "") + '">' +
                 '<div class="lunar-stack-form">' +
@@ -634,12 +639,12 @@ window.LunarCompassModule = (function() {
                 '<button id="lunar-ai-btn-' + realIdx + '" class="lunar-ai-btn" onclick="window.askLunarAI(event, ' + realIdx + ')">🧙‍♂️ مشورت با پیرمرد درباره زمان‌بندی این تصمیم</button>' +
                 '<div id="lunar-ai-out-' + realIdx + '" class="lunar-ai-box"></div>' +
                 '<button class="lunar-complete-btn" onclick="window.completeLunarDecision(event, ' + realIdx + ', \'تصمیم با موفقیت اتخاذ و نهایی شد ✅\')">✅ تثبیت تصمیم و انتقال به لیست «تصمیمات گرفته‌شده»</button>' +
+                '<button class="lunar-delete-btn" onclick="window.removeProLunarDecision(event, ' + realIdx + ')">🗑️ حذف کامل این تصمیم</button>' +
               '</div>' +
             '</div>';
         });
       }
     } else {
-      // تب آرشیو تصمیمات گرفته‌شده
       const archItems = allList.map((d, realIdx) => ({ d, realIdx })).filter(x => x.d.status === "archived");
       if (archItems.length === 0) {
         cardsHtml =
@@ -673,7 +678,7 @@ window.LunarCompassModule = (function() {
       '<div id="lunarTrackerSection" class="lunar-pro-card">' +
         '<div class="lunar-top-bar">' +
           '<span class="lunar-main-title">🌕 قطب‌نمای ۲۸ روزه و زمان‌سنج تصمیم</span>' +
-          '<span class="lunar-ver-pill">نسخه ۱.۴ رفلکتور</span>' +
+          '<span class="lunar-ver-pill">نسخه ۱.۴.۱</span>' +
         '</div>' +
 
         '<div class="lunar-tabs-row">' +
