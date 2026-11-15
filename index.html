@@ -4,15 +4,15 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="theme-color" content="#020617" />
-  <title>OLDMAN v1.4 | نسخه حرفه‌ای چندفایلی - شهریار</title>
+  <title>OLDMAN v1.5 | نسخه آیینی و کهکشانی - شهریار</title>
   <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
-  <link rel="stylesheet" href="style.css?v=1.4" />
+  <link rel="stylesheet" href="style.css?v=1.5" />
 </head>
 <body>
   <div class="cosmic-dust"></div>
   <div class="wrap">
     <header>
-      <div class="logo">OLDMAN v1.4</div>
+      <div class="logo">OLDMAN v1.5</div>
       <div class="meta">
         <span>کاربر: شهریار (Reflector 6/2)</span>
         <span id="clockDisplay">--:--</span>
@@ -71,7 +71,7 @@
 
     <div class="banner">تطبیق چارت تولد شما ✨ چارت لحظه‌ای زمین</div>
 
-    <!-- بادی‌گراف حرفه‌ای (با جدول سیارات در بالا) -->
+    <!-- بادی‌گراف حرفه‌ای (با سنسورهای نامرئی دو شست در طرفین مرکز گلو) -->
     <div class="bodygraph-container">
       <div class="bg-top-meta">
         <div class="bg-user-info">
@@ -164,7 +164,7 @@
     <!-- راهنمای اقدام -->
     <div class="card"><div class="c-head"><span class="c-title">🚦 راهنمای اقدام</span></div><div class="row"><span class="do-t">🟢 عالی برای: </span><span id="doTxt"></span></div><div class="row"><span class="dont-t">🔴 پرهیز از: </span><span id="dontTxt"></span></div></div>
 
-    <!-- جایگاه ماژول مستقل قطب‌نمای ۲۸ روزه و زمان‌سنج تصمیم v1.4 -->
+    <!-- جایگاه ماژول قطب‌نمای ۲۸ روزه نسخه ۱.۴.۵ -->
     <div id="lunarTrackerMount"></div>
   </div>
 
@@ -190,7 +190,7 @@
       <div class="f-grp"><label>موتور اول:</label><select id="provSel"><option value="gemini">Google Gemini API</option><option value="pollinations">ابری مستقیم</option></select></div>
       <div class="f-grp"><label>کلید API:</label><input type="text" id="keyInp" /></div>
       <button class="s-btn" onclick="saveSet()">ذخیره</button>
-      <button class="close-btn" onclick="closeModal('setModal')">انصراف</button>
+      <button class="close-def" onclick="closeModal('setModal')">انصراف</button>
     </div>
   </div>
 
@@ -219,13 +219,13 @@
     };
   </script>
 
-  <!-- بارگذاری فایل‌های ماژولار نسخه 1.4 با ضد کش -->
-  <script src="core.js?v=1.4"></script>
-  <script src="gems.js?v=1.4"></script>
-  <script src="lunar.js?v=1.4"></script>
-  <script src="oracle.js?v=1.4"></script>
-  <script src="weather.js?v=1.4"></script>
-  <script src="dreams.js?v=1.4"></script>
+  <!-- بارگذاری فایل‌های ماژولار نسخه 1.5 با ضد کش -->
+  <script src="core.js?v=1.5"></script>
+  <script src="gems.js?v=1.5"></script>
+  <script src="lunar.js?v=1.5"></script>
+  <script src="oracle.js?v=1.5"></script>
+  <script src="weather.js?v=1.5"></script>
+  <script src="dreams.js?v=1.5"></script>
   <script>
     const origRunApp = window.runApp;
     window.runApp = function(resetDeep) {
