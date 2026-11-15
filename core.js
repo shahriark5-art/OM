@@ -1,5 +1,5 @@
 // =========================================================================
-// CORE MODULE: ASTRONOMY, INTERACTIVE BODYGRAPH, LUCK GAUGE & ADVANCED CHANNELS
+// CORE MODULE: ASTRONOMY, INTERACTIVE BODYGRAPH, LUCK GAUGE & RITUAL SUPERNOVA v1.5.1
 // =========================================================================
 window.EMBEDDED_GEMINI_KEY = "";
 window.MY_GATES = new Set([7,8,9,10,11,12,13,15,23,24,28,37,44,50,54,60,63]);
@@ -125,7 +125,7 @@ window.GATE_FEELINGS = {
   21:"میل به استقلال، مدیریت شخصی و در دست گرفتن فرمان کارها", 22:"جذابیت، وقار و موجی از احساسات لطیف و شاعرانه", 23:"شفافیت ناگهانی ذهن برای گفتن حرف اصلی بدون حاشیه", 24:"تکرار یک فکر عمیق تا لحظه رسیدن به یک کشف و الهام شیرین",
   25:"سبکی قلب، رهایی از کینه و حس معصومیت", 26:"هوشیاری مالی و شمّ قوی برای مذاکره و قانع کردن دیگران", 27:"حس دلسوزی، مراقبت از خانواده و توجه به سلامتی و تغذیه", 28:"بی‌قراری هدفمند برای انجام کاری که واقعاً برایت معنا دارد",
   29:"انرژی بالا برای متعهد شدن و به سرانجام رساندن کار", 30:"موجی از اشتیاق، میل شدید و هیجان عاطفی", 31:"نفوذ کلام طبیعی و شنیده شدن حرفت در جمع", 32:"حس ششم قوی درباره اینکه کدام کار یا رابطه آینده‌دار است",
-  33:"نیاز عمیق به خلوت، تنهایی و فاصله گرفتن از شلوغی‌ها", 34:"فوران انرژی بدنی و قدرت اقدام مستقل", 35:"میل به تنوع، تجربه جدید و شکستن یکنواختی", 36:"نوسان عاطفی گذرا که با کمی صبر به آرامش و پختگی می‌رسد",
+  33:"نیاز عمیق به خلوت، تنهایی و فاصله گرفتن از شلوغی‌ها", 34:"انرژی بالا و قدرت اقدام مستقل", 35:"میل به تنوع، تجربه جدید و شکستن یکنواختی", 36:"نوسان عاطفی گذرا که با کمی صبر به آرامش و پختگی می‌رسد",
   37:"نیاز به گرمای خانواده، رفاقت صمیمی و مهربانی متقابل", 38:"حس سرسختی و ایستادگی در برابر فشارهای بیرونی", 39:"حس شوخ‌طبعی، چالش‌گری یا تکان دادن فضای راکد", 40:"نیاز به استراحت، رها کردن بار مسئولیت دیگران و تجدید قوا",
   41:"جوانه زدن یک آرزو، امید یا خیال تازه در دل", 42:"حس رضایت از بستن یک پرونده قدیمی و تمام کردن کارهای ناتمام", 43:"جرقه زدن یک فهم و بصیرت ناگهانی در خلوت ذهن", 44:"شمّ تیز برای تشخیص صداقت افراد و فرصت‌های کاری",
   45:"توجه به مسائل مالی، دارایی و مدیریت هزینه‌ها", 46:"حس خوش‌شانسی، هم‌زمانی‌های شیرین و قرار گرفتن در جای درست", 47:"کنار هم قرار گرفتن قطعات پازل فکری و رسیدن به آرامش ذهنی", 48:"حس عمیق شدن در یک موضوع و پختگی فکری",
@@ -442,7 +442,12 @@ function setupInteractiveCenters() {
   });
 }
 
+window.isSupernovaActiveGlobal = false;
+
 function renderBodyGraph(pls, act) {
+  // اگر در حال اتصال آیینی سوپرنوا هستیم، رندر عادی چارت متوقف شود تا پیام و وضعیت قفل بماند
+  if (window.isSupernovaActiveGlobal) return;
+
   setupInteractiveCenters();
   const mode = window.getStore("bgFilter", "all");
   const moon = pls[2];
@@ -756,7 +761,7 @@ function renderLunarDecisions() {
   let list = [];
   try { list = JSON.parse(window.getStore("decisions", "[]")); } catch(e) {}
   if (list.length === 0) {
-    box.innerHTML = '<div style="color:#94a3b8;font-size:0.75rem;text-align:center;padding:6px">هنوز تصمیمی برای چرخه ۲۸ روزه ماه ثبت نکرده‌اید.</div>';
+    if (box) box.innerHTML = '<div style="color:#94a3b8;font-size:0.75rem;text-align:center;padding:6px">هنوز تصمیمی برای چرخه ۲۸ روزه ماه ثبت نکرده‌اید.</div>';
     return;
   }
   box.innerHTML = "";
@@ -776,6 +781,171 @@ function renderLunarDecisions() {
       '</div>';
   });
 }
+
+// =========================================================================
+// RITUAL DUAL-THUMB SUPERNOVA & AUDIO/HAPTIC ENGINE (v1.5.1)
+// =========================================================================
+(function initCosmicRitualSensors() {
+  let leftPressed = false;
+  let rightPressed = false;
+  let touchStartTime = 0;
+  let audioCtx = null;
+  let oscNode = null;
+  let gainNode = null;
+
+  function startCosmicSoundAndHaptic() {
+    if (navigator.vibrate) {
+      try { navigator.vibrate([45, 60, 45]); } catch(e) {}
+    }
+
+    try {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (AudioContext) {
+        if (!audioCtx) audioCtx = new AudioContext();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+
+        if (!oscNode) {
+          oscNode = audioCtx.createOscillator();
+          gainNode = audioCtx.createGain();
+
+          oscNode.type = 'sine';
+          oscNode.frequency.setValueAtTime(432, audioCtx.currentTime);
+
+          gainNode.gain.setValueAtTime(0.001, audioCtx.currentTime);
+          gainNode.gain.exponentialRampToValueAtTime(0.12, audioCtx.currentTime + 0.8);
+
+          oscNode.connect(gainNode);
+          gainNode.connect(audioCtx.destination);
+          oscNode.start();
+        }
+      }
+    } catch(e) {}
+  }
+
+  function stopCosmicSound() {
+    try {
+      if (gainNode && audioCtx && oscNode) {
+        gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
+        setTimeout(() => {
+          try {
+            if (oscNode) {
+              oscNode.stop();
+              oscNode.disconnect();
+            }
+          } catch(e) {}
+          oscNode = null;
+          gainNode = null;
+        }, 500);
+      }
+    } catch(e) {}
+  }
+
+  function activateSupernovaState() {
+    window.isSupernovaActiveGlobal = true;
+    const bgBox = document.querySelector(".bg-box");
+    const filterRow = document.querySelector(".bg-filter-row");
+    const capEl = document.getElementById("capText");
+
+    if (bgBox) bgBox.classList.add("supernova-active");
+    
+    if (filterRow) {
+      filterRow.style.display = "none";
+      if (!document.getElementById("cosmicStarBadge")) {
+        const starDiv = document.createElement("div");
+        starDiv.id = "cosmicStarBadge";
+        starDiv.style.textAlign = "center";
+        starDiv.style.margin = "6px 0";
+        starDiv.innerHTML = '<span class="cosmic-star-badge">⭐️ اتصال کیهانی برقرار شد ⭐️</span>';
+        filterRow.parentNode.insertBefore(starDiv, filterRow);
+      }
+    }
+
+    if (capEl) {
+      capEl.innerHTML = "<span style='color:#fef08a;font-weight:900;'>✨ مدار کهکشانی کاملاً متصل شد؛ تمام مراکز و کانال‌ها یکپارچه گشتند.<br/>اکنون نیت خود را در دل یا بر زبان جاری کن...</span>";
+    }
+
+    startCosmicSoundAndHaptic();
+    if (touchStartTime === 0) touchStartTime = Date.now();
+  }
+
+  function deactivateSupernovaState() {
+    window.isSupernovaActiveGlobal = false;
+    const bgBox = document.querySelector(".bg-box");
+    const filterRow = document.querySelector(".bg-filter-row");
+    const starBadge = document.getElementById("cosmicStarBadge");
+    const capEl = document.getElementById("capText");
+
+    if (bgBox) bgBox.classList.remove("supernova-active");
+    if (filterRow) filterRow.style.display = "flex";
+    if (starBadge) starBadge.remove();
+
+    stopCosmicSound();
+
+    if (touchStartTime > 0) {
+      const holdDuration = Date.now() - touchStartTime;
+      touchStartTime = 0;
+
+      if (holdDuration >= 2500 && capEl) {
+        const moonGate = (window.OLDMAN_STATE && window.OLDMAN_STATE.pls && window.OLDMAN_STATE.pls[2]) ? window.OLDMAN_STATE.pls[2].gate : 1;
+        const gateTheme = (window.GATE_THEMES && window.GATE_THEMES[moonGate]) || "حضور و آفرینش";
+        
+        capEl.innerHTML = "<span style='color:#4ade80;font-weight:900;'>🌟 پیام تو از مسیر دروازه " + moonGate + " («" + gateTheme + "») به افلاک مخابره شد و کائنات شنید.</span>";
+        setTimeout(() => {
+          if (window.OLDMAN_STATE) {
+            window.runApp(false);
+          }
+        }, 6000);
+        return;
+      }
+    }
+
+    if (window.OLDMAN_STATE) {
+      window.runApp(false);
+    }
+  }
+
+  function setupSensors() {
+    const bgBox = document.querySelector(".bg-box");
+    if (!bgBox || document.getElementById("ritualSensorL")) return;
+
+    const sLeft = document.createElement("div");
+    sLeft.id = "ritualSensorL";
+    sLeft.className = "ritual-sensor-left";
+
+    const sRight = document.createElement("div");
+    sRight.id = "ritualSensorR";
+    sRight.className = "ritual-sensor-right";
+
+    bgBox.style.position = "relative";
+    bgBox.appendChild(sLeft);
+    bgBox.appendChild(sRight);
+
+    function checkTouchState() {
+      if (leftPressed && rightPressed) {
+        activateSupernovaState();
+      } else {
+        deactivateSupernovaState();
+      }
+    }
+
+    sLeft.addEventListener("touchstart", (e) => { e.preventDefault(); leftPressed = true; sLeft.classList.add("active-touch"); checkTouchState(); }, { passive: false });
+    sLeft.addEventListener("touchend", (e) => { e.preventDefault(); leftPressed = false; sLeft.classList.remove("active-touch"); checkTouchState(); }, { passive: false });
+    sLeft.addEventListener("touchcancel", (e) => { leftPressed = false; sLeft.classList.remove("active-touch"); checkTouchState(); });
+
+    sRight.addEventListener("touchstart", (e) => { e.preventDefault(); rightPressed = true; sRight.classList.add("active-touch"); checkTouchState(); }, { passive: false });
+    sRight.addEventListener("touchend", (e) => { e.preventDefault(); rightPressed = false; sRight.classList.remove("active-touch"); checkTouchState(); }, { passive: false });
+    sRight.addEventListener("touchcancel", (e) => { rightPressed = false; sRight.classList.remove("active-touch"); checkTouchState(); });
+
+    sLeft.addEventListener("mousedown", () => { leftPressed = true; sLeft.classList.add("active-touch"); checkTouchState(); });
+    sLeft.addEventListener("mouseup", () => { leftPressed = false; sLeft.classList.remove("active-touch"); checkTouchState(); });
+    sRight.addEventListener("mousedown", () => { rightPressed = true; sRight.classList.add("active-touch"); checkTouchState(); });
+    sRight.addEventListener("mouseup", () => { rightPressed = false; sRight.classList.remove("active-touch"); checkTouchState(); });
+  }
+
+  window.addEventListener("DOMContentLoaded", () => {
+    setTimeout(setupSensors, 800);
+  });
+})();
 
 window.runApp = function(resetDeep) {
   const now = new Date();
@@ -809,13 +979,19 @@ window.runApp = function(resetDeep) {
   renderLunarDecisions();
 
   if (act.length > 0) {
-    document.getElementById("fcBase").textContent = act.map(x => x.ch.fc).join(" ");
-    document.getElementById("doTxt").textContent = act.map(x => x.ch.doT).join(" | ");
-    document.getElementById("dontTxt").textContent = act.map(x => x.ch.dontT).join(" | ");
+    const baseEl = document.getElementById("fcBase");
+    const doEl = document.getElementById("doTxt");
+    const dontEl = document.getElementById("dontTxt");
+    if (baseEl) baseEl.textContent = act.map(x => x.ch.fc).join(" ");
+    if (doEl) doEl.textContent = act.map(x => x.ch.doT).join(" | ");
+    if (dontEl) dontEl.textContent = act.map(x => x.ch.dontT).join(" | ");
   } else {
-    document.getElementById("fcBase").textContent = "فضای روحی صاف، سبک و آینه‌ای.";
-    document.getElementById("doTxt").textContent = "مشاهده بی‌طرفانه و استراحت.";
-    document.getElementById("dontTxt").textContent = "تصمیم‌گیری عجولانه.";
+    const baseEl = document.getElementById("fcBase");
+    const doEl = document.getElementById("doTxt");
+    const dontEl = document.getElementById("dontTxt");
+    if (baseEl) baseEl.textContent = "فضای روحی صاف، سبک و آینه‌ای.";
+    if (doEl) doEl.textContent = "مشاهده بی‌طرفانه و استراحت.";
+    if (dontEl) dontEl.textContent = "تصمیم‌گیری عجولانه.";
   }
 
   const pg = document.getElementById("pGrid");
@@ -841,173 +1017,3 @@ window.saveSet = function() {
   if (k) window.setStore("key", k);
   document.getElementById("setModal").classList.remove("open");
 };
-// =========================================================================
-// RITUAL DUAL-THUMB SUPERNOVA & AUDIO/HAPTIC ENGINE (v1.5)
-// =========================================================================
-(function initCosmicRitualSensors() {
-  let leftPressed = false;
-  let rightPressed = false;
-  let touchStartTime = 0;
-  let audioCtx = null;
-  let oscNode = null;
-  let gainNode = null;
-
-  function startCosmicSoundAndHaptic() {
-    // ۱. ویبره تپش قلب (در صورت پشتیبانی گوشی)
-    if (navigator.vibrate) {
-      try { navigator.vibrate([45, 60, 45]); } catch(e) {}
-    }
-
-    // ۲. طنین صوتی ملایم ۴۳۲ هرتز (بدون نیاز به فایل خارجی)
-    try {
-      const AudioContext = window.AudioContext || window.webkitAudioContext;
-      if (AudioContext) {
-        if (!audioCtx) audioCtx = new AudioContext();
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-
-        oscNode = audioCtx.createOscillator();
-        gainNode = audioCtx.createGain();
-
-        oscNode.type = 'sine';
-        oscNode.frequency.setValueAtTime(432, audioCtx.currentTime); // فرکانس قدسی ۴۳۲ هرتز
-
-        gainNode.gain.setValueAtTime(0.001, audioCtx.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.12, audioCtx.currentTime + 0.8); // محو تدریجی صدا (Fade in)
-
-        oscNode.connect(gainNode);
-        gainNode.connect(audioCtx.destination);
-        oscNode.start();
-      }
-    } catch(e) {}
-  }
-
-  function stopCosmicSound() {
-    try {
-      if (gainNode && audioCtx && oscNode) {
-        gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
-        setTimeout(() => {
-          try {
-            oscNode.stop();
-            oscNode.disconnect();
-          } catch(e) {}
-          oscNode = null;
-        }, 500);
-      }
-    } catch(e) {}
-  }
-
-  function activateSupernovaState() {
-    const bgBox = document.querySelector(".bg-box");
-    const filterRow = document.querySelector(".bg-filter-row");
-    const capEl = document.getElementById("capText");
-
-    if (bgBox) bgBox.classList.add("supernova-active");
-    
-    // مخفی کردن دکمه‌های بالا و نمایش ستاره ⭐️
-    if (filterRow) {
-      if (!document.getElementById("cosmicStarBadge")) {
-        filterRow.style.display = "none";
-        const starDiv = document.createElement("div");
-        starDiv.id = "cosmicStarBadge";
-        starDiv.style.textAlign = "center";
-        starDiv.style.margin = "6px 0";
-        starDiv.innerHTML = '<span class="cosmic-star-badge">⭐️ اتصال کیهانی برقرار شد ⭐️</span>';
-        filterRow.parentNode.insertBefore(starDiv, filterRow);
-      }
-    }
-
-    if (capEl) {
-      capEl.innerHTML = "<span style='color:#fef08a;font-weight:900;'>✨ مدار کهکشانی کاملاً متصل شد؛ تمام مراکز و کانال‌ها یکپارچه گشتند.<br/>اکنون نیت خود را در دل یا بر زبان جاری کن...</span>";
-    }
-
-    startCosmicSoundAndHaptic();
-    touchStartTime = Date.now();
-  }
-
-  function deactivateSupernovaState() {
-    const bgBox = document.querySelector(".bg-box");
-    const filterRow = document.querySelector(".bg-filter-row");
-    const starBadge = document.getElementById("cosmicStarBadge");
-    const capEl = document.getElementById("capText");
-
-    if (bgBox) bgBox.classList.remove("supernova-active");
-    if (filterRow) filterRow.style.display = "flex";
-    if (starBadge) starBadge.remove();
-
-    stopCosmicSound();
-
-    // محاسبه مدت زمان نگه داشتن برای پیام تایید کائنات
-    if (touchStartTime > 0) {
-      const holdDuration = Date.now() - touchStartTime;
-      touchStartTime = 0;
-
-      if (holdDuration >= 2500 && capEl) {
-        const moonGate = (window.OLDMAN_STATE && window.OLDMAN_STATE.pls && window.OLDMAN_STATE.pls[2]) ? window.OLDMAN_STATE.pls[2].gate : 1;
-        const gateTheme = (window.GATE_THEMES && window.GATE_THEMES[moonGate]) || "حضور و آفرینش";
-        
-        capEl.innerHTML = "<span style='color:#4ade80;font-weight:900;'>🌟 پیام تو از مسیر دروازه " + moonGate + " («" + gateTheme + "») به افلاک مخابره شد و کائنات شنید.</span>";
-        setTimeout(() => {
-          if (window.OLDMAN_STATE) {
-            window.runApp(false); // بازگشت به حالت عادی چارت پس از چند ثانیه
-          }
-        }, 6000);
-        return;
-      }
-    }
-
-    if (window.OLDMAN_STATE) {
-      window.runApp(false);
-    }
-  }
-
-  function setupSensors() {
-    const bgBox = document.querySelector(".bg-box");
-    if (!bgBox || document.getElementById("ritualSensorL")) return;
-
-    // ایجاد دکمه‌های نامرئی در دو طرف بادی‌گراف
-    const sLeft = document.createElement("div");
-    sLeft.id = "ritualSensorL";
-    sLeft.className = "ritual-sensor-left";
-
-    const sRight = document.createElement("div");
-    sRight.id = "ritualSensorR";
-    sRight.className = "ritual-sensor-right";
-
-    bgBox.style.position = "relative";
-    bgBox.appendChild(sLeft);
-    bgBox.appendChild(sRight);
-
-    function checkTouchState() {
-      if (leftPressed && rightPressed) {
-        activateSupernovaState();
-      } else {
-        deactivateSupernovaState();
-      }
-    }
-
-    sLeft.addEventListener("touchstart", (e) => { e.preventDefault(); leftPressed = true; sLeft.classList.add("active-touch"); checkTouchState(); }, { passive: false });
-    sLeft.addEventListener("touchend", (e) => { e.preventDefault(); leftPressed = false; sLeft.classList.remove("active-touch"); checkTouchState(); }, { passive: false });
-    sLeft.addEventListener("touchcancel", (e) => { leftPressed = false; sLeft.classList.remove("active-touch"); checkTouchState(); });
-
-    sRight.addEventListener("touchstart", (e) => { e.preventDefault(); rightPressed = true; sRight.classList.add("active-touch"); checkTouchState(); }, { passive: false });
-    sRight.addEventListener("touchend", (e) => { e.preventDefault(); rightPressed = false; sRight.classList.remove("active-touch"); checkTouchState(); }, { passive: false });
-    sRight.addEventListener("touchcancel", (e) => { rightPressed = false; sRight.classList.remove("active-touch"); checkTouchState(); });
-
-    // پشتیبانی از ماوس برای تست دسکتاپ (کلیک هم‌زمان)
-    sLeft.addEventListener("mousedown", () => { leftPressed = true; sLeft.classList.add("active-touch"); checkTouchState(); });
-    sLeft.addEventListener("mouseup", () => { leftPressed = false; sLeft.classList.remove("active-touch"); checkTouchState(); });
-    sRight.addEventListener("mousedown", () => { rightPressed = true; sRight.classList.add("active-touch"); checkTouchState(); });
-    sRight.addEventListener("mouseup", () => { rightPressed = false; sRight.classList.remove("active-touch"); checkTouchState(); });
-  }
-
-  // راه‌اندازی سنسورها پس از لود شدن کامل صفحه
-  window.addEventListener("DOMContentLoaded", () => {
-    setTimeout(setupSensors, 800);
-  });
-  
-  const origRun = window.runApp;
-  window.runApp = function(resetDeep) {
-    if (typeof origRun =="function") origRun(resetDeep);
-    setTimeout(setupSensors, 300);
-  };
-})();
