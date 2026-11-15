@@ -1,15 +1,17 @@
 // =========================================================================
-// MODULE 6: 28-DAY REFLECTOR LUNAR COMPASS & DECISION TIME-MACHINE (lunar.js)
+// MODULE 6: 28-DAY REFLECTOR LUNAR COMPASS & DECISION TIME-MACHINE v1.4
 // =========================================================================
 window.LunarCompassModule = (function() {
+  let activeTab = "active"; // 'active' | 'archived'
   let isBusy = false;
   let cachedLunarModel = "";
 
   const CATEGORIES = {
     wealth: { label: "💰 مالی و معامله", scoreKey: "wealth", color: "#f5c56b", gates: [44, 54, 12, 37, 26, 32] },
+    health: { label: "💪 سلامت و سبک زندگی", scoreKey: "action", color: "#10b981", gates: [27, 50, 5, 15, 58, 10] },
+    action: { label: "🚀 پروژه و اقدام", scoreKey: "action", color: "#38bdf8", gates: [28, 8, 7, 23, 10, 54] },
     love:   { label: "❤️ روابط و پیمان", scoreKey: "love",   color: "#f43f5e", gates: [12, 37, 50, 15, 11, 10] },
-    action: { label: "⚡ اقدام و پروژه", scoreKey: "action", color: "#38bdf8", gates: [28, 8, 7, 23, 10, 54] },
-    total:  { label: "👁️ کلی و شهودی",   scoreKey: "total",  color: "#4ade80", gates: [24, 63, 13, 10, 15, 50] }
+    total:  { label: "👁️ کلی و شهودی",   scoreKey: "total",  color: "#a855f7", gates: [24, 63, 13, 10, 15, 50] }
   };
 
   (function injectLunarStyles() {
@@ -20,105 +22,150 @@ window.LunarCompassModule = (function() {
     st.id = "lunar-compass-styles";
     st.textContent = `
       .lunar-pro-card {
-        background: radial-gradient(circle at 50% 0%, rgba(245, 197, 107, 0.14) 0%, rgba(12, 18, 36, 0.95) 72%);
+        background: radial-gradient(circle at 50% 0%, rgba(245, 197, 107, 0.14) 0%, rgba(12, 18, 36, 0.96) 72%);
         border: 1.5px solid rgba(245, 197, 107, 0.45);
-        border-radius: 20px; padding: 15px; margin-bottom: 15px;
+        border-radius: 20px; padding: 14px; margin-bottom: 15px;
         box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6);
         box-sizing: border-box; overflow: hidden;
       }
-      .lunar-pro-card .c-head {
-        display: flex !important; justify-content: space-between !important;
-        align-items: center !important; gap: 6px !important; margin-bottom: 10px !important;
+      .lunar-top-bar {
+        display: flex; justify-content: space-between; align-items: center;
+        gap: 8px; margin-bottom: 10px;
       }
-      .lunar-pro-card .c-title {
-        font-size: 0.82rem !important; font-weight: 900 !important;
-        color: #f5c56b !important; line-height: 1.4 !important;
+      .lunar-main-title {
+        font-size: 0.84rem; font-weight: 900; color: #f5c56b;
       }
-      .lunar-head-badge {
-        font-size: 0.66rem; color: #fde68a; background: rgba(245, 197, 107, 0.12);
-        border: 1px solid rgba(245, 197, 107, 0.3); padding: 2px 8px;
-        border-radius: 99px; white-space: nowrap; flex-shrink: 0;
+      .lunar-ver-pill {
+        font-size: 0.65rem; color: #fde68a; background: rgba(245, 197, 107, 0.14);
+        border: 1px solid rgba(245, 197, 107, 0.35); padding: 2px 8px;
+        border-radius: 99px; white-space: nowrap;
+      }
+      .lunar-tabs-row {
+        display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 12px;
+      }
+      .lunar-tab-btn {
+        padding: 8px 6px; border-radius: 10px; font-family: inherit;
+        font-size: 0.74rem; font-weight: 800; cursor: pointer;
+        background: rgba(255, 255, 255, 0.04); color: #94a3b8;
+        border: 1px solid rgba(255, 255, 255, 0.1); transition: 0.2s;
+      }
+      .lunar-tab-btn.active {
+        background: rgba(245, 197, 107, 0.2); color: #fef08a;
+        border-color: #f5c56b;
       }
       .lunar-add-box {
-        background: rgba(4, 7, 16, 0.75); border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 14px; padding: 12px; margin-bottom: 12px; box-sizing: border-box;
+        background: rgba(4, 7, 16, 0.78); border: 1px solid rgba(255, 255, 255, 0.09);
+        border-radius: 14px; padding: 11px; margin-bottom: 12px;
       }
-      .lunar-form-stack {
-        display: flex; flex-direction: column; gap: 8px; margin-top: 8px; width: 100%;
+      .lunar-stack-form {
+        display: flex; flex-direction: column; gap: 8px; margin-top: 7px;
       }
-      .lunar-full-inp {
-        width: 100% !important; box-sizing: border-box !important;
-        padding: 10px 12px !important; border-radius: 10px !important;
-        border: 1px solid rgba(255, 255, 255, 0.16) !important;
-        background: rgba(15, 23, 42, 0.9) !important; color: #ffffff !important;
-        font-family: inherit !important; font-size: 0.8rem !important;
+      .lunar-inp-full {
+        width: 100%; box-sizing: border-box; padding: 10px 11px;
+        border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.16);
+        background: rgba(15, 23, 42, 0.95); color: #fff;
+        font-family: inherit; font-size: 0.78rem;
       }
-      .lunar-full-inp:focus {
-        outline: none !important; border-color: #f5c56b !important;
+      .lunar-inp-full:focus { outline: none; border-color: #f5c56b; }
+      .lunar-action-grid {
+        display: grid; grid-template-columns: 1.2fr 1fr; gap: 7px;
       }
-      .lunar-bottom-actions {
-        display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%;
+      .lunar-sel-box {
+        width: 100%; box-sizing: border-box; padding: 9px 8px;
+        border-radius: 10px; border: 1px solid rgba(245, 197, 107, 0.4);
+        background: #090e20; color: #fde68a; font-family: inherit;
+        font-size: 0.74rem; font-weight: 700;
       }
-      .lunar-cat-sel {
-        width: 100% !important; box-sizing: border-box !important;
-        padding: 9px 10px !important; border-radius: 10px !important;
-        border: 1px solid rgba(245, 197, 107, 0.4) !important;
-        background: #090e20 !important; color: #fde68a !important;
-        font-family: inherit !important; font-size: 0.76rem !important; font-weight: 700 !important;
-      }
-      .lunar-submit-btn {
-        width: 100% !important; box-sizing: border-box !important;
-        padding: 9px 12px !important; border-radius: 10px !important;
-        border: none !important;
-        background: linear-gradient(135deg, #f5c56b, #d97706) !important;
-        color: #020617 !important; font-family: inherit !important;
-        font-size: 0.78rem !important; font-weight: 900 !important;
-        cursor: pointer !important; text-align: center !important;
+      .lunar-btn-gold {
+        width: 100%; box-sizing: border-box; padding: 9px 10px;
+        border-radius: 10px; border: none;
+        background: linear-gradient(135deg, #f5c56b, #d97706);
+        color: #020617; font-family: inherit; font-size: 0.76rem;
+        font-weight: 900; cursor: pointer;
       }
       .lunar-dec-card {
-        background: rgba(15, 23, 42, 0.88); border: 1px solid rgba(255, 255, 255, 0.1);
-        border-right: 4px solid #f5c56b; border-radius: 14px;
-        padding: 12px 13px; margin-top: 11px; transition: 0.25s;
+        background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(255, 255, 255, 0.11);
+        border-right: 4px solid #f5c56b; border-radius: 15px;
+        padding: 12px; margin-top: 12px;
       }
-      .lunar-dec-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; cursor: pointer; }
-      .lunar-cat-badge {
-        font-size: 0.66rem; padding: 2px 8px; border-radius: 99px;
+      .lunar-card-head {
+        display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;
+      }
+      .lunar-badge {
+        font-size: 0.65rem; padding: 2px 8px; border-radius: 99px;
         background: rgba(255, 255, 255, 0.07); color: #e2e8f0; display: inline-block; margin-top: 4px;
       }
-      .lunar-milestones {
+      .lunar-ms-grid {
         display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px;
-        margin: 9px 0 6px; text-align: center;
+        margin: 9px 0 8px; text-align: center;
       }
-      .ms-step {
+      .ms-item {
         background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.07);
-        border-radius: 8px; padding: 4px 2px; font-size: 0.64rem; color: #64748b;
+        border-radius: 8px; padding: 4px 2px; font-size: 0.62rem; color: #64748b;
       }
-      .ms-step.done { border-color: rgba(56, 189, 248, 0.45); color: #bae6fd; background: rgba(56, 189, 248, 0.1); }
-      .ms-step.current { border-color: #f5c56b; color: #fef08a; background: rgba(245, 197, 107, 0.18); font-weight: 800; }
-      .lunar-window-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin-top: 9px; }
-      .win-box { border-radius: 10px; padding: 8px 9px; font-size: 0.72rem; line-height: 1.6; }
-      .win-box.gold { background: rgba(34, 197, 94, 0.11); border: 1px solid rgba(34, 197, 94, 0.38); color: #dcfce7; }
-      .win-box.warn { background: rgba(239, 68, 68, 0.11); border: 1px solid rgba(239, 68, 68, 0.35); color: #fee2e2; }
+      .ms-item.done { border-color: rgba(56, 189, 248, 0.45); color: #bae6fd; background: rgba(56, 189, 248, 0.1); }
+      .ms-item.current { border-color: #f5c56b; color: #fef08a; background: rgba(245, 197, 107, 0.18); font-weight: 800; }
+
+      .win-section-title {
+        font-size: 0.72rem; font-weight: 800; color: #fde68a; margin: 10px 0 6px;
+        display: flex; justify-content: space-between; align-items: center;
+      }
+      .win-list { display: flex; flex-direction: column; gap: 6px; }
+      .win-row {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 7px 9px; border-radius: 10px; font-size: 0.71rem; line-height: 1.5;
+      }
+      .win-row.starter { background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.35); color: #e0f2fe; }
+      .win-row.midpeak { background: rgba(168, 85, 247, 0.11); border: 1px solid rgba(168, 85, 247, 0.35); color: #f3e8ff; }
+      .win-row.final   { background: rgba(34, 197, 94, 0.12); border: 1px solid rgba(34, 197, 94, 0.4); color: #dcfce7; }
+      .win-row.caution { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.35); color: #fee2e2; }
+      .win-left-tag {
+        font-size: 0.66rem; font-weight: 900; padding: 3px 7px; border-radius: 8px;
+        background: rgba(0, 0, 0, 0.35); white-space: nowrap; margin-right: 6px; text-align: center;
+      }
+
+      .pulse-box {
+        background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 11px; padding: 8px 9px; margin-top: 9px;
+      }
+      .pulse-btns { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-top: 6px; }
+      .pulse-btn {
+        padding: 6px 4px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.12);
+        background: rgba(15, 23, 42, 0.8); color: #cbd5e1; font-family: inherit;
+        font-size: 0.67rem; font-weight: 700; cursor: pointer; transition: 0.2s;
+      }
+      .pulse-btn:hover { border-color: #f5c56b; color: #fff; }
+
+      .tools-toggle-btn {
+        width: 100%; margin-top: 8px; padding: 7px; border-radius: 9px;
+        background: rgba(255, 255, 255, 0.05); border: 1px dashed rgba(255, 255, 255, 0.2);
+        color: #7dd3fc; font-family: inherit; font-size: 0.72rem; font-weight: 700; cursor: pointer;
+      }
       .lunar-drawer {
-        display: none; margin-top: 10px; padding-top: 10px;
-        border-top: 1px dashed rgba(255, 255, 255, 0.14); font-size: 0.77rem;
+        display: none; margin-top: 9px; padding-top: 9px;
+        border-top: 1px solid rgba(255, 255, 255, 0.1); font-size: 0.75rem;
       }
       .lunar-drawer.open { display: block; }
-      .lunar-note-stack { display: flex; flex-direction: column; gap: 6px; margin-top: 7px; }
       .lunar-note-item {
         background: rgba(255, 255, 255, 0.03); border-right: 2.5px solid #38bdf8;
-        border-radius: 7px; padding: 6px 8px; margin-top: 5px; font-size: 0.73rem; color: #cbd5e1;
+        border-radius: 7px; padding: 5px 8px; margin-top: 5px; font-size: 0.71rem; color: #cbd5e1;
       }
       .lunar-ai-btn {
-        width: 100%; margin-top: 9px; padding: 9px; border-radius: 10px;
-        border: 1px solid rgba(245, 197, 107, 0.6);
-        background: linear-gradient(135deg, rgba(245, 197, 107, 0.22), rgba(56, 189, 248, 0.2));
-        color: #fef08a; font-family: inherit; font-size: 0.76rem; font-weight: 900; cursor: pointer;
+        width: 100%; margin-top: 8px; padding: 8px; border-radius: 9px;
+        border: 1px solid rgba(245, 197, 107, 0.55);
+        background: linear-gradient(135deg, rgba(245, 197, 107, 0.2), rgba(56, 189, 248, 0.18));
+        color: #fef08a; font-family: inherit; font-size: 0.74rem; font-weight: 900; cursor: pointer;
+      }
+      .lunar-complete-btn {
+        width: 100%; margin-top: 7px; padding: 8px; border-radius: 9px;
+        border: 1px solid rgba(34, 197, 94, 0.5);
+        background: rgba(34, 197, 94, 0.15); color: #bbf7d0;
+        font-family: inherit; font-size: 0.73rem; font-weight: 800; cursor: pointer;
       }
       .lunar-ai-box {
         display: none; margin-top: 8px; padding: 9px 10px; border-radius: 10px;
-        background: rgba(5, 8, 18, 0.94); border-right: 3px solid #f5c56b;
-        color: #fef3c7; font-size: 0.77rem; line-height: 1.85; text-align: justify;
+        background: rgba(5, 8, 18, 0.95); border-right: 3px solid #f5c56b;
+        color: #fef3c7; font-size: 0.75rem; line-height: 1.85; text-align: justify;
       }
     `;
     document.head.appendChild(st);
@@ -142,93 +189,106 @@ window.LunarCompassModule = (function() {
     }
   }
 
+  function getTimeSlotLabel(hr) {
+    if (hr < 12) return "بازه صبح (۰۹:۰۰ تا ۱۲:۰۰)";
+    if (hr < 16) return "بازه ظهر (۱۲:۰۰ تا ۱۶:۰۰)";
+    if (hr < 20) return "بازه عصر (۱۶:۰۰ تا ۲۰:۰۰)";
+    return "بازه شب (۲۰:۰۰ تا ۲۳:۰۰)";
+  }
+
+  function formatDaysDiff(targetMs) {
+    const diffDays = Math.ceil((targetMs - Date.now()) / 86400000);
+    if (diffDays < 0) return "گذشته";
+    if (diffDays === 0) return "🔥 امروز";
+    if (diffDays === 1) return "⏳ فردا";
+    return "⏳ " + diffDays + " روز دیگر";
+  }
+
+  // محاسبه ۴ پنجره زمانی استاندارد در طول ۲۸ روز بر اساس ساعت‌های ثابت بیداری
   function scanDecisionWindows(dec) {
     const startMs = dec.start || Date.now();
-    const nowMs = Date.now();
-    const endMs = startMs + 28 * 86400000;
     const cat = CATEGORIES[dec.cat] || CATEGORIES.total;
     const scoreKey = cat.scoreKey;
 
-    const scanFrom = Math.max(nowMs, startMs);
-    const scanTo = Math.max(scanFrom + 7 * 86400000, endMs);
+    const startDayZero = new Date(startMs);
+    startDayZero.setHours(0, 0, 0, 0);
+    const baseMs = startDayZero.getTime();
 
-    let bestWin = null;
-    let worstWin = null;
+    let starterBest = null; // روز ۱ تا ۷
+    let midPeakBest = null; // روز ۸ تا ۲۰
+    let finalBest   = null; // روز ۲۱ تا ۲۸
+    let cautionDay  = null; // پایین‌ترین امتیاز در روزهای پیش رو
 
-    if (!window.calcPlanets || !window.calcGalacticLuck) {
-      const defBest = new Date(nowMs + 3 * 86400000);
-      const defWorst = new Date(nowMs + 5 * 86400000);
-      return {
-        bestDate: defBest, bestScore: 84, bestDaysLeft: 3, bestReason: "هم‌نوایی ماه با مدار تصمیم",
-        worstDate: defWorst, worstScore: 32, worstDaysLeft: 5,
-        finalDate: new Date(endMs)
-      };
+    const slotHours = [10, 14, 18, 21];
+
+    for (let dayIdx = 0; dayIdx < 28; dayIdx++) {
+      for (let s = 0; s < slotHours.length; s++) {
+        const hr = slotHours[s];
+        const t = baseMs + dayIdx * 86400000 + hr * 3600000;
+        const dt = new Date(t);
+
+        let rawScore = 55;
+        let reason = "تعادل هاله و مدار ماه";
+
+        if (window.calcPlanets && window.calcGalacticLuck) {
+          const pls = window.calcPlanets(dt);
+          const moon = pls[2];
+          const act = [];
+          if (window.DB) {
+            window.DB.forEach(ch => {
+              const tp = pls.find(p => p.gate === ch.g2);
+              if (tp) act.push({ ch, p: tp });
+            });
+          }
+          const lk = window.calcGalacticLuck(pls, act, dt);
+          rawScore = Math.round((lk[scoreKey] * 0.6) + (lk.total * 0.4));
+
+          const moonCh = act.find(x => x.p.isMoon);
+          if (moonCh) {
+            rawScore += 9;
+            reason = "قفل " + moonCh.ch.name;
+          } else if (cat.gates.includes(moon.gate)) {
+            rawScore += 7;
+            const gTheme = (window.GATE_THEMES && window.GATE_THEMES[moon.gate]) || "";
+            reason = "ماه در دروازه «" + gTheme + "»";
+          } else if (window.DETRIMENT_GATES && window.DETRIMENT_GATES.has(moon.gate)) {
+            rawScore -= 8;
+            reason = "ماه در زاویه اصطکاکی (نیاز به سکوت)";
+          }
+        }
+
+        const score = Math.min(96, Math.max(12, rawScore));
+        const item = { dt, t, dayNum: dayIdx + 1, slotLabel: getTimeSlotLabel(hr), score, reason };
+
+        if (dayIdx <= 6) {
+          if (!starterBest || score > starterBest.score) starterBest = item;
+        } else if (dayIdx <= 19) {
+          if (!midPeakBest || score > midPeakBest.score) midPeakBest = item;
+        } else {
+          if (!finalBest || score > finalBest.score) finalBest = item;
+        }
+
+        if (t >= Date.now() - 12 * 3600000) {
+          if (!cautionDay || score < cautionDay.score) cautionDay = item;
+        }
+      }
     }
 
-    for (let t = scanFrom; t <= scanTo; t += 6 * 3600000) {
-      const dt = new Date(t);
-      const hr = dt.getHours();
-      if (hr < 8 || hr > 22) continue;
-
-      const pls = window.calcPlanets(dt);
-      const moon = pls[2];
-      const act = [];
-      if (window.DB) {
-        window.DB.forEach(ch => {
-          const tp = pls.find(p => p.gate === ch.g2);
-          if (tp) act.push({ ch, p: tp });
-        });
-      }
-
-      const lk = window.calcGalacticLuck(pls, act, dt);
-      let score = (lk[scoreKey] * 0.65) + (lk.total * 0.35);
-
-      let reason = "تعادل پایدار هاله و ماه";
-      const moonCh = act.find(x => x.p.isMoon);
-      if (moonCh) {
-        score += 12;
-        reason = "قفل " + moonCh.ch.name + " توسط ماه";
-      }
-      if (cat.gates.includes(moon.gate)) {
-        score += 9;
-        const gTheme = (window.GATE_THEMES && window.GATE_THEMES[moon.gate]) || "";
-        if (!moonCh) reason = "عبور ماه از دروازه هم‌سو («" + gTheme + "»)";
-      }
-      if (window.EXALTED_GATES && window.EXALTED_GATES.has(moon.gate)) {
-        score += 8;
-      }
-
-      const daysFromStart = (t - startMs) / 86400000;
-      if (daysFromStart >= 7) score += 5;
-
-      const finalScore = Math.min(99, Math.max(5, Math.round(score)));
-      const daysLeft = Math.max(0, Math.ceil((t - nowMs) / 86400000));
-
-      if (!bestWin || finalScore > bestWin.score) {
-        bestWin = { dt, score: finalScore, daysLeft, reason, moonGate: moon.gate };
-      }
-      if (!worstWin || finalScore < worstWin.score) {
-        worstWin = { dt, score: finalScore, daysLeft, moonGate: moon.gate };
-      }
-    }
+    if (!cautionDay) cautionDay = starterBest;
 
     return {
-      bestDate: bestWin ? bestWin.dt : new Date(nowMs + 2 * 86400000),
-      bestScore: bestWin ? bestWin.score : 82,
-      bestDaysLeft: bestWin ? bestWin.daysLeft : 2,
-      bestReason: bestWin ? bestWin.reason : "وضوح بالای مدار ماه",
-      worstDate: worstWin ? worstWin.dt : new Date(nowMs + 4 * 86400000),
-      worstScore: worstWin ? worstWin.score : 30,
-      worstDaysLeft: worstWin ? worstWin.daysLeft : 4,
-      finalDate: new Date(endMs)
+      starter: starterBest,
+      midPeak: midPeakBest,
+      finalWin: finalBest,
+      caution: cautionDay,
+      endDate: new Date(startMs + 28 * 86400000)
     };
   }
 
-  function formatDaysLeft(days) {
-    if (days <= 0) return "🔥 همین امروز!";
-    if (days === 1) return "⏳ فردا (۱ روز دیگر)";
-    return "⏳ " + days + " روز دیگر";
-  }
+  window.switchLunarTab = function(tabName) {
+    activeTab = tabName;
+    render();
+  };
 
   window.addProLunarDecision = function() {
     const inp = document.getElementById("proDecisionTitleInp");
@@ -241,10 +301,51 @@ window.LunarCompassModule = (function() {
       title: inp.value.trim(),
       cat: catSel ? catSel.value : "total",
       start: Date.now(),
+      status: "active",
+      pulses: [],
       notes: []
     });
     saveDecisions(list);
     inp.value = "";
+    activeTab = "active";
+    render();
+  };
+
+  window.recordDailyPulse = function(ev, idx, mood) {
+    if (ev) ev.stopPropagation();
+    const list = getDecisions();
+    const dec = list[idx];
+    if (!dec) return;
+    if (!Array.isArray(dec.pulses)) dec.pulses = [];
+
+    const elapsedDays = Math.min(28, Math.max(1, Math.floor((Date.now() - dec.start) / 86400000) + 1));
+    const existingIdx = dec.pulses.findIndex(p => p.day === elapsedDays);
+    if (existingIdx >= 0) dec.pulses[existingIdx].mood = mood;
+    else dec.pulses.push({ day: elapsedDays, mood });
+
+    saveDecisions(list);
+    render();
+  };
+
+  window.completeLunarDecision = function(ev, idx, outcomeText) {
+    if (ev) ev.stopPropagation();
+    const list = getDecisions();
+    if (!list[idx]) return;
+    list[idx].status = "archived";
+    list[idx].completedAt = Date.now();
+    list[idx].outcome = outcomeText || "نهایی و تثبیت شد";
+    saveDecisions(list);
+    activeTab = "archived";
+    render();
+  };
+
+  window.restoreLunarDecision = function(ev, idx) {
+    if (ev) ev.stopPropagation();
+    const list = getDecisions();
+    if (!list[idx]) return;
+    list[idx].status = "active";
+    saveDecisions(list);
+    activeTab = "active";
     render();
   };
 
@@ -361,12 +462,12 @@ window.LunarCompassModule = (function() {
     btn.disabled = true;
     btn.textContent = "🌕 پیرمرد در حال رصد چرخه ۲۸ روزه این تصمیم...";
     outBox.style.display = "block";
-    outBox.innerHTML = "در حال بررسی فاز فعلی ماه و پنجره‌های طلایی تصمیم‌گیری...";
+    outBox.innerHTML = "در حال بررسی فاز ماه، نبض‌های ثبت‌شده و پنجره‌های طلایی...";
 
     const elapsedDays = Math.min(28, Math.floor((Date.now() - dec.start) / 86400000) + 1);
     const win = scanDecisionWindows(dec);
-    const bestDayStr = win.bestDate.toLocaleDateString("fa-IR", { weekday: "long", month: "short", day: "numeric" });
-    const warnDayStr = win.worstDate.toLocaleDateString("fa-IR", { weekday: "long", month: "short", day: "numeric" });
+    const stDay = win.starter.dt.toLocaleDateString("fa-IR", { weekday: "long", month: "short", day: "numeric" });
+    const fnDay = win.finalWin.dt.toLocaleDateString("fa-IR", { weekday: "long", month: "short", day: "numeric" });
     const notesStr = (dec.notes && dec.notes.length > 0)
       ? dec.notes.map(n => "روز " + n.day + ": " + n.text).join(" | ")
       : "هنوز یادداشتی ثبت نشده";
@@ -374,14 +475,13 @@ window.LunarCompassModule = (function() {
     const promptText =
       "تو «پیرمرد حکیم» هستی و به «شهریار» (Reflector 6/2) درباره تصمیم مهمش مشاوره می‌دهی.\n" +
       "- عنوان تصمیم: «" + dec.title + "»\n" +
-      "- وضعیت چرخه ۲۸ روزه: امروز روز " + elapsedDays + " از ۲۸ روز است.\n" +
-      "- بهترین پنجره طلایی محاسبه‌شده برای تصمیم‌گیری یا اقدام کلیدی: " + bestDayStr + " (" + formatDaysLeft(win.bestDaysLeft) + " با شاخص هماهنگی " + win.bestScore + "% به دلیل " + win.bestReason + ").\n" +
-      "- روز هشدار و احتیاط: " + warnDayStr + " (شاخص " + win.worstScore + "%).\n" +
-      "- یادداشت‌های درونی شهریار تا این لحظه: " + notesStr + "\n\n" +
-      "در ۴ جمله عمیق، گرم و راهگشا به شهریار بگو:\n" +
-      "۱. در روز " + elapsedDays + " از چرخه ماه، این تصمیم در چه مرحله‌ای از پختگی قرار دارد؟\n" +
-      "۲. چرا صبر کردن تا پنجره طلایی (" + bestDayStr + ") به نفع اوست و در آن روز چطور عمل کند؟\n" +
-      "۳. چه سوالی را امشب از دل خود بپرسد تا وضوحش بیشتر شود؟";
+      "- امروز روز " + elapsedDays + " از چرخه ۲۸ روزه ماه است.\n" +
+      "- پنجره مناسب استارت و تست اولیه: " + stDay + " (" + win.starter.slotLabel + ")\n" +
+      "- روز موعود برای تصمیم نهایی رفلکتور: " + fnDay + " (" + win.finalWin.slotLabel + ")\n" +
+      "- یادداشت‌های شهریار: " + notesStr + "\n\n" +
+      "در ۴ جمله صمیمی، عمیق و کاربردی به شهریار بگو:\n" +
+      "۱. آیا این موضوع («" + dec.title + "») از جنس اقدام عملی فوری در پنجره اول است یا نیاز به صبر تا روز ۲۸ دارد؟\n" +
+      "۲. در این روزهای میانی چطور انرژی خود را مدیریت کند تا به وضوح صددرصدی برسد؟";
 
     const apiKey = window.getStore ? window.getStore("key", "") : "";
     const res = await callLunarAI(apiKey, promptText);
@@ -391,7 +491,7 @@ window.LunarCompassModule = (function() {
     } else {
       outBox.innerHTML =
         "<b>🧙‍♂️ قطب‌نمای پیرمرد:</b><br/>" +
-        "شهریار جان، تو اکنون در روز <b>" + elapsedDays + "</b> از چرخه ۲۸ روزه «" + dec.title + "» هستی. عجله نکن؛ در تاریخ <b>" + bestDayStr + " (" + formatDaysLeft(win.bestDaysLeft) + ")</b> به دلیل «" + win.bestReason + "»، آسمان بالاترین وضوح (" + win.bestScore + "٪) را به آینه دلت می‌دهد و بهترین زمان برای جمع‌بندی یا گام برداشتن است. فقط در <b>" + warnDayStr + "</b> از تصمیم‌گیری احساسی پرهیز کن.";
+        "شهریار جان، برای «" + dec.title + "» اگر قصد برداشتن گام عملی و آزمایشی داری، <b>" + stDay + " (" + win.starter.slotLabel + ")</b> بهترین موج آغازگر را دارد؛ اما برای تعهد نهایی و قطعی، صبر کردن تا پنجره طلایی پایان ماه در <b>" + fnDay + "</b> آینه دلت را کاملاً شفاف می‌سازد.";
     }
 
     btn.disabled = false;
@@ -403,111 +503,203 @@ window.LunarCompassModule = (function() {
     const mount = document.getElementById("lunarTrackerMount");
     if (!mount) return;
 
-    const list = getDecisions();
+    const allList = getDecisions();
+    const activeCount = allList.filter(x => x.status !== "archived").length;
+    const archivedCount = allList.filter(x => x.status === "archived").length;
+
     let cardsHtml = "";
 
-    if (list.length === 0) {
-      cardsHtml =
-        '<div style="color:#94a3b8;font-size:0.78rem;text-align:center;padding:12px 6px;background:rgba(255,255,255,0.02);border-radius:12px">' +
-          '🌕 هنوز تصمیمی در قطب‌نمای ۲۸ روزه ثبت نکرده‌اید.<br/>' +
-          '<span style="font-size:0.71rem;color:#64748b">عنوان تصمیم مهم خود را در کادر بالا بنویسید تا رادار، بهترین روز تصمیم‌گیری را محاسبه کند.</span>' +
-        '</div>';
-    } else {
-      list.forEach((d, idx) => {
-        const catInfo = CATEGORIES[d.cat] || CATEGORIES.total;
-        const elapsedDays = Math.min(28, Math.max(1, Math.floor((Date.now() - d.start) / 86400000) + 1));
-        const pct = Math.min(100, Math.round((elapsedDays / 28) * 100));
-        const win = scanDecisionWindows(d);
+    if (activeTab === "active") {
+      const activeItems = allList.map((d, realIdx) => ({ d, realIdx })).filter(x => x.d.status !== "archived");
 
-        const bestDateStr = win.bestDate.toLocaleDateString("fa-IR", { weekday: "short", month: "short", day: "numeric" });
-        const bestTimeStr = win.bestDate.toLocaleTimeString("fa-IR", { hour: "2-digit", minute: "2-digit" });
-        const warnDateStr = win.worstDate.toLocaleDateString("fa-IR", { weekday: "short", month: "short", day: "numeric" });
-        const finalDateStr = win.finalDate.toLocaleDateString("fa-IR", { month: "short", day: "numeric" });
-
-        const ms1 = elapsedDays >= 7 ? "done" : "current";
-        const ms2 = elapsedDays >= 14 ? "done" : (elapsedDays >= 7 ? "current" : "");
-        const ms3 = elapsedDays >= 21 ? "done" : (elapsedDays >= 14 ? "current" : "");
-        const ms4 = elapsedDays >= 28 ? "done" : (elapsedDays >= 21 ? "current" : "");
-
-        const notesArr = Array.isArray(d.notes) ? d.notes : [];
-        let notesHtml = "";
-        notesArr.forEach(n => {
-          notesHtml += '<div class="lunar-note-item"><b style="color:#7dd3fc">روز ' + n.day + ' (' + n.date + '):</b> ' + n.text + '</div>';
-        });
-
-        cardsHtml +=
-          '<div class="lunar-dec-card" style="border-right-color:' + catInfo.color + '">' +
-            '<div class="lunar-dec-top" onclick="window.toggleLunarDecDrawer(' + idx + ')">' +
-              '<div>' +
-                '<div style="font-size:0.86rem;font-weight:900;color:#fef08a">' + d.title + '</div>' +
-                '<span class="lunar-cat-badge">' + catInfo.label + '</span> ' +
-                '<span class="lunar-cat-badge" style="color:#7dd3fc">روز ' + elapsedDays + ' از ۲۸ (' + pct + '٪)</span>' +
-              '</div>' +
-              '<div style="display:flex;align-items:center;gap:8px">' +
-                '<span style="font-size:0.68rem;color:#93c5fd">جزئیات ▾</span>' +
-                '<span onclick="window.removeProLunarDecision(event, ' + idx + ')" style="color:#fca5a5;cursor:pointer;font-size:0.75rem;padding:2px 5px">✕</span>' +
-              '</div>' +
-            '</div>' +
-
-            '<div class="bar-bg" style="margin-top:8px;height:6px"><div class="bar-fill" style="width:' + pct + '%;background:' + catInfo.color + '"></div></div>' +
-
-            '<div class="lunar-milestones">' +
-              '<div class="ms-step ' + ms1 + '">🌓 روز ۷<br/>چالش اول</div>' +
-              '<div class="ms-step ' + ms2 + '">🌕 روز ۱۴<br/>اوج روشنایی</div>' +
-              '<div class="ms-step ' + ms3 + '">🌗 روز ۲۱<br/>پالایش</div>' +
-              '<div class="ms-step ' + ms4 + '">🌑 روز ۲۸<br/>' + finalDateStr + '</div>' +
-            '</div>' +
-
-            '<div class="lunar-window-grid">' +
-              '<div class="win-box gold">' +
-                '<div style="font-weight:900;color:#4ade80">🎯 بهترین زمان تصمیم:</div>' +
-                '<div style="font-weight:800;color:#fff;margin-top:2px">' + formatDaysLeft(win.bestDaysLeft) + '</div>' +
-                '<div style="font-size:0.67rem;color:#bbf7d0">' + bestDateStr + ' ساعت ' + bestTimeStr + ' (' + win.bestScore + '٪)</div>' +
-                '<div style="font-size:0.64rem;color:#86efac;margin-top:2px">✨ ' + win.bestReason + '</div>' +
-              '</div>' +
-              '<div class="win-box warn">' +
-                '<div style="font-weight:900;color:#fca5a5">⚠️ روز پرهیز از تصمیم:</div>' +
-                '<div style="font-weight:800;color:#fff;margin-top:2px">' + formatDaysLeft(win.worstDaysLeft) + '</div>' +
-                '<div style="font-size:0.67rem;color:#fecaca">' + warnDateStr + ' (شاخص ' + win.worstScore + '٪)</div>' +
-                '<div style="font-size:0.64rem;color:#fca5a5;margin-top:2px">🛑 احتمال تصمیم احساسی/عجولانه</div>' +
-              '</div>' +
-            '</div>' +
-
-            '<div id="lunar-dec-drawer-' + idx + '" class="lunar-drawer' + (openIdx === idx ? " open" : "") + '" onclick="event.stopPropagation()">' +
-              '<div style="font-size:0.73rem;color:#fde68a;font-weight:700">📝 ثبت حس و نشانه امروز درباره این تصمیم:</div>' +
-              '<div class="lunar-note-stack">' +
-                '<input type="text" id="lunar-note-inp-' + idx + '" class="lunar-full-inp" placeholder="امروز حس کردم که..." />' +
-                '<button class="lunar-submit-btn" onclick="window.addLunarJournalNote(event, ' + idx + ')">+ ثبت یادداشت روزانه</button>' +
-              '</div>' +
-              '<div id="lunar-notes-list-' + idx + '">' + notesHtml + '</div>' +
-              '<button id="lunar-ai-btn-' + idx + '" class="lunar-ai-btn" onclick="window.askLunarAI(event, ' + idx + ')">🧙‍♂️ مشورت با پیرمرد درباره بهترین روز این تصمیم</button>' +
-              '<div id="lunar-ai-out-' + idx + '" class="lunar-ai-box"></div>' +
-            '</div>' +
+      if (activeItems.length === 0) {
+        cardsHtml =
+          '<div style="color:#94a3b8;font-size:0.77rem;text-align:center;padding:14px 8px;background:rgba(255,255,255,0.02);border-radius:12px">' +
+            '🌕 هیچ تصمیم فعالی در چرخه ۲۸ روزه ندارید.<br/>' +
+            '<span style="font-size:0.7rem;color:#64748b">از کادر بالا یک تصمیم یا هدف جدید ثبت کنید تا ۳ پنجره طلایی آن محاسبه شود.</span>' +
           '</div>';
-      });
+      } else {
+        activeItems.forEach(({ d, realIdx }) => {
+          const catInfo = CATEGORIES[d.cat] || CATEGORIES.total;
+          const elapsedDays = Math.min(28, Math.max(1, Math.floor((Date.now() - d.start) / 86400000) + 1));
+          const pct = Math.min(100, Math.round((elapsedDays / 28) * 100));
+          const win = scanDecisionWindows(d);
+
+          const fmtDate = dt => dt.toLocaleDateString("fa-IR", { weekday: "short", month: "short", day: "numeric" });
+          const stDateStr = fmtDate(win.starter.dt);
+          const mdDateStr = fmtDate(win.midPeak.dt);
+          const fnDateStr = fmtDate(win.finalWin.dt);
+          const caDateStr = fmtDate(win.caution.dt);
+          const endStr    = win.endDate.toLocaleDateString("fa-IR", { month: "short", day: "numeric" });
+
+          const ms1 = elapsedDays >= 7 ? "done" : "current";
+          const ms2 = elapsedDays >= 14 ? "done" : (elapsedDays >= 7 ? "current" : "");
+          const ms3 = elapsedDays >= 21 ? "done" : (elapsedDays >= 14 ? "current" : "");
+          const ms4 = elapsedDays >= 28 ? "done" : (elapsedDays >= 21 ? "current" : "");
+
+          // محاسبه نبض رضایت روزانه
+          const pulses = Array.isArray(d.pulses) ? d.pulses : [];
+          const posCount = pulses.filter(p => p.mood === "pos").length;
+          const clarityPct = pulses.length > 0 ? Math.round((posCount / pulses.length) * 100) : null;
+          const todayPulse = pulses.find(p => p.day === elapsedDays);
+
+          const notesArr = Array.isArray(d.notes) ? d.notes : [];
+          let notesHtml = "";
+          notesArr.forEach(n => {
+            notesHtml += '<div class="lunar-note-item"><b style="color:#7dd3fc">روز ' + n.day + ' (' + n.date + '):</b> ' + n.text + '</div>';
+          });
+
+          cardsHtml +=
+            '<div class="lunar-dec-card" style="border-right-color:' + catInfo.color + '">' +
+              '<div class="lunar-card-head">' +
+                '<div>' +
+                  '<div style="font-size:0.88rem;font-weight:900;color:#fef08a">' + d.title + '</div>' +
+                  '<span class="lunar-badge">' + catInfo.label + '</span> ' +
+                  '<span class="lunar-badge" style="color:#7dd3fc">روز ' + elapsedDays + ' از ۲۸ (' + pct + '٪)</span>' +
+                  (clarityPct !== null ? ' <span class="lunar-badge" style="color:#4ade80">💚 رضایت درونی: ' + clarityPct + '٪</span>' : '') +
+                '</div>' +
+                '<span onclick="window.removeProLunarDecision(event, ' + realIdx + ')" style="color:#fca5a5;cursor:pointer;font-size:0.78rem;padding:2px 6px" title="حذف">✕</span>' +
+              '</div>' +
+
+              '<div class="bar-bg" style="margin-top:8px;height:6px"><div class="bar-fill" style="width:' + pct + '%;background:' + catInfo.color + '"></div></div>' +
+
+              '<div class="lunar-ms-grid">' +
+                '<div class="ms-item ' + ms1 + '">🌓 روز ۷<br/>گام اول</div>' +
+                '<div class="ms-item ' + ms2 + '">🌕 روز ۱۴<br/>اوج روشنایی</div>' +
+                '<div class="ms-item ' + ms3 + '">🌗 روز ۲۱<br/>غربالگری</div>' +
+                '<div class="ms-item ' + ms4 + '">🌑 روز ۲۸<br/>' + endStr + '</div>' +
+              '</div>' +
+
+              '<div class="win-section-title">' +
+                '<span>🧭 رادار زمان‌بندی تصمیم در این چرخه:</span>' +
+                '<span style="font-size:0.64rem;color:#94a3b8">۴ نقطه کلیدی</span>' +
+              '</div>' +
+              '<div class="win-list">' +
+                '<div class="win-row starter">' +
+                  '<div>' +
+                    '<div style="font-weight:900;color:#7dd3fc">⚡ ۱. بهترین روز استارت و تست عملی (هفته اول):</div>' +
+                    '<div>📅 <b>' + stDateStr + '</b> — ' + win.starter.slotLabel + '</div>' +
+                    '<div style="font-size:0.64rem;color:#bae6fd">✨ ' + win.starter.reason + ' (مناسب شروع اقدام)</div>' +
+                  '</div>' +
+                  '<div class="win-left-tag">' + formatDaysDiff(win.starter.t) + '<br/><span style="color:#7dd3fc">' + win.starter.score + '٪</span></div>' +
+                '</div>' +
+
+                '<div class="win-row midpeak">' +
+                  '<div>' +
+                    '<div style="font-weight:900;color:#d8b4fe">🌕 ۲. پنجره میانی و مذاکره (هفته دوم و سوم):</div>' +
+                    '<div>📅 <b>' + mdDateStr + '</b> — ' + win.midPeak.slotLabel + '</div>' +
+                    '<div style="font-size:0.64rem;color:#e9d5ff">✨ ' + win.midPeak.reason + '</div>' +
+                  '</div>' +
+                  '<div class="win-left-tag">' + formatDaysDiff(win.midPeak.t) + '<br/><span style="color:#d8b4fe">' + win.midPeak.score + '٪</span></div>' +
+                '</div>' +
+
+                '<div class="win-row final">' +
+                  '<div>' +
+                    '<div style="font-weight:900;color:#4ade80">👑 ۳. روز موعود تصمیم قطعی رفلکتور (هفته آخر):</div>' +
+                    '<div>📅 <b>' + fnDateStr + '</b> — ' + win.finalWin.slotLabel + '</div>' +
+                    '<div style="font-size:0.64rem;color:#bbf7d0">✨ تکمیل دایره ماه + ' + win.finalWin.reason + '</div>' +
+                  '</div>' +
+                  '<div class="win-left-tag">' + formatDaysDiff(win.finalWin.t) + '<br/><span style="color:#4ade80">' + win.finalWin.score + '٪</span></div>' +
+                '</div>' +
+
+                '<div class="win-row caution">' +
+                  '<div>' +
+                    '<div style="font-weight:900;color:#fca5a5">🛑 روز پرهیز از تصمیم عجولانه:</div>' +
+                    '<div>📅 <b>' + caDateStr + '</b> — افت انرژی یا زاویه اصطکاکی</div>' +
+                  '</div>' +
+                  '<div class="win-left-tag">' + formatDaysDiff(win.caution.t) + '<br/><span style="color:#fca5a5">' + win.caution.score + '٪</span></div>' +
+                '</div>' +
+              '</div>' +
+
+              '<div class="pulse-box">' +
+                '<div style="font-size:0.7rem;color:#fde68a;font-weight:800;display:flex;justify-content:space-between">' +
+                  '<span>💓 حس درونی امروزت (روز ' + elapsedDays + ') به این تصمیم چیست؟</span>' +
+                  '<span style="color:#94a3b8">' + (todayPulse ? "ثبت شد ✓" : "یک لمس") + '</span>' +
+                '</div>' +
+                '<div class="pulse-btns">' +
+                  '<button class="pulse-btn" style="' + (todayPulse && todayPulse.mood === "pos" ? "border-color:#22c55e;background:rgba(34,197,94,0.2);color:#fff" : "") + '" onclick="window.recordDailyPulse(event, ' + realIdx + ', \'pos\')">🟢 روشن و موافق</button>' +
+                  '<button class="pulse-btn" style="' + (todayPulse && todayPulse.mood === "neu" ? "border-color:#f5c56b;background:rgba(245,197,107,0.2);color:#fff" : "") + '" onclick="window.recordDailyPulse(event, ' + realIdx + ', \'neu\')">🟡 مردد / خنثی</button>' +
+                  '<button class="pulse-btn" style="' + (todayPulse && todayPulse.mood === "neg" ? "border-color:#ef4444;background:rgba(239,68,68,0.2);color:#fff" : "") + '" onclick="window.recordDailyPulse(event, ' + realIdx + ', \'neg\')">🔴 سنگین و مخالف</button>' +
+                '</div>' +
+              '</div>' +
+
+              '<button class="tools-toggle-btn" onclick="window.toggleLunarDecDrawer(' + realIdx + ')">📝 یادداشت روزانه، مشورت پیرمرد و نهایی‌سازی (' + notesArr.length + ' یادداشت) ▾</button>' +
+
+              '<div id="lunar-dec-drawer-' + realIdx + '" class="lunar-drawer' + (openIdx === realIdx ? " open" : "") + '">' +
+                '<div class="lunar-stack-form">' +
+                  '<input type="text" id="lunar-note-inp-' + realIdx + '" class="lunar-inp-full" placeholder="یادداشت یا نشانه امروز را بنویس..." />' +
+                  '<button class="lunar-btn-gold" onclick="window.addLunarJournalNote(event, ' + realIdx + ')">+ ذخیره یادداشت در پرونده تصمیم</button>' +
+                '</div>' +
+                '<div id="lunar-notes-list-' + realIdx + '">' + notesHtml + '</div>' +
+                '<button id="lunar-ai-btn-' + realIdx + '" class="lunar-ai-btn" onclick="window.askLunarAI(event, ' + realIdx + ')">🧙‍♂️ مشورت با پیرمرد درباره زمان‌بندی این تصمیم</button>' +
+                '<div id="lunar-ai-out-' + realIdx + '" class="lunar-ai-box"></div>' +
+                '<button class="lunar-complete-btn" onclick="window.completeLunarDecision(event, ' + realIdx + ', \'تصمیم با موفقیت اتخاذ و نهایی شد ✅\')">✅ تثبیت تصمیم و انتقال به لیست «تصمیمات گرفته‌شده»</button>' +
+              '</div>' +
+            '</div>';
+        });
+      }
+    } else {
+      // تب آرشیو تصمیمات گرفته‌شده
+      const archItems = allList.map((d, realIdx) => ({ d, realIdx })).filter(x => x.d.status === "archived");
+      if (archItems.length === 0) {
+        cardsHtml =
+          '<div style="color:#94a3b8;font-size:0.76rem;text-align:center;padding:14px 8px;background:rgba(255,255,255,0.02);border-radius:12px">' +
+            '📂 هنوز هیچ تصمیمی به لیست نهایی منتقل نشده است.<br/>' +
+            '<span style="font-size:0.69rem;color:#64748b">وقتی تصمیمی را نهایی کردید، دکمه «تثبیت تصمیم» را در جزئیات کارت بزنید تا در این سابقه ذخیره شود.</span>' +
+          '</div>';
+      } else {
+        archItems.forEach(({ d, realIdx }) => {
+          const catInfo = CATEGORIES[d.cat] || CATEGORIES.total;
+          const compDate = new Date(d.completedAt || Date.now()).toLocaleDateString("fa-IR", { year: "numeric", month: "short", day: "numeric" });
+          cardsHtml +=
+            '<div class="lunar-dec-card" style="border-right-color:#22c55e">' +
+              '<div class="lunar-card-head">' +
+                '<div>' +
+                  '<div style="font-size:0.85rem;font-weight:900;color:#bbf7d0">✅ ' + d.title + '</div>' +
+                  '<span class="lunar-badge">' + catInfo.label + '</span> ' +
+                  '<span class="lunar-badge" style="color:#86efac">تثبیت‌شده در: ' + compDate + '</span>' +
+                '</div>' +
+                '<div style="display:flex;gap:6px">' +
+                  '<span onclick="window.restoreLunarDecision(event, ' + realIdx + ')" style="color:#7dd3fc;cursor:pointer;font-size:0.7rem">↩️ بازگردانی</span>' +
+                  '<span onclick="window.removeProLunarDecision(event, ' + realIdx + ')" style="color:#fca5a5;cursor:pointer;font-size:0.75rem">✕</span>' +
+                '</div>' +
+              '</div>' +
+            '</div>';
+        });
+      }
     }
 
     mount.innerHTML =
       '<div id="lunarTrackerSection" class="lunar-pro-card">' +
-        '<div class="c-head">' +
-          '<span class="c-title">🌕 قطب‌نمای ۲۸ روزه و زمان‌سنج تصمیم</span>' +
-          '<span class="lunar-head-badge">⏱️ رفلکتور هوشمند</span>' +
+        '<div class="lunar-top-bar">' +
+          '<span class="lunar-main-title">🌕 قطب‌نمای ۲۸ روزه و زمان‌سنج تصمیم</span>' +
+          '<span class="lunar-ver-pill">نسخه ۱.۴ رفلکتور</span>' +
         '</div>' +
-        '<div class="lunar-add-box">' +
-          '<div style="font-size:0.74rem;color:#cbd5e1">یک تصمیم مهم ثبت کن تا بهترین روز و ساعت اتخاذ تصمیم محاسبه شود:</div>' +
-          '<div class="lunar-form-stack">' +
-            '<input type="text" id="proDecisionTitleInp" class="lunar-full-inp" placeholder="مثلاً: سرمایه‌گذاری، قرارداد، خرید، سفر..." />' +
-            '<div class="lunar-bottom-actions">' +
-              '<select id="proDecisionCatSel" class="lunar-cat-sel">' +
-                '<option value="wealth">💰 مالی و معامله</option>' +
-                '<option value="action">⚡ اقدام و پروژه</option>' +
-                '<option value="love">❤️ روابط و پیمان</option>' +
-                '<option va‌lue="total">👁️ کلی و شهودی</option>' +
-              '</select>' +
-              '<button class="lunar-submit-btn" onclick="window.addProLunarDecision()">+ ثبت در چرخه</button>' +
+
+        '<div class="lunar-tabs-row">' +
+          '<button class="lunar-tab-btn' + (activeTab === "active" ? " active" : "") + '" onclick="window.switchLunarTab(\'active\')">⏳ در جریان چرخه (' + activeCount + ')</button>' +
+          '<button class="lunar-tab-btn' + (activeTab === "archived" ? " active" : "") + '" onclick="window.switchLunarTab(\'archived\')">✅ تصمیمات گرفته‌شده (' + archivedCount + ')</button>' +
+        '</div>' +
+
+        (activeTab === "active" ? (
+          '<div class="lunar-add-box">' +
+            '<div style="font-size:0.73rem;color:#cbd5e1">یک تصمیم یا هدف جدید ثبت کن تا پنجره‌های زمانی آن محاسبه شود:</div>' +
+            '<div class="lunar-stack-form">' +
+              '<input type="text" id="proDecisionTitleInp" class="lunar-inp-full" placeholder="مثلاً: کم کردن وزن، سرمایه‌گذاری، قرارداد..." />' +
+              '<div class="lunar-action-grid">' +
+                '<select id="proDecisionCatSel" class="lunar-sel-box">' +
+                  '<option value="wealth">💰 مالی و معامله</option>' +
+                  '<option value="health">💪 سلامت و سبک زندگی</option>' +
+                  '<option value="action">🚀 پروژه و اقدام</option>' +
+                  '<option value="love">❤️ روابط و پیمان</option>' +
+                  '<option value="total">👁️ کلی و شهودی</option>' +
+                '</select>' +
+                '<button class="lunar-btn-gold" onclick="window.addProLunarDecision()">+ ثبت تصمیم</button>' +
+              '</div>' +
             '</div>' +
-          '</div>' +
-        '</div>' +
+          '</div>'
+        ) : '') +
+
         '<div id="proLunarDecisionsList">' + cardsHtml + '</div>' +
       '</div>';
   }
