@@ -10,7 +10,6 @@ window.NATAL_MOON_LON = 299.0;
 
 window.MANDALA = [41,19,13,49,30,55,37,63,22,36,25,17,21,51,42,3,27,24,2,23,8,20,16,35,45,12,15,52,39,53,62,56,31,33,7,4,29,59,40,64,47,6,46,18,48,57,32,50,28,44,1,43,14,34,9,5,26,11,10,58,38,54,61,60];
 
-// تزریق استایل‌های پیشرفته برای بخش کانال‌های فعال
 (function injectChannelStyles() {
   if (document.getElementById("adv-channel-styles")) return;
   const st = document.createElement("style");
@@ -47,7 +46,7 @@ window.MANDALA = [41,19,13,49,30,55,37,63,22,36,25,17,21,51,42,3,27,24,2,23,8,20
     .ch-gift { background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.28); border-radius: 8px; padding: 6px; font-size: 0.71rem; color: #bbf7d0; }
     .ch-ask-btn {
       width: 100%; margin-top: 8px; padding: 8px 10px; border-radius: 9px;
-      border: 1px solid rgba(245, 197, 107, 0.5);
+      border: 1px solid rgba(245,197,107,0.5);
       background: linear-gradient(135deg, rgba(245,197,107,0.2), rgba(217,119,6,0.25));
       color: #fde68a; font-size: 0.75rem; font-weight: 800; cursor: pointer;
     }
@@ -131,7 +130,7 @@ window.GATE_FEELINGS = {
   41:"جوانه زدن یک آرزو، امید یا خیال تازه در دل", 42:"حس رضایت از بستن یک پرونده قدیمی و تمام کردن کارهای ناتمام", 43:"جرقه زدن یک فهم و بصیرت ناگهانی در خلوت ذهن", 44:"شمّ تیز برای تشخیص صداقت افراد و فرصت‌های کاری",
   45:"توجه به مسائل مالی، دارایی و مدیریت هزینه‌ها", 46:"حس خوش‌شانسی، هم‌زمانی‌های شیرین و قرار گرفتن در جای درست", 47:"کنار هم قرار گرفتن قطعات پازل فکری و رسیدن به آرامش ذهنی", 48:"حس عمیق شدن در یک موضوع و پختگی فکری",
   49:"حساسیت نسبت به انصاف و اصول اخلاقی در روابط", 50:"حس مسئولیت‌پذیری، حفظ چهارچوب‌ها و آرامش خانه", 51:"شجاعت بالا و آمادگی برای یک حرکت جسورانه", 52:"آرامش عمیق، سکون و توانایی نشستن و تمرکز طولانی",
-  53:"انرژی و انگیزه برای استارت زدن یک برنامه نو", 54:"انگیزه قوی برای پیشرفت مالی و ارتقای جایگاه", 55:"نوسان لبریز روحی میان دلتنگی شاعرانه و شادی عمیق", 56:"میل به معاشرت، تعریف کردن خاطرات و گپ و گفت صمیمی",
+  53:"انرژی و انگیزه برای استارت زدن یک برنامه نو", 54:"انگیزه قوی برای پیشرفت مالی و ارتقای جایگاه", 55:"نوسان لطیف روحی میان دلتنگی شاعرانه و شادی عمیق", 56:"میل به معاشرت، تعریف کردن خاطرات و گپ و گفت صمیمی",
   57:"حس ششم فوق‌العاده تیز و دریافت هشدارها یا پیام‌های ظریف درونی", 58:"نشاط، سرزندگی و امید به بهتر شدن اوضاع", 59:"شکستن دیوارها و صمیمیت", 60:"تپش تحول در دل محدودیت",
   61:"خیره شدن به راز سر به مهر هستی", 62:"نام‌گذاری دقیق بر پدیده‌ها", 63:"پرسش مقدس در آغاز راه", 64:"شفقِ روشنایی پس از حیرت"
 };
@@ -820,13 +819,15 @@ window.runApp = function(resetDeep) {
   }
 
   const pg = document.getElementById("pGrid");
-  pg.innerHTML = "";
-  pls.forEach(p => {
-    const hit = window.DB.some(c => c.g2 === p.gate);
-    const isNatal = window.MY_GATES.has(p.gate);
-    const cls = hit ? " hit" : (isNatal ? " natal-res" : "");
-    pg.innerHTML += '<div class="p-chip' + cls + '"><span>' + p.s + ' ' + p.n + '</span><b style="color:#f5c56b">' + p.gate + '.' + p.line + '</b></div>';
-  });
+  if (pg) {
+    pg.innerHTML = "";
+    pls.forEach(p => {
+      const hit = window.DB.some(c => c.g2 === p.gate);
+      const isNatal = window.MY_GATES.has(p.gate);
+      const cls = hit ? " hit" : (isNatal ? " natal-res" : "");
+      pg.innerHTML += '<div class="p-chip' + cls + '"><span>' + p.s + ' ' + p.n + '</span><b style="color:#f5c56b">' + p.gate + '.' + p.line + '</b></div>';
+    });
+  }
 
   window.OLDMAN_STATE = { now, pls, act, lk };
 };
