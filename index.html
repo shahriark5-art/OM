@@ -19,6 +19,9 @@
       </div>
     </header>
 
+    <!-- نوار جواهرنشان و مشاور ۱۴ انگشتر نقره -->
+    <div id="gemTalismanMount"></div>
+
     <!-- آمپر شانس -->
     <div id="luckCardBox" class="luck-card">
       <div class="luck-head">
@@ -222,17 +225,6 @@
 
   <!-- بارگذاری فایل‌های ماژولار -->
   <script src="core.js"></script>
-  <script src="oracle.js"></script>
-  <script src="weather.js"></script>
-  <script src="dreams.js"></script>
-  <script>
-    window.runApp(true);
-    setInterval(() => window.runApp(false), 60000);
-  </script>
-</body>
-</html>
-  <!-- بارگذاری فایل‌های ماژولار -->
-  <script src="core.js"></script>
   <script src="gems.js"></script>
   <script src="oracle.js"></script>
   <script src="weather.js"></script>
@@ -240,7 +232,9 @@
   <script>
     const origRunApp = window.runApp;
     window.runApp = function(resetDeep) {
-      origRunApp(resetDeep);
+      if (typeof origRunApp === "function") {
+        origRunApp(resetDeep);
+      }
       if (window.GemTalismanModule && window.OLDMAN_STATE) {
         window.GemTalismanModule.update(
           window.OLDMAN_STATE.now,
@@ -253,3 +247,5 @@
     window.runApp(true);
     setInterval(() => window.runApp(false), 60000);
   </script>
+</body>
+</html>
