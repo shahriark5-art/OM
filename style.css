@@ -222,29 +222,40 @@ svg.bg { width: 225px; height: 285px; filter: drop-shadow(0 0 18px rgba(56, 189,
 .pl-row { display: flex; justify-content: space-between; align-items: center; padding: 1.5px 0; border-bottom: 1px dashed rgba(255,255,255,0.05); font-family: monospace; }
 .pl-red { color: #fca5a5; font-weight: 700; }
 .pl-blk { color: #f1f5f9; font-weight: 700; }
-/* اصلاحات بخش قطب‌نمای ۲۸ روزه */
+/* اصلاحات دقیق فرم قطب‌نما در موبایل */
 .lunar-pro-card .c-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   flex-wrap: nowrap;
 }
 .lunar-pro-card .c-title {
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   line-height: 1.4;
+  white-space: nowrap;
 }
 .lunar-form-row {
   display: flex;
-  gap: 6px;
+  gap: 4px;
   margin-top: 7px;
   align-items: center;
+  width: 100%;
 }
-.lunar-form-row input {
-  flex: 2;
+.lunar-form-row input#proDecisionTitleInp {
+  flex: 1.6;
   min-width: 0;
+  font-size: 0.75rem;
+  padding: 8px 6px;
 }
 .lunar-cat-sel {
-  flex: 1;
+  flex: 1.1;
   min-width: 0;
+  font-size: 0.7rem;
+  padding: 8px 4px;
 }
 .lunar-add-btn {
   flex-shrink: 0;
   white-space: nowrap;
+  font-size: 0.72rem;
+  padding: 8px 10px;
 }
