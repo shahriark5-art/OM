@@ -1,8 +1,9 @@
 // =========================================================================
-// MODULE 6: 28-DAY REFLECTOR LUNAR COMPASS & DECISION TIME-MACHINE v1.4.1
+// MODULE 6: 28-DAY REFLECTOR LUNAR COMPASS & DECISION TIME-MACHINE v1.4.2
 // =========================================================================
 window.LunarCompassModule = (function() {
   let activeTab = "active"; // 'active' | 'archived'
+  let openCardId = null;    // شناسه تصمیمی که در حال حاضر باز است
   let isBusy = false;
   let cachedLunarModel = "";
 
@@ -86,8 +87,9 @@ window.LunarCompassModule = (function() {
       .lunar-dec-card {
         background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(255, 255, 255, 0.11);
         border-right: 4px solid #f5c56b; border-radius: 15px;
-        padding: 12px; margin-top: 12px;
+        padding: 12px; margin-top: 12px; cursor: pointer; transition: 0.2s;
       }
+      .lunar-dec-card:hover { border-color: rgba(245, 197, 107, 0.5); }
       .lunar-card-head {
         display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;
       }
@@ -136,16 +138,11 @@ window.LunarCompassModule = (function() {
       }
       .pulse-btn:hover { border-color: #f5c56b; color: #fff; }
 
-      .tools-toggle-btn {
-        width: 100%; margin-top: 8px; padding: 7px; border-radius: 9px;
-        background: rgba(255, 255, 255, 0.05); border: 1px dashed rgba(255, 255, 255, 0.2);
-        color: #7dd3fc; font-family: inherit; font-size: 0.72rem; font-weight: 700; cursor: pointer;
-      }
-      .lunar-drawer {
-        display: none; margin-top: 9px; padding-top: 9px;
+      .lunar-body-content {
+        display: none; margin-top: 10px; padding-top: 10px;
         border-top: 1px solid rgba(255, 255, 255, 0.1); font-size: 0.75rem;
       }
-      .lunar-drawer.open { display: block; }
+      .lunar-body-content.open { display: block; }
       .lunar-note-item {
         background: rgba(255, 255, 255, 0.03); border-right: 2.5px solid #38bdf8;
         border-radius: 7px; padding: 5px 8px; margin-top: 5px; font-size: 0.71rem; color: #cbd5e1;
@@ -292,6 +289,12 @@ window.LunarCompassModule = (function() {
 
   window.switchLunarTab = function(tabName) {
     activeTab = tabName;
+    openCardId = null;
+    render();
+  };
+
+  window.toggleCardAccordion = function(cardId) {
+    openCardId = (openCardId === cardId ? null : cardId);
     render();
   };
 
@@ -301,8 +304,9 @@ window.LunarCompassModule = (function() {
     if (!inp || !inp.value.trim()) return;
 
     const list = getDecisions();
+    const newId = Date.now();
     list.unshift({
-      id: Date.now(),
+      id: newId,
       title: inp.value.trim(),
       cat: catSel ? catSel.value : "total",
       start: Date.now(),
@@ -313,13 +317,14 @@ window.LunarCompassModule = (function() {
     saveDecisions(list);
     inp.value = "";
     activeTab = "active";
+    openCardId = newId; // به صورت خودکار کارت جدید را باز کن
     render();
   };
 
-  window.recordDailyPulse = function(ev, idx, mood) {
+  window.recordDailyPulse = function(ev, cardId, mood) {
     if (ev) ev.stopPropagation();
     const list = getDecisions();
-    const dec = list[idx];
+    const dec = list.find(x => x.id === cardId);
     if (!dec) return;
     if (!Array.isArray(dec.pulses)) dec.pulses = [];
 
@@ -332,62 +337,63 @@ window.LunarCompassModule = (function() {
     render();
   };
 
-  window.completeLunarDecision = function(ev, idx, outcomeText) {
+  window.completeLunarDecision = function(ev, cardId, outcomeText) {
     if (ev) ev.stopPropagation();
     const list = getDecisions();
-    if (!list[idx]) return;
-    list[idx].status = "archived";
-    list[idx].completedAt = Date.now();
-    list[idx].outcome = outcomeText || "نهایی و تثبیت شد";
+    const dec = list.find(x => x.id === cardId);
+    if (!dec) return;
+    dec.status = "archived";
+    dec.completedAt = Date.now();
+    dec.outcome = outcomeText || "نهایی و تثبیت شد";
     saveDecisions(list);
     activeTab = "archived";
+    openCardId = null;
     render();
   };
 
-  window.restoreLunarDecision = function(ev, idx) {
+  window.restoreLunarDecision = function(ev, cardId) {
     if (ev) ev.stopPropagation();
     const list = getDecisions();
-    if (!list[idx]) return;
-    list[idx].status = "active";
+    const dec = list.find(x => x.id === cardId);
+    if (!dec) return;
+    dec.status = "active";
     saveDecisions(list);
     activeTab = "active";
+    openCardId = cardId;
     render();
   };
 
-  window.removeProLunarDecision = function(ev, idx) {
+  window.removeProLunarDecision = function(ev, cardId) {
     if (ev) ev.stopPropagation();
     if (confirm("آیا از حذف این تصمیم مطمئن هستید؟")) {
-      const list = getDecisions();
-      list.splice(idx, 1);
+      let list = getDecisions();
+      list = list.filter(x => x.id !== cardId);
       saveDecisions(list);
+      if (openCardId === cardId) openCardId = null;
       render();
     }
   };
 
-  window.toggleLunarDecDrawer = function(idx) {
-    const dr = document.getElementById("lunar-dec-drawer-" + idx);
-    if (dr) dr.classList.toggle("open");
-  };
-
-  window.addLunarJournalNote = function(ev, idx) {
+  window.addLunarJournalNote = function(ev, cardId) {
     if (ev) ev.stopPropagation();
-    const inp = document.getElementById("lunar-note-inp-" + idx);
+    const inp = document.getElementById("lunar-note-inp-" + cardId);
     if (!inp || !inp.value.trim()) return;
 
     const list = getDecisions();
-    if (!list[idx]) return;
-    if (!Array.isArray(list[idx].notes)) list[idx].notes = [];
+    const dec = list.find(x => x.id === cardId);
+    if (!dec) return;
+    if (!Array.isArray(dec.notes)) dec.notes = [];
 
-    const elapsedDays = Math.min(28, Math.floor((Date.now() - list[idx].start) / 86400000) + 1);
+    const elapsedDays = Math.min(28, Math.floor((Date.now() - dec.start) / 86400000) + 1);
     const dateStr = new Date().toLocaleDateString("fa-IR", { month: "short", day: "numeric" });
 
-    list[idx].notes.unshift({
+    dec.notes.unshift({
       day: elapsedDays,
       date: dateStr,
       text: inp.value.trim()
     });
     saveDecisions(list);
-    render(idx);
+    render();
   };
 
   async function fetchWithTimeout(url, options, timeoutMs) {
@@ -453,16 +459,16 @@ window.LunarCompassModule = (function() {
     return { ok: false };
   }
 
-  window.askLunarAI = async function(ev, idx) {
+  window.askLunarAI = async function(ev, cardId) {
     if (ev) ev.stopPropagation();
     if (isBusy) return;
 
     const list = getDecisions();
-    const dec = list[idx];
+    const dec = list.find(x => x.id === cardId);
     if (!dec) return;
 
-    const outBox = document.getElementById("lunar-ai-out-" + idx);
-    const btn = document.getElementById("lunar-ai-btn-" + idx);
+    const outBox = document.getElementById("lunar-ai-out-" + cardId);
+    const btn = document.getElementById("lunar-ai-btn-" + cardId);
     if (!outBox || !btn) return;
 
     isBusy = true;
@@ -506,7 +512,7 @@ window.LunarCompassModule = (function() {
     isBusy = false;
   };
 
-  function render(openIdx = -1) {
+  function render() {
     const mount = document.getElementById("lunarTrackerMount");
     if (!mount) return;
 
@@ -517,7 +523,7 @@ window.LunarCompassModule = (function() {
     let cardsHtml = "";
 
     if (activeTab === "active") {
-      const activeItems = allList.map((d, realIdx) => ({ d, realIdx })).filter(x => x.d.status !== "archived");
+      const activeItems = allList.filter(x => x.status !== "archived");
 
       if (activeItems.length === 0) {
         cardsHtml =
@@ -526,7 +532,8 @@ window.LunarCompassModule = (function() {
             '<span style="font-size:0.7rem;color:#64748b">از کادر بالا یک تصمیم یا هدف جدید ثبت کنید تا ۳ پنجره طلایی آن محاسبه شود.</span>' +
           '</div>';
       } else {
-        activeItems.forEach(({ d, realIdx }) => {
+        activeItems.forEach(d => {
+          const isOpen = (openCardId === d.id);
           const catInfo = CATEGORIES[d.cat] || CATEGORIES.total;
           const elapsedDays = Math.min(28, Math.max(1, Math.floor((Date.now() - d.start) / 86400000) + 1));
           const pct = Math.min(100, Math.round((elapsedDays / 28) * 100));
@@ -556,7 +563,7 @@ window.LunarCompassModule = (function() {
           });
 
           cardsHtml +=
-            '<div class="lunar-dec-card" style="border-right-color:' + catInfo.color + '">' +
+            '<div class="lunar-dec-card" style="border-right-color:' + catInfo.color + '" onclick="window.toggleCardAccordion(' + d.id + ')">' +
               '<div class="lunar-card-head">' +
                 '<div>' +
                   '<div style="font-size:0.88rem;font-weight:900;color:#fef08a">' + d.title + '</div>' +
@@ -564,96 +571,97 @@ window.LunarCompassModule = (function() {
                   '<span class="lunar-badge" style="color:#7dd3fc">روز ' + elapsedDays + ' از ۲۸ (' + pct + '٪)</span>' +
                   (clarityPct !== null ? ' <span class="lunar-badge" style="color:#4ade80">💚 رضایت درون: ' + clarityPct + '٪</span>' : '') +
                 '</div>' +
+                '<span style="font-size:0.7rem;color:#7dd3fc;font-weight:700">' + (isOpen ? "بستن ▴" : "مشاهده جزئیات ▾") + '</span>' +
               '</div>' +
 
               '<div class="bar-bg" style="margin-top:8px;height:6px"><div class="bar-fill" style="width:' + pct + '%;background:' + catInfo.color + '"></div></div>' +
 
-              '<div class="lunar-ms-grid">' +
-                '<div class="ms-item ' + ms1 + '">🌓 روز ۷<br/>گام اول</div>' +
-                '<div class="ms-item ' + ms2 + '">🌕 روز ۱۴<br/>اوج روشنایی</div>' +
-                '<div class="ms-item ' + ms3 + '">🌗 روز ۲۱<br/>غربالگری</div>' +
-                '<div class="ms-item ' + ms4 + '">🌑 روز ۲۸<br/>' + endStr + '</div>' +
-              '</div>' +
+              '<div class="lunar-body-content' + (isOpen ? " open" : "") + '" onclick="event.stopPropagation()">' +
+                '<div class="lunar-ms-grid">' +
+                  '<div class="ms-item ' + ms1 + '">🌓 روز ۷<br/>گام اول</div>' +
+                  '<div class="ms-item ' + ms2 + '">🌕 روز ۱۴<br/>اوج روشنایی</div>' +
+                  '<div class="ms-item ' + ms3 + '">🌗 روز ۲۱<br/>غربالگری</div>' +
+                  '<div class="ms-item ' + ms4 + '">🌑 روز ۲۸<br/>' + endStr + '</div>' +
+                '</div>' +
 
-              '<div class="win-section-title">' +
-                '<span>🧭 رادار زمان‌بندی تصمیم در این چرخه:</span>' +
-                '<span style="font-size:0.64rem;color:#94a3b8">۴ نقطه کلیدی</span>' +
-              '</div>' +
-              '<div class="win-list">' +
-                '<div class="win-row starter">' +
-                  '<div>' +
-                    '<div style="font-weight:900;color:#7dd3fc">⚡ ۱. بهترین روز استارت و تست عملی (هفته اول):</div>' +
-                    '<div>📅 <b>' + stDateStr + '</b> — ' + win.starter.slotLabel + '</div>' +
-                    '<div style="font-size:0.64rem;color:#bae6fd">✨ ' + win.starter.reason + ' (مناسب شروع اقدام)</div>' +
+                '<div class="win-section-title">' +
+                  '<span>🧭 رادار زمان‌بندی تصمیم در این چرخه:</span>' +
+                  '<span style="font-size:0.64rem;color:#94a3b8">۴ نقطه کلیدی</span>' +
+                '</div>' +
+                '<div class="win-list">' +
+                  '<div class="win-row starter">' +
+                    '<div>' +
+                      '<div style="font-weight:900;color:#7dd3fc">⚡ ۱. بهترین روز استارت و تست عملی (هفته اول):</div>' +
+                      '<div>📅 <b>' + stDateStr + '</b> — ' + win.starter.slotLabel + '</div>' +
+                      '<div style="font-size:0.64rem;color:#bae6fd">✨ ' + win.starter.reason + ' (مناسب شروع اقدام)</div>' +
+                    '</div>' +
+                    '<div class="win-left-tag">' + formatDaysDiff(win.starter.t) + '<br/><span style="color:#7dd3fc">' + win.starter.score + '٪</span></div>' +
                   '</div>' +
-                  '<div class="win-left-tag">' + formatDaysDiff(win.starter.t) + '<br/><span style="color:#7dd3fc">' + win.starter.score + '٪</span></div>' +
-                '</div>' +
 
-                '<div class="win-row midpeak">' +
-                  '<div>' +
-                    '<div style="font-weight:900;color:#d8b4fe">🌕 ۲. پنجره میانی و مذاکره (هفته دوم و سوم):</div>' +
-                    '<div>📅 <b>' + mdDateStr + '</b> — ' + win.midPeak.slotLabel + '</div>' +
-                    '<div style="font-size:0.64rem;color:#e9d5ff">✨ ' + win.midPeak.reason + '</div>' +
+                  '<div class="win-row midpeak">' +
+                    '<div>' +
+                      '<div style="font-weight:900;color:#d8b4fe">🌕 ۲. پنجره میانی و مذاکره (هفته دوم و سوم):</div>' +
+                      '<div>📅 <b>' + mdDateStr + '</b> — ' + win.midPeak.slotLabel + '</div>' +
+                      '<div style="font-size:0.64rem;color:#e9d5ff">✨ ' + win.midPeak.reason + '</div>' +
+                    '</div>' +
+                    '<div class="win-left-tag">' + formatDaysDiff(win.midPeak.t) + '<br/><span style="color:#d8b4fe">' + win.midPeak.score + '٪</span></div>' +
                   '</div>' +
-                  '<div class="win-left-tag">' + formatDaysDiff(win.midPeak.t) + '<br/><span style="color:#d8b4fe">' + win.midPeak.score + '٪</span></div>' +
-                '</div>' +
 
-                '<div class="win-row final">' +
-                  '<div>' +
-                    '<div style="font-weight:900;color:#4ade80">👑 ۳. روز موعود تصمیم قطعی رفلکتور (هفته آخر):</div>' +
-                    '<div>📅 <b>' + fnDateStr + '</b> — ' + win.finalWin.slotLabel + '</div>' +
-                    '<div style="font-size:0.64rem;color:#bbf7d0">✨ تکمیل دایره ماه + ' + win.finalWin.reason + '</div>' +
+                  '<div class="win-row final">' +
+                    '<div>' +
+                      '<div style="font-weight:900;color:#4ade80">👑 ۳. روز موعود تصمیم قطعی رفلکتور (هفته آخر):</div>' +
+                      '<div>📅 <b>' + fnDateStr + '</b> — ' + win.finalWin.slotLabel + '</div>' +
+                      '<div style="font-size:0.64rem;color:#bbf7d0">✨ تکمیل دایره ماه + ' + win.finalWin.reason + '</div>' +
+                    '</div>' +
+                    '<div class="win-left-tag">' + formatDaysDiff(win.finalWin.t) + '<br/><span style="color:#4ade80">' + win.finalWin.score + '٪</span></div>' +
                   '</div>' +
-                  '<div class="win-left-tag">' + formatDaysDiff(win.finalWin.t) + '<br/><span style="color:#4ade80">' + win.finalWin.score + '٪</span></div>' +
-                '</div>' +
 
-                '<div class="win-row caution">' +
-                  '<div>' +
-                    '<div style="font-weight:900;color:#fca5a5">🛑 روز پرهیز از تصمیم عجولانه:</div>' +
-                    '<div>📅 <b>' + caDateStr + '</b> — افت انرژی یا زاویه اصطکاکی</div>' +
+                  '<div class="win-row caution">' +
+                    '<div>' +
+                      '<div style="font-weight:900;color:#fca5a5">🛑 روز پرهیز از تصمیم عجولانه:</div>' +
+                      '<div>📅 <b>' + caDateStr + '</b> — افت انرژی یا زاویه اصطکاکی</div>' +
+                    '</div>' +
+                    '<div class="win-left-tag">' + formatDaysDiff(win.caution.t) + '<br/><span style="color:#fca5a5">' + win.caution.score + '٪</span></div>' +
                   '</div>' +
-                  '<div class="win-left-tag">' + formatDaysDiff(win.caution.t) + '<br/><span style="color:#fca5a5">' + win.caution.score + '٪</span></div>' +
                 '</div>' +
-              '</div>' +
 
-              '<div class="pulse-box">' +
-                '<div style="font-size:0.7rem;color:#fde68a;font-weight:800;display:flex;justify-content:space-between">' +
-                  '<span>💓 حس درونی امروزت (روز ' + elapsedDays + ') به این تصمیم چیست؟</span>' +
-                  '<span style="color:#94a3b8">' + (todayPulse ? "ثبت شد ✓" : "یک لمس") + '</span>' +
+                '<div class="pulse-box">' +
+                  '<div style="font-size:0.7rem;color:#fde68a;font-weight:800;display:flex;justify-content:space-between">' +
+                    '<span>💓 حس درونی امروزت (روز ' + elapsedDays + ') به این تصمیم چیست؟</span>' +
+                    '<span style="color:#94a3b8">' + (todayPulse ? "ثبت شد ✓" : "یک لمس") + '</span>' +
+                  '</div>' +
+                  '<div class="pulse-btns">' +
+                    '<button class="pulse-btn" style="' + (todayPulse && todayPulse.mood === "pos" ? "border-color:#22c55e;background:rgba(34,197,94,0.2);color:#fff" : "") + '" onclick="window.recordDailyPulse(event, ' + d.id + ', \'pos\')">🟢 روشن و موافق</button>' +
+                    '<button class="pulse-btn" style="' + (todayPulse && todayPulse.mood === "neu" ? "border-color:#f5c56b;background:rgba(245,197,107,0.2);color:#fff" : "") + '" onclick="window.recordDailyPulse(event, ' + d.id + ', \'neu\')">🟡 مردد / خنثی</button>' +
+                    '<button class="pulse-btn" style="' + (todayPulse && todayPulse.mood === "neg" ? "border-color:#ef4444;background:rgba(239,68,68,0.2);color:#fff" : "") + '" onclick="window.recordDailyPulse(event, ' + d.id + ', \'neg\')">🔴 سنگین و مخالف</button>' +
+                  '</div>' +
                 '</div>' +
-                '<div class="pulse-btns">' +
-                  '<button class="pulse-btn" style="' + (todayPulse && todayPulse.mood === "pos" ? "border-color:#22c55e;background:rgba(34,197,94,0.2);color:#fff" : "") + '" onclick="window.recordDailyPulse(event, ' + realIdx + ', \'pos\')">🟢 روشن و موافق</button>' +
-                  '<button class="pulse-btn" style="' + (todayPulse && todayPulse.mood === "neu" ? "border-color:#f5c56b;background:rgba(245,197,107,0.2);color:#fff" : "") + '" onclick="window.recordDailyPulse(event, ' + realIdx + ', \'neu\')">🟡 مردد / خنثی</button>' +
-                  '<button class="pulse-btn" style="' + (todayPulse && todayPulse.mood === "neg" ? "border-color:#ef4444;background:rgba(239,68,68,0.2);color:#fff" : "") + '" onclick="window.recordDailyPulse(event, ' + realIdx + ', \'neg\')">🔴 سنگین و مخالف</button>' +
-                '</div>' +
-              '</div>' +
 
-              '<button class="tools-toggle-btn" onclick="window.toggleLunarDecDrawer(' + realIdx + ')">📝 یادداشت روزانه، مشورت پیرمرد، تثبیت یا حذف (' + notesArr.length + ' یادداشت) ▾</button>' +
-
-              '<div id="lunar-dec-drawer-' + realIdx + '" class="lunar-drawer' + (openIdx === realIdx ? " open" : "") + '">' +
-                '<div class="lunar-stack-form">' +
-                  '<input type="text" id="lunar-note-inp-' + realIdx + '" class="lunar-inp-full" placeholder="یادداشت یا نشانه امروز را بنویس..." />' +
-                  '<button class="lunar-btn-gold" onclick="window.addLunarJournalNote(event, ' + realIdx + ')">+ ذخیره یادداشت در پرونده تصمیم</button>' +
+                '<div class="lunar-stack-form" style="margin-top:10px">' +
+                  '<input type="text" id="lunar-note-inp-' + d.id + '" class="lunar-inp-full" placeholder="یادداشت یا نشانه امروز را بنویس..." />' +
+                  '<button class="lunar-btn-gold" onclick="window.addLunarJournalNote(event, ' + d.id + ')">+ ذخیره یادداشت در پرونده تصمیم</button>' +
                 '</div>' +
-                '<div id="lunar-notes-list-' + realIdx + '">' + notesHtml + '</div>' +
-                '<button id="lunar-ai-btn-' + realIdx + '" class="lunar-ai-btn" onclick="window.askLunarAI(event, ' + realIdx + ')">🧙‍♂️ مشورت با پیرمرد درباره زمان‌بندی این تصمیم</button>' +
-                '<div id="lunar-ai-out-' + realIdx + '" class="lunar-ai-box"></div>' +
-                '<button class="lunar-complete-btn" onclick="window.completeLunarDecision(event, ' + realIdx + ', \'تصمیم با موفقیت اتخاذ و نهایی شد ✅\')">✅ تثبیت تصمیم و انتقال به لیست «تصمیمات گرفته‌شده»</button>' +
-                '<button class="lunar-delete-btn" onclick="window.removeProLunarDecision(event, ' + realIdx + ')">🗑️ حذف کامل این تصمیم</button>' +
+                '<div id="lunar-notes-list-' + d.id + '">' + notesHtml + '</div>' +
+
+                '<button id="lunar-ai-btn-' + d.id + '" class="lunar-ai-btn" onclick="window.askLunarAI(event, ' + d.id + ')">🧙‍♂️ مشورت با پیرمرد درباره زمان‌بندی این تصمیم</button>' +
+                '<div id="lunar-ai-out-' + d.id + '" class="lunar-ai-box"></div>' +
+
+                '<button class="lunar-complete-btn" onclick="window.completeLunarDecision(event, ' + d.id + ', \'تصمیم با موفقیت اتخاذ و نهایی شد ✅\')">✅ تثبیت تصمیم و انتقال به لیست «تصمیمات گرفته‌شده»</button>' +
+                '<button class="lunar-delete-btn" onclick="window.removeProLunarDecision(event, ' + d.id + ')">🗑️ حذف کامل این تصمیم</button>' +
               '</div>' +
             '</div>';
         });
       }
     } else {
-      const archItems = allList.map((d, realIdx) => ({ d, realIdx })).filter(x => x.d.status === "archived");
+      const archItems = allList.filter(x => x.status === "archived");
       if (archItems.length === 0) {
         cardsHtml =
           '<div style="color:#94a3b8;font-size:0.76rem;text-align:center;padding:14px 8px;background:rgba(255,255,255,0.02);border-radius:12px">' +
             '📂 هنوز هیچ تصمیمی به لیست نهایی منتقل نشده است.<br/>' +
-            '<span style="font-size:0.69rem;color:#64748b">وقتی تصمیمی را نهایی کردید، دکمه «تثبیت تصمیم» را در جزئیات کارت بزنید تا در این سابقه ذخیره شود.</span>' +
+            '<span style="font-size:0.69rem;color:#64748b">وقتی تصمیمی را نهایی کردید، دکمه «تثبیت تصمیم» را بزنید تا در این سابقه ذخیره شود.</span>' +
           '</div>';
       } else {
-        archItems.forEach(({ d, realIdx }) => {
+        archItems.forEach(d => {
           const catInfo = CATEGORIES[d.cat] || CATEGORIES.total;
           const compDate = new Date(d.completedAt || Date.now()).toLocaleDateString("fa-IR", { year: "numeric", month: "short", day: "numeric" });
           cardsHtml +=
@@ -664,9 +672,9 @@ window.LunarCompassModule = (function() {
                   '<span class="lunar-badge">' + catInfo.label + '</span> ' +
                   '<span class="lunar-badge" style="color:#86efac">تثبیت‌شده در: ' + compDate + '</span>' +
                 '</div>' +
-                '<div style="display:flex;gap:6px">' +
-                  '<span onclick="window.restoreLunarDecision(event, ' + realIdx + ')" style="color:#7dd3fc;cursor:pointer;font-size:0.7rem">↩️ بازگردانی</span>' +
-                  '<span onclick="window.removeProLunarDecision(event, ' + realIdx + ')" style="color:#fca5a5;cursor:pointer;font-size:0.75rem">✕</span>' +
+                '<div style="display:flex;gap:6px" onclick="event.stopPropagation()">' +
+                  '<span onclick="window.restoreLunarDecision(event, ' + d.id + ')" style="color:#7dd3fc;cursor:pointer;font-size:0.7rem">↩️ بازگردانی</span>' +
+                  '<span onclick="window.removeProLunarDecision(event, ' + d.id + ')" style="color:#fca5a5;cursor:pointer;font-size:0.75rem">✕</span>' +
                 '</div>' +
               '</div>' +
             '</div>';
@@ -678,7 +686,7 @@ window.LunarCompassModule = (function() {
       '<div id="lunarTrackerSection" class="lunar-pro-card">' +
         '<div class="lunar-top-bar">' +
           '<span class="lunar-main-title">🌕 قطب‌نمای ۲۸ روزه و زمان‌سنج تصمیم</span>' +
-          '<span class="lunar-ver-pill">نسخه ۱.۴.۱</span>' +
+          '<span class="lunar-ver-pill">نسخه ۱.۴.۲</span>' +
         '</div>' +
 
         '<div class="lunar-tabs-row">' +
