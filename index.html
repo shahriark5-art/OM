@@ -164,19 +164,15 @@
     <!-- راهنمای اقدام -->
     <div class="card"><div class="c-head"><span class="c-title">🚦 راهنمای اقدام</span></div><div class="row"><span class="do-t">🟢 عالی برای: </span><span id="doTxt"></span></div><div class="row"><span class="dont-t">🔴 پرهیز از: </span><span id="dontTxt"></span></div></div>
 
-    <!-- قطب‌نمای ۲۸ روزه -->
-    <div id="lunarTrackerSection" class="card">
-      <div class="c-head"><span class="c-title">🌕 قطب‌نمای ۲۸ روزه رفلکتور</span></div>
-      <div class="lunar-form"><input type="text" id="decisionTitleInp" class="lunar-inp" placeholder="عنوان تصمیم..." /><button class="lunar-add-btn" onclick="addLunarDecision()">+ ثبت</button></div>
-      <div id="lunarDecisionsList"></div>
-    </div>
+    <!-- جایگاه ماژول مستقل قطب‌نمای ۲۸ روزه و زمان‌سنج تصمیم (lunar.js) -->
+    <div id="lunarTrackerMount"></div>
   </div>
 
   <nav class="b-nav">
     <button class="n-btn act" onclick="runApp(true)"><span>🔄</span><span>بروزرسانی</span></button>
     <button class="n-btn" onclick="scrollToId('oldmanOracleSection')"><span>🧙‍♂️</span><span>پیرمرد</span></button>
     <button class="n-btn" onclick="scrollToId('dreamArchiveSection')"><span>🌙</span><span>رویاها</span></button>
-    <button class="n-btn" onclick="scrollToId('upcomingChannelsSection')"><span>📅</span><span>آینده</span></button>
+    <button class="n-btn" onclick="scrollToId('lunarTrackerMount')"><span>🌕</span><span>قطب‌نما</span></button>
     <button class="n-btn" onclick="openSetModal()"><span>⚙️</span><span>تنظیمات</span></button>
   </nav>
 
@@ -226,10 +222,11 @@
   <!-- بارگذاری فایل‌های ماژولار -->
   <script src="core.js"></script>
   <script src="gems.js"></script>
+  <script src="lunar.js"></script>
   <script src="oracle.js"></script>
   <script src="weather.js"></script>
   <script src="dreams.js"></script>
-    <script>
+  <script>
     const origRunApp = window.runApp;
     window.runApp = function(resetDeep) {
       if (typeof origRunApp === "function") {
@@ -243,10 +240,12 @@
           window.OLDMAN_STATE.lk
         );
       }
+      if (window.LunarCompassModule) {
+        window.LunarCompassModule.render();
+      }
     };
     window.runApp(true);
     setInterval(() => window.runApp(false), 60000);
   </script>
-
 </body>
 </html>
