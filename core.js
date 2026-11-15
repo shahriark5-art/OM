@@ -445,7 +445,6 @@ function setupInteractiveCenters() {
 window.isSupernovaActiveGlobal = false;
 
 function renderBodyGraph(pls, act) {
-  // اگر در حال اتصال آیینی سوپرنوا هستیم، رندر عادی چارت متوقف شود تا پیام و وضعیت قفل بماند
   if (window.isSupernovaActiveGlobal) return;
 
   setupInteractiveCenters();
@@ -863,6 +862,10 @@ function renderLunarDecisions() {
     if (capEl) {
       capEl.innerHTML = "<span style='color:#fef08a;font-weight:900;'>✨ مدار کهکشانی کاملاً متصل شد؛ تمام مراکز و کانال‌ها یکپارچه گشتند.<br/>اکنون نیت خود را در دل یا بر زبان جاری کن...</span>";
     }
+
+    // قفل کردن و روشن کردن کامل مراکز و خطوط چارت در حالت سوپرنوا
+    document.querySelectorAll(".c-shape").forEach(el => el.setAttribute("class", "c-shape on-gold"));
+    document.querySelectorAll(".ch-line").forEach(el => el.setAttribute("class", "ch-line active-design"));
 
     startCosmicSoundAndHaptic();
     if (touchStartTime === 0) touchStartTime = Date.now();
