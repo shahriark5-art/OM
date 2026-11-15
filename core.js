@@ -841,3 +841,173 @@ window.saveSet = function() {
   if (k) window.setStore("key", k);
   document.getElementById("setModal").classList.remove("open");
 };
+// =========================================================================
+// RITUAL DUAL-THUMB SUPERNOVA & AUDIO/HAPTIC ENGINE (v1.5)
+// =========================================================================
+(function initCosmicRitualSensors() {
+  let leftPressed = false;
+  let rightPressed = false;
+  let touchStartTime = 0;
+  let audioCtx = null;
+  let oscNode = null;
+  let gainNode = null;
+
+  function startCosmicSoundAndHaptic() {
+    // ۱. ویبره تپش قلب (در صورت پشتیبانی گوشی)
+    if (navigator.vibrate) {
+      try { navigator.vibrate([45, 60, 45]); } catch(e) {}
+    }
+
+    // ۲. طنین صوتی ملایم ۴۳۲ هرتز (بدون نیاز به فایل خارجی)
+    try {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (AudioContext) {
+        if (!audioCtx) audioCtx = new AudioContext();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+
+        oscNode = audioCtx.createOscillator();
+        gainNode = audioCtx.createGain();
+
+        oscNode.type = 'sine';
+        oscNode.frequency.setValueAtTime(432, audioCtx.currentTime); // فرکانس قدسی ۴۳۲ هرتز
+
+        gainNode.gain.setValueAtTime(0.001, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.12, audioCtx.currentTime + 0.8); // محو تدریجی صدا (Fade in)
+
+        oscNode.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        oscNode.start();
+      }
+    } catch(e) {}
+  }
+
+  function stopCosmicSound() {
+    try {
+      if (gainNode && audioCtx && oscNode) {
+        gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
+        setTimeout(() => {
+          try {
+            oscNode.stop();
+            oscNode.disconnect();
+          } catch(e) {}
+          oscNode = null;
+        }, 500);
+      }
+    } catch(e) {}
+  }
+
+  function activateSupernovaState() {
+    const bgBox = document.querySelector(".bg-box");
+    const filterRow = document.querySelector(".bg-filter-row");
+    const capEl = document.getElementById("capText");
+
+    if (bgBox) bgBox.classList.add("supernova-active");
+    
+    // مخفی کردن دکمه‌های بالا و نمایش ستاره ⭐️
+    if (filterRow) {
+      if (!document.getElementById("cosmicStarBadge")) {
+        filterRow.style.display = "none";
+        const starDiv = document.createElement("div");
+        starDiv.id = "cosmicStarBadge";
+        starDiv.style.textAlign = "center";
+        starDiv.style.margin = "6px 0";
+        starDiv.innerHTML = '<span class="cosmic-star-badge">⭐️ اتصال کیهانی برقرار شد ⭐️</span>';
+        filterRow.parentNode.insertBefore(starDiv, filterRow);
+      }
+    }
+
+    if (capEl) {
+      capEl.innerHTML = "<span style='color:#fef08a;font-weight:900;'>✨ مدار کهکشانی کاملاً متصل شد؛ تمام مراکز و کانال‌ها یکپارچه گشتند.<br/>اکنون نیت خود را در دل یا بر زبان جاری کن...</span>";
+    }
+
+    startCosmicSoundAndHaptic();
+    touchStartTime = Date.now();
+  }
+
+  function deactivateSupernovaState() {
+    const bgBox = document.querySelector(".bg-box");
+    const filterRow = document.querySelector(".bg-filter-row");
+    const starBadge = document.getElementById("cosmicStarBadge");
+    const capEl = document.getElementById("capText");
+
+    if (bgBox) bgBox.classList.remove("supernova-active");
+    if (filterRow) filterRow.style.display = "flex";
+    if (starBadge) starBadge.remove();
+
+    stopCosmicSound();
+
+    // محاسبه مدت زمان نگه داشتن برای پیام تایید کائنات
+    if (touchStartTime > 0) {
+      const holdDuration = Date.now() - touchStartTime;
+      touchStartTime = 0;
+
+      if (holdDuration >= 2500 && capEl) {
+        const moonGate = (window.OLDMAN_STATE && window.OLDMAN_STATE.pls && window.OLDMAN_STATE.pls[2]) ? window.OLDMAN_STATE.pls[2].gate : 1;
+        const gateTheme = (window.GATE_THEMES && window.GATE_THEMES[moonGate]) || "حضور و آفرینش";
+        
+        capEl.innerHTML = "<span style='color:#4ade80;font-weight:900;'>🌟 پیام تو از مسیر دروازه " + moonGate + " («" + gateTheme + "») به افلاک مخابره شد و کائنات شنید.</span>";
+        setTimeout(() => {
+          if (window.OLDMAN_STATE) {
+            window.runApp(false); // بازگشت به حالت عادی چارت پس از چند ثانیه
+          }
+        }, 6000);
+        return;
+      }
+    }
+
+    if (window.OLDMAN_STATE) {
+      window.runApp(false);
+    }
+  }
+
+  function setupSensors() {
+    const bgBox = document.querySelector(".bg-box");
+    if (!bgBox || document.getElementById("ritualSensorL")) return;
+
+    // ایجاد دکمه‌های نامرئی در دو طرف بادی‌گراف
+    const sLeft = document.createElement("div");
+    sLeft.id = "ritualSensorL";
+    sLeft.className = "ritual-sensor-left";
+
+    const sRight = document.createElement("div");
+    sRight.id = "ritualSensorR";
+    sRight.className = "ritual-sensor-right";
+
+    bgBox.style.position = "relative";
+    bgBox.appendChild(sLeft);
+    bgBox.appendChild(sRight);
+
+    function checkTouchState() {
+      if (leftPressed && rightPressed) {
+        activateSupernovaState();
+      } else {
+        deactivateSupernovaState();
+      }
+    }
+
+    sLeft.addEventListener("touchstart", (e) => { e.preventDefault(); leftPressed = true; sLeft.classList.add("active-touch"); checkTouchState(); }, { passive: false });
+    sLeft.addEventListener("touchend", (e) => { e.preventDefault(); leftPressed = false; sLeft.classList.remove("active-touch"); checkTouchState(); }, { passive: false });
+    sLeft.addEventListener("touchcancel", (e) => { leftPressed = false; sLeft.classList.remove("active-touch"); checkTouchState(); });
+
+    sRight.addEventListener("touchstart", (e) => { e.preventDefault(); rightPressed = true; sRight.classList.add("active-touch"); checkTouchState(); }, { passive: false });
+    sRight.addEventListener("touchend", (e) => { e.preventDefault(); rightPressed = false; sRight.classList.remove("active-touch"); checkTouchState(); }, { passive: false });
+    sRight.addEventListener("touchcancel", (e) => { rightPressed = false; sRight.classList.remove("active-touch"); checkTouchState(); });
+
+    // پشتیبانی از ماوس برای تست دسکتاپ (کلیک هم‌زمان)
+    sLeft.addEventListener("mousedown", () => { leftPressed = true; sLeft.classList.add("active-touch"); checkTouchState(); });
+    sLeft.addEventListener("mouseup", () => { leftPressed = false; sLeft.classList.remove("active-touch"); checkTouchState(); });
+    sRight.addEventListener("mousedown", () => { rightPressed = true; sRight.classList.add("active-touch"); checkTouchState(); });
+    sRight.addEventListener("mouseup", () => { rightPressed = false; sRight.classList.remove("active-touch"); checkTouchState(); });
+  }
+
+  // راه‌اندازی سنسورها پس از لود شدن کامل صفحه
+  window.addEventListener("DOMContentLoaded", () => {
+    setTimeout(setupSensors, 800);
+  });
+  
+  const origRun = window.runApp;
+  window.runApp = function(resetDeep) {
+    if (typeof origRun =="function") origRun(resetDeep);
+    setTimeout(setupSensors, 300);
+  };
+})();
