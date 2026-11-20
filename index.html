@@ -4,15 +4,15 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="theme-color" content="#020617" />
-  <title>OLDMAN v1.5 | نسخه آیینی و کهکشانی - شهریار</title>
+  <title>OLDMAN v1.6 | نسخه آیینی و کهکشانی - شهریار</title>
   <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
-  <link rel="stylesheet" href="style.css?v=1.5" />
+  <link rel="stylesheet" href="style.css?v=1.6" />
 </head>
 <body>
   <div class="cosmic-dust"></div>
   <div class="wrap">
     <header>
-      <div class="logo">OLDMAN v1.5</div>
+      <div class="logo">OLDMAN v1.6</div>
       <div class="meta">
         <span>کاربر: شهریار (Reflector 6/2)</span>
         <span id="clockDisplay">--:--</span>
@@ -164,7 +164,7 @@
     <!-- راهنمای اقدام -->
     <div class="card"><div class="c-head"><span class="c-title">🚦 راهنمای اقدام</span></div><div class="row"><span class="do-t">🟢 عالی برای: </span><span id="doTxt"></span></div><div class="row"><span class="dont-t">🔴 پرهیز از: </span><span id="dontTxt"></span></div></div>
 
-    <!-- جایگاه ماژول قطب‌نمای ۲۸ روزه نسخه ۱.۴.۵ -->
+    <!-- جایگاه ماژول قطب‌نمای ۲۸ روزه -->
     <div id="lunarTrackerMount"></div>
 
     <!-- جایگاه ماژول پیکولوژی در انتهای برنامه -->
@@ -222,14 +222,14 @@
     };
   </script>
 
-  <!-- بارگذاری فایل‌های ماژولار نسخه 1.5 با ضد کش -->
-  <script src="core.js?v=1.5"></script>
-  <script src="gems.js?v=1.5"></script>
-  <script src="lunar.js?v=1.5"></script>
-  <script src="oracle.js?v=1.5"></script>
-  <script src="weather.js?v=1.5"></script>
-  <script src="dreams.js?v=1.5"></script>
-  <script src="picology.js?v=1.5"></script>
+  <!-- بارگذاری فایل‌های ماژولار نسخه 1.6 با ضد کش -->
+  <script src="core.js?v=1.6"></script>
+  <script src="gems.js?v=1.6"></script>
+  <script src="lunar.js?v=1.6"></script>
+  <script src="oracle.js?v=1.6"></script>
+  <script src="weather.js?v=1.6"></script>
+  <script src="dreams.js?v=1.6"></script>
+  <script src="picology.js?v=1.6"></script>
   <script>
     const origRunApp = window.runApp;
     window.runApp = function(resetDeep) {
@@ -247,8 +247,8 @@
       if (window.LunarCompassModule) {
         window.LunarCompassModule.render();
       }
-      if (resetDeep && window.PicologyModule) {
-        window.PicologyModule.render();
+      if (window.PicologyModule) {
+        window.PicologyModule.render(Boolean(resetDeep));
       }
     };
     window.runApp(true);
