@@ -166,6 +166,9 @@
 
     <!-- جایگاه ماژول قطب‌نمای ۲۸ روزه نسخه ۱.۴.۵ -->
     <div id="lunarTrackerMount"></div>
+
+    <!-- جایگاه ماژول پیکولوژی در انتهای برنامه -->
+    <div id="picologyMount"></div>
   </div>
 
   <nav class="b-nav">
@@ -190,7 +193,7 @@
       <div class="f-grp"><label>موتور اول:</label><select id="provSel"><option value="gemini">Google Gemini API</option><option value="pollinations">ابری مستقیم</option></select></div>
       <div class="f-grp"><label>کلید API:</label><input type="text" id="keyInp" /></div>
       <button class="s-btn" onclick="saveSet()">ذخیره</button>
-      <button class="close-def" onclick="closeModal('setModal')">انصراف</button>
+      <button class="close-btn" onclick="closeModal('setModal')">انصراف</button>
     </div>
   </div>
 
@@ -226,6 +229,7 @@
   <script src="oracle.js?v=1.5"></script>
   <script src="weather.js?v=1.5"></script>
   <script src="dreams.js?v=1.5"></script>
+  <script src="picology.js?v=1.5"></script>
   <script>
     const origRunApp = window.runApp;
     window.runApp = function(resetDeep) {
@@ -242,6 +246,9 @@
       }
       if (window.LunarCompassModule) {
         window.LunarCompassModule.render();
+      }
+      if (resetDeep && window.PicologyModule) {
+        window.PicologyModule.render();
       }
     };
     window.runApp(true);
