@@ -9,7 +9,7 @@ window.PicologyModule = (function() {
   let retryCount = 0;
   let isFallbackFullscreen = false;
 
-  (function injectPicologyStyles() {
+  function injectPicologyStyles() {
     const oldSt = document.getElementById("picology-pure-styles");
     if (oldSt) oldSt.remove();
 
@@ -27,11 +27,12 @@ window.PicologyModule = (function() {
         box-sizing: border-box;
       }
       .picology-header-row {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
         gap: 8px;
         margin-bottom: 10px;
+        width: 100%;
       }
       .picology-title {
         font-size: 0.84rem;
@@ -39,16 +40,18 @@ window.PicologyModule = (function() {
         color: #f5c56b;
       }
       .picology-fs-btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 32px;
-        height: 32px;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 34px;
+        height: 34px;
+        flex-shrink: 0;
         border-radius: 10px;
-        border: 1px solid rgba(245, 197, 107, 0.35);
-        background: rgba(255, 255, 255, 0.05);
-        color: #fde68a;
-        font-size: 0.9rem;
+        border: 1px solid rgba(245, 197, 107, 0.45);
+        background: rgba(255, 255, 255, 0.08);
+        color: #fef08a;
+        font-size: 0.95rem;
+        line-height: 1;
         cursor: pointer;
         user-select: none;
         -webkit-user-select: none;
@@ -57,7 +60,7 @@ window.PicologyModule = (function() {
       }
       .picology-fs-btn:active {
         transform: scale(0.94);
-        background: rgba(245, 197, 107, 0.18);
+        background: rgba(245, 197, 107, 0.22);
         border-color: #f5c56b;
       }
       .picology-stage {
@@ -147,7 +150,7 @@ window.PicologyModule = (function() {
       }
     `;
     document.head.appendChild(st);
-  })();
+  }
 
   function generateUniqueRandomUrl() {
     let seed = "";
@@ -311,6 +314,7 @@ window.PicologyModule = (function() {
   };
 
   function render() {
+    injectPicologyStyles();
     const mount = document.getElementById("picologyMount");
     if (!mount) return;
 
@@ -334,6 +338,9 @@ window.PicologyModule = (function() {
       showImage(generateUniqueRandomUrl());
     }
   }
+
+  setTimeout(render, 200);
+  window.addEventListener("DOMContentLoaded", () => setTimeout(render, 200));
 
   return { render, next: window.nextPicologyPhoto, toggleFullscreen: window.togglePicologyFullscreen };
 })();
