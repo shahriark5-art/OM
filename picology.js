@@ -7,13 +7,17 @@ window.PicologyModule = (function() {
   let nextPreloadedUrl = "";
   let isTransitioning = false;
   let retryCount = 0;
+  let isFallbackFullscreen = false;
 
   (function injectPicologyStyles() {
-    if (document.getElementById("picology-pure-styles")) return;
+    const oldSt = document.getElementById("picology-pure-styles");
+    if (oldSt) oldSt.remove();
+
     const st = document.createElement("style");
     st.id = "picology-pure-styles";
     st.textContent = `
       .picology-wrap {
+        position: relative;
         background: rgba(12, 18, 36, 0.92);
         border: 1px solid rgba(255, 255, 255, 0.12);
         border-radius: 20px;
@@ -22,11 +26,39 @@ window.PicologyModule = (function() {
         box-shadow: 0 12px 30px rgba(0, 0, 0, 0.55);
         box-sizing: border-box;
       }
+      .picology-header-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 10px;
+      }
       .picology-title {
         font-size: 0.84rem;
         font-weight: 900;
         color: #f5c56b;
-        margin-bottom: 10px;
+      }
+      .picology-fs-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 10px;
+        border: 1px solid rgba(245, 197, 107, 0.35);
+        background: rgba(255, 255, 255, 0.05);
+        color: #fde68a;
+        font-size: 0.9rem;
+        cursor: pointer;
+        user-select: none;
+        -webkit-user-select: none;
+        -webkit-tap-highlight-color: transparent;
+        transition: background 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+      }
+      .picology-fs-btn:active {
+        transform: scale(0.94);
+        background: rgba(245, 197, 107, 0.18);
+        border-color: #f5c56b;
       }
       .picology-stage {
         position: relative;
@@ -40,6 +72,7 @@ window.PicologyModule = (function() {
         user-select: none;
         -webkit-user-select: none;
         -webkit-touch-callout: none;
+        -webkit-tap-highlight-color: transparent;
         touch-action: manipulation;
         display: flex;
         align-items: center;
@@ -73,6 +106,44 @@ window.PicologyModule = (function() {
       }
       .picology-loader.show {
         opacity: 1;
+      }
+
+      /* حالت تمام‌صفحه */
+      .picology-wrap.is-fullscreen,
+      .picology-wrap:fullscreen,
+      .picology-wrap:-webkit-full-screen {
+        position: fixed;
+        inset: 0;
+        width: 100vw;
+        height: 100vh;
+        max-width: none;
+        margin: 0;
+        border-radius: 0;
+        border: none;
+        z-index: 99999;
+        background: #020617;
+        display: flex;
+        flex-direction: column;
+        padding: 14px;
+      }
+      .picology-wrap.is-fullscreen .picology-stage,
+      .picology-wrap:fullscreen .picology-stage,
+      .picology-wrap:-webkit-full-screen .picology-stage {
+        flex: 1;
+        width: 100%;
+        height: 100%;
+        min-height: 0;
+        max-height: none;
+        border-radius: 12px;
+        background: #000000;
+      }
+      .picology-wrap.is-fullscreen .picology-img,
+      .picology-wrap:fullscreen .picology-img,
+      .picology-wrap:-webkit-full-screen .picology-img {
+        width: 100%;
+        height: 100%;
+        max-height: none;
+        object-fit: contain;
       }
     `;
     document.head.appendChild(st);
@@ -140,6 +211,94 @@ window.PicologyModule = (function() {
     tempImg.src = url;
   }
 
+  function isCurrentlyFullscreen() {
+    const wrapEl = document.getElementById("picologyWrapBox");
+    const nativeFsEl = document.fullscreenElement || document.webkitFullscreenElement;
+    return Boolean((wrapEl && nativeFsEl === wrapEl) || isFallbackFullscreen);
+  }
+
+  function syncFullscreenIcon() {
+    const btn = document.getElementById("picologyFsBtn");
+    if (!btn) return;
+    btn.textContent = isCurrentlyFullscreen() ? "↙️" : "⛶";
+    btn.title = isCurrentlyFullscreen() ? "خروج از تمام‌صفحه" : "نمایش تمام‌صفحه";
+  }
+
+  window.togglePicologyFullscreen = function(ev) {
+    if (ev) ev.stopPropagation();
+    const wrapEl = document.getElementById("picologyWrapBox");
+    if (!wrapEl) return;
+
+    const nativeFsEl = document.fullscreenElement || document.webkitFullscreenElement;
+
+    if (nativeFsEl) {
+      const exitFn = document.exitFullscreen || document.webkitExitFullscreen;
+      if (exitFn) {
+        try {
+          const p = exitFn.call(document);
+          if (p && typeof p.catch === "function") p.catch(() => {});
+        } catch (e) {}
+      }
+      isFallbackFullscreen = false;
+      wrapEl.classList.remove("is-fullscreen");
+      syncFullscreenIcon();
+      return;
+    }
+
+    if (isFallbackFullscreen) {
+      isFallbackFullscreen = false;
+      wrapEl.classList.remove("is-fullscreen");
+      syncFullscreenIcon();
+      return;
+    }
+
+    const reqFn = wrapEl.requestFullscreen || wrapEl.webkitRequestFullscreen;
+    if (reqFn) {
+      try {
+        const res = reqFn.call(wrapEl);
+        if (res && typeof res.catch === "function") {
+          res.catch(() => {
+            isFallbackFullscreen = true;
+            wrapEl.classList.add("is-fullscreen");
+            syncFullscreenIcon();
+          });
+        }
+        setTimeout(() => {
+          if (!(document.fullscreenElement || document.webkitFullscreenElement)) {
+            isFallbackFullscreen = true;
+            wrapEl.classList.add("is-fullscreen");
+            syncFullscreenIcon();
+          }
+        }, 120);
+        return;
+      } catch (e) {}
+    }
+
+    isFallbackFullscreen = true;
+    wrapEl.classList.add("is-fullscreen");
+    syncFullscreenIcon();
+  };
+
+  document.addEventListener("fullscreenchange", () => {
+    const wrapEl = document.getElementById("picologyWrapBox");
+    const nativeFsEl = document.fullscreenElement || document.webkitFullscreenElement;
+    if (!nativeFsEl && wrapEl) {
+      isFallbackFullscreen = false;
+      wrapEl.classList.remove("is-fullscreen");
+    }
+    syncFullscreenIcon();
+  });
+
+  document.addEventListener("webkitfullscreenchange", () => {
+    const wrapEl = document.getElementById("picologyWrapBox");
+    const nativeFsEl = document.fullscreenElement || document.webkitFullscreenElement;
+    if (!nativeFsEl && wrapEl) {
+      isFallbackFullscreen = false;
+      wrapEl.classList.remove("is-fullscreen");
+    }
+    syncFullscreenIcon();
+  });
+
   window.nextPicologyPhoto = function() {
     if (isTransitioning) return;
     if (nextPreloadedUrl) {
@@ -157,8 +316,11 @@ window.PicologyModule = (function() {
 
     if (!document.getElementById("picologyStageBox")) {
       mount.innerHTML =
-        '<div class="picology-wrap">' +
-          '<div class="picology-title">🖼️ پیکولوژی</div>' +
+        '<div id="picologyWrapBox" class="picology-wrap">' +
+          '<div class="picology-header-row">' +
+            '<div class="picology-title">🖼️ پیکولوژی</div>' +
+            '<button id="picologyFsBtn" type="button" class="picology-fs-btn" title="نمایش تمام‌صفحه" aria-label="نمایش تمام‌صفحه" onclick="window.togglePicologyFullscreen(event)">⛶</button>' +
+          '</div>' +
           '<div id="picologyStageBox" class="picology-stage" onclick="window.nextPicologyPhoto()">' +
             '<img id="picologyImgEl" class="picology-img" alt="" />' +
             '<div id="picologyLoaderEl" class="picology-loader show">...</div>' +
@@ -166,10 +328,12 @@ window.PicologyModule = (function() {
         '</div>';
     }
 
+    syncFullscreenIcon();
+
     if (!currentUrl) {
       showImage(generateUniqueRandomUrl());
     }
   }
 
-  return { render, next: window.nextPicologyPhoto };
+  return { render, next: window.nextPicologyPhoto, toggleFullscreen: window.togglePicologyFullscreen };
 })();
