@@ -4,15 +4,15 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="theme-color" content="#020617" />
-  <title>OLDMAN v1.6 | نسخه آیینی و کهکشانی - شهریار</title>
+  <title>OLDMAN v1.7 | نسخه آیینی و کهکشانی - شهریار</title>
   <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
-  <link rel="stylesheet" href="style.css?v=1.6" />
+  <link rel="stylesheet" href="style.css?v=1.7" />
 </head>
 <body>
   <div class="cosmic-dust"></div>
   <div class="wrap">
     <header>
-      <div class="logo">OLDMAN v1.6</div>
+      <div class="logo">OLDMAN v1.7</div>
       <div class="meta">
         <span>کاربر: شهریار (Reflector 6/2)</span>
         <span id="clockDisplay">--:--</span>
@@ -222,14 +222,15 @@
     };
   </script>
 
-  <!-- بارگذاری فایل‌های ماژولار نسخه 1.6 با ضد کش -->
-  <script src="core.js?v=1.6"></script>
-  <script src="gems.js?v=1.6"></script>
-  <script src="lunar.js?v=1.6"></script>
-  <script src="oracle.js?v=1.6"></script>
-  <script src="weather.js?v=1.6"></script>
-  <script src="dreams.js?v=1.6"></script>
-  <script src="picology.js?v=1.6"></script>
+  <!-- بارگذاری فایل‌های ماژولار نسخه 1.7 با ضد کش -->
+  <script src="core.js?v=1.7"></script>
+  <script src="gems.js?v=1.7"></script>
+  <script src="luck.js?v=1.7"></script>
+  <script src="lunar.js?v=1.7"></script>
+  <script src="oracle.js?v=1.7"></script>
+  <script src="weather.js?v=1.7"></script>
+  <script src="dreams.js?v=1.7"></script>
+  <script src="picology.js?v=1.7"></script>
   <script>
     const origRunApp = window.runApp;
     window.runApp = function(resetDeep) {
@@ -244,6 +245,14 @@
           window.OLDMAN_STATE.lk
         );
       }
+      if (window.GalacticLuckModule && window.OLDMAN_STATE) {
+        window.GalacticLuckModule.update(
+          window.OLDMAN_STATE.now,
+          window.OLDMAN_STATE.pls,
+          window.OLDMAN_STATE.act,
+          window.OLDMAN_STATE.lk
+        );
+      }
       if (window.LunarCompassModule) {
         window.LunarCompassModule.render();
       }
@@ -251,6 +260,17 @@
         window.PicologyModule.render(Boolean(resetDeep));
       }
     };
+
+    const origSetLuckMode = window.setLuckGaugeMode;
+    window.setLuckGaugeMode = function(mode) {
+      if (typeof origSetLuckMode === "function") {
+        origSetLuckMode(mode);
+      }
+      if (window.GalacticLuckModule) {
+        window.GalacticLuckModule.sync();
+      }
+    };
+
     window.runApp(true);
     setInterval(() => window.runApp(false), 60000);
   </script>
