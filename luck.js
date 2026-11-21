@@ -55,10 +55,10 @@ window.GalacticLuckModule = (function() {
         display: inline-flex;
         align-items: center;
         gap: 4px;
-        padding: 6px 10px;
+        padding: 6px 11px;
         border-radius: 99px;
-        background: rgba(245, 197, 107, 0.14);
-        border: 1px solid rgba(245, 197, 107, 0.4);
+        background: rgba(245, 197, 107, 0.16);
+        border: 1px solid rgba(245, 197, 107, 0.45);
         color: #fef08a;
         font-size: 0.7rem;
         font-weight: 800;
@@ -66,6 +66,11 @@ window.GalacticLuckModule = (function() {
         cursor: pointer;
         user-select: none;
         -webkit-tap-highlight-color: transparent;
+      }
+      .luck-toggle-chip.is-open-btn {
+        background: rgba(56, 189, 248, 0.14);
+        border-color: rgba(56, 189, 248, 0.45);
+        color: #bae6fd;
       }
       .luck-expanded-body.is-hidden {
         display: none !important;
@@ -243,10 +248,15 @@ window.GalacticLuckModule = (function() {
     syncUI();
   };
 
-  window.toggleGalacticLuckCard = function(ev) {
-    if (ev && ev.target && ev.target.closest && ev.target.closest(".mode-tab, .sub-item, .inspect-btn, .luck-pulse-btn")) {
-      return;
-    }
+  window.handleLuckCardClick = function(ev) {
+    // فقط زمانی که کارت بسته است، با لمس روی کارت باز شود؛ وقتی باز است با دکمه «بستن ▴» بسته شود
+    if (isExpanded) return;
+    isExpanded = true;
+    syncUI();
+  };
+
+  window.toggleLuckFromButton = function(ev) {
+    if (ev) ev.stopPropagation();
     isExpanded = !isExpanded;
     syncUI();
   };
@@ -261,11 +271,7 @@ window.GalacticLuckModule = (function() {
       btn.id = "luckHeaderToggleBtn";
       btn.className = "luck-toggle-chip";
       btn.textContent = "جزئیات ▾";
-      btn.onclick = function(e) {
-        e.stopPropagation();
-        isExpanded = !isExpanded;
-        syncUI();
-      };
+      btn.onclick = window.toggleLuckFromButton;
       headEl.appendChild(btn);
     }
 
@@ -346,7 +352,7 @@ window.GalacticLuckModule = (function() {
 
     if (!card.dataset.luckToggleBound) {
       card.dataset.luckToggleBound = "1";
-      card.addEventListener("click", window.toggleGalacticLuckCard);
+      card.addEventListener("click", window.handleLuckCardClick);
     }
   }
 
@@ -362,12 +368,18 @@ window.GalacticLuckModule = (function() {
       card.classList.remove("collapsed-pro");
       bodyWrap.classList.remove("is-hidden");
       if (compBar) compBar.style.display = "none";
-      if (toggleBtn) toggleBtn.textContent = "بستن ▴";
+      if (toggleBtn) {
+        toggleBtn.textContent = "بستن ▴";
+        toggleBtn.classList.add("is-open-btn");
+      }
     } else {
       card.classList.add("collapsed-pro");
       bodyWrap.classList.add("is-hidden");
       if (compBar) compBar.style.display = "flex";
-      if (toggleBtn) toggleBtn.textContent = "جزئیات ▾";
+      if (toggleBtn) {
+        toggleBtn.textContent = "جزئیات ▾";
+        toggleBtn.classList.remove("is-open-btn");
+      }
     }
 
     const mode = window.getStore ? window.getStore("luckMode", "total") : "total";
