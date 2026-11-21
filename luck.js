@@ -248,18 +248,34 @@ window.GalacticLuckModule = (function() {
     syncUI();
   };
 
-  window.handleLuckCardClick = function(ev) {
-    // فقط زمانی که کارت بسته است، با لمس روی کارت باز شود؛ وقتی باز است با دکمه «بستن ▴» بسته شود
+  function openLuckCard() {
     if (isExpanded) return;
     isExpanded = true;
     syncUI();
-  };
+  }
 
   window.toggleLuckFromButton = function(ev) {
-    if (ev) ev.stopPropagation();
+    if (ev) {
+      ev.preventDefault();
+      ev.stopPropagation();
+    }
     isExpanded = !isExpanded;
     syncUI();
   };
+
+  function bindCardClickBehavior(card, bodyWrap) {
+    if (!card) return;
+    card.removeEventListener("click", openLuckCard);
+    if (!isExpanded) {
+      card.addEventListener("click", openLuckCard);
+    }
+    if (bodyWrap && !bodyWrap.dataset.stopBound) {
+      bodyWrap.dataset.stopBound = "1";
+      bodyWrap.addEventListener("click", function(ev) {
+        ev.stopPropagation();
+      });
+    }
+  }
 
   function ensureExtrasMounted() {
     const card = document.getElementById("luckCardBox");
@@ -267,11 +283,12 @@ window.GalacticLuckModule = (function() {
 
     const headEl = card.querySelector(".luck-head");
     if (headEl && !document.getElementById("luckHeaderToggleBtn")) {
-      const btn = document.createElement("span");
+      const btn = document.createElement("button");
+      btn.type = "button";
       btn.id = "luckHeaderToggleBtn";
       btn.className = "luck-toggle-chip";
       btn.textContent = "جزئیات ▾";
-      btn.onclick = window.toggleLuckFromButton;
+      btn.addEventListener("click", window.toggleLuckFromButton);
       headEl.appendChild(btn);
     }
 
@@ -337,9 +354,9 @@ window.GalacticLuckModule = (function() {
           '<span id="luckPulseSavedTag" style="color:#94a3b8;font-size:0.66rem">ثبت‌نشده</span>' +
         '</div>' +
         '<div class="luck-pulse-grid">' +
-          '<button id="lpBtn-high" class="luck-pulse-btn" onclick="window.recordLuckAlignment(event, \'high\')">🟢 کاملاً هم‌سو</button>' +
-          '<button id="lpBtn-mid" class="luck-pulse-btn" onclick="window.recordLuckAlignment(event, \'mid\')">🟡 تا حدی</button>' +
-          '<button id="lpBtn-low" class="luck-pulse-btn" onclick="window.recordLuckAlignment(event, \'low\')">🔴 متفاوت از حسم</button>' +
+          '<button type="button" id="lpBtn-high" class="luck-pulse-btn" onclick="window.recordLuckAlignment(event, \'high\')">🟢 کاملاً هم‌سو</button>' +
+          '<button type="button" id="lpBtn-mid" class="luck-pulse-btn" onclick="window.recordLuckAlignment(event, \'mid\')">🟡 تا حدی</button>' +
+          '<button type="button" id="lpBtn-low" class="luck-pulse-btn" onclick="window.recordLuckAlignment(event, \'low\')">🔴 متفاوت از حسم</button>' +
         '</div>';
 
       const insightsPanel = document.getElementById("luckInsightsPanel");
@@ -350,10 +367,7 @@ window.GalacticLuckModule = (function() {
       }
     }
 
-    if (!card.dataset.luckToggleBound) {
-      card.dataset.luckToggleBound = "1";
-      card.addEventListener("click", window.handleLuckCardClick);
-    }
+    bindCardClickBehavior(card, bodyWrap);
   }
 
   function syncUI() {
@@ -381,6 +395,8 @@ window.GalacticLuckModule = (function() {
         toggleBtn.classList.remove("is-open-btn");
       }
     }
+
+    bindCardClickBehavior(card, bodyWrap);
 
     const mode = window.getStore ? window.getStore("luckMode", "total") : "total";
     const now = lastSnapshot && lastSnapshot.now ? lastSnapshot.now : new Date();
