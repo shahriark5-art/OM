@@ -121,32 +121,6 @@
       <div id="oracleAnswersList" class="oracle-history-box"></div>
     </div>
 
-    <!-- دفترچه رویاهای ابری -->
-    <div id="dreamArchiveSection" class="card dream-card">
-      <div class="c-head">
-        <span class="c-title">🌙 دفترچه رویاها و گوگل درایو</span>
-        <span style="font-size:0.68rem;color:#38bdf8">☁️ ابری</span>
-      </div>
-      <div class="f-grp" style="margin-top:0">
-        <label>عنوان رویا:</label>
-        <input type="text" id="dreamTitleInp" class="lunar-inp" placeholder="مثلاً: پرواز..." style="width:100%" />
-      </div>
-      <div class="f-grp">
-        <label>شرح کامل متن خواب:</label>
-        <textarea id="dreamTextInp" class="dream-textarea" placeholder="دیشب دیدم که..."></textarea>
-      </div>
-      <div class="dream-btn-row">
-        <button id="dreamInterpretBtn" class="dream-action-btn" onclick="window.DreamArchiveModule.interpret()">🔮 تعبیر پیرمرد</button>
-        <button id="dreamSaveBtn" class="dream-action-btn cloud" onclick="window.DreamArchiveModule.saveToCloud()">☁️ بایگانی درایو</button>
-        <button class="dream-action-btn" onclick="window.DreamArchiveModule.loadFromCloud()" style="background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.2)">📖 کتابخانه</button>
-      </div>
-      <div id="dreamInterpretationOutput" class="dream-interp-box"></div>
-      <div id="dreamCloudListContainer" style="display:none;margin-top:10px">
-        <div style="font-size:0.75rem;color:#38bdf8;font-weight:700;margin-bottom:4px">📚 آرشیو رویاها:</div>
-        <div id="dreamCloudListBox" class="dream-list-scroll"></div>
-      </div>
-    </div>
-
     <!-- رادار هواشناسی و فالگیر -->
     <div class="card">
       <div class="c-head"><span class="c-title">🌤️🔮 رادار آب‌وهوا و فالگیر</span><span id="srcTag" style="font-size:0.68rem;color:#4ade80">آماده ✅</span></div>
@@ -174,7 +148,7 @@
   <nav class="b-nav">
     <button class="n-btn act" onclick="runApp(true)"><span>🔄</span><span>بروزرسانی</span></button>
     <button class="n-btn" onclick="scrollToId('oldmanOracleSection')"><span>🧙‍♂️</span><span>پیرمرد</span></button>
-    <button class="n-btn" onclick="scrollToId('dreamArchiveSection')"><span>🌙</span><span>رویاها</span></button>
+    <button class="n-btn" onclick="location.href='dreams.html'"><span>🌙</span><span>رویاها</span></button>
     <button class="n-btn" onclick="scrollToId('lunarTrackerMount')"><span>🌕</span><span>قطب‌نما</span></button>
     <button class="n-btn" onclick="openSetModal()"><span>⚙️</span><span>تنظیمات</span></button>
   </nav>
@@ -229,7 +203,6 @@
   <script src="lunar.js?v=1.7"></script>
   <script src="oracle.js?v=1.7"></script>
   <script src="weather.js?v=1.7"></script>
-  <script src="dreams.js?v=1.7"></script>
   <script src="picology.js?v=1.7"></script>
   <script>
     const origRunApp = window.runApp;
