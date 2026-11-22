@@ -260,6 +260,29 @@
       text-align: justify;
     }
 
+    .selected-dream-viewer {
+      display: none;
+      margin-top: 16px;
+      padding: 14px 15px;
+      border-radius: 16px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(56, 189, 248, 0.38);
+      border-right: 4px solid var(--sky);
+    }
+
+    .selected-dream-viewer.visible {
+      display: block;
+    }
+
+    .selected-dream-body {
+      font-size: 0.86rem;
+      line-height: 1.9;
+      color: #e2e8f0;
+      white-space: pre-line;
+      margin-top: 8px;
+      text-align: justify;
+    }
+
     .archive-panel {
       display: none;
       margin-top: 18px;
@@ -319,6 +342,7 @@
       color: #cbd5e1;
       margin-top: 6px;
       line-height: 1.65;
+      white-space: pre-line;
     }
 
     .drive-config-details {
@@ -399,6 +423,14 @@
         <button id="loadDriveBtn" type="button" class="btn-library" onclick="loadDreamsFromDrive()">📚 بازخوانی از درایو</button>
       </div>
 
+      <div id="selectedDreamViewer" class="selected-dream-viewer">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+          <b id="selectedDreamTitle" style="color:#7dd3fc;font-size:0.88rem">📜 متن کامل رویای انتخاب‌شده</b>
+          <span id="selectedDreamDate" style="font-size:0.7rem;color:#94a3b8"></span>
+        </div>
+        <div id="selectedDreamBody" class="selected-dream-body"></div>
+      </div>
+
       <div id="interpBox" class="interp-card">
         <div id="interpHeading" class="interp-title">✨ تعبیر عمیق رویا</div>
         <div id="interpText" class="interp-content"></div>
@@ -449,6 +481,70 @@
 
     let selectedMoodTag = "";
     let loadedArchiveItems = [];
+
+    function pickFirstNonEmpty(obj, keys) {
+      if (!obj || typeof obj !== "object") return "";
+      for (const k of keys) {
+        const val = obj[k];
+        if (typeof val === "string" && val.trim()) return val.trim();
+        if (typeof val === "number") return String(val);
+      }
+      return "";
+    }
+
+    function normalizeDreamRecord(raw, fallbackId) {
+      if (typeof raw === "string") {
+        const trimmed = raw.trim();
+        if (trimmed.startsWith("{")) {
+          try {
+            return normalizeDreamRecord(JSON.parse(trimmed), fallbackId);
+          } catch (e) {}
+        }
+        return {
+          id: fallbackId || ("item_" + Math.random().toString(36).slice(2, 8)),
+          title: "رویای ثبت‌شده",
+          body: trimmed,
+          interpretation: "",
+          mood: "",
+          symbols: "",
+          persianDate: ""
+        };
+      }
+
+      const base = (raw && typeof raw === "object") ? raw : {};
+      const nested = (base.record && typeof base.record === "object")
+        ? base.record
+        : ((base.data && typeof base.data === "object") ? base.data : {});
+
+      const src = { ...nested, ...base };
+
+      const title = pickFirstNonEmpty(src, ["title", "dreamTitle", "subject", "name"]) || "رویای بدون عنوان";
+      const body = pickFirstNonEmpty(src, [
+        "body", "text", "content", "dream", "dreamText", "dream_text",
+        "description", "story", "narrative", "note", "details", "rawText"
+      ]);
+      const interpretation = pickFirstNonEmpty(src, [
+        "interpretation", "aiInterpretation", "ai_interpretation", "analysis",
+        "meaning", "interp", "reply", "taabir", "dreamInterpretation"
+      ]);
+      const mood = pickFirstNonEmpty(src, ["mood", "emotion", "feeling", "state"]);
+      const symbols = pickFirstNonEmpty(src, ["symbols", "tags", "keywords", "elements"]);
+      const persianDate = pickFirstNonEmpty(src, [
+        "persianDate", "dateStr", "date", "createdAt", "created_at", "timestamp"
+      ]);
+      const id = src.id || src.fileId || fallbackId || ("dream_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6));
+
+      return {
+        ...src,
+        id,
+        title,
+        body,
+        interpretation,
+        mood,
+        symbols,
+        persianDate
+      };
+    }
 
     function getActiveFolderId() {
       return (
@@ -683,7 +779,7 @@
     function readLocalDreams() {
       try {
         const arr = JSON.parse(localStorage.getItem(LOCAL_DREAMS_KEY) || "[]");
-        return Array.isArray(arr) ? arr : [];
+        return Array.isArray(arr) ? arr.map((item, i) => normalizeDreamRecord(item, "local_" + i)) : [];
       } catch (e) {
         return [];
       }
@@ -802,6 +898,15 @@
       }
     }
 
+    function extractListFromPayload(data) {
+      if (Array.isArray(data)) return data;
+      if (!data || typeof data !== "object") return [];
+      for (const k of ["dreams", "items", "records", "files", "data", "result"]) {
+        if (Array.isArray(data[k])) return data[k];
+      }
+      return [];
+    }
+
     async function fetchDreamsFromGoogleDrive() {
       const folderId = getActiveFolderId();
       const webAppUrl = getActiveWebAppUrl();
@@ -813,10 +918,9 @@
         const res = await fetch(url);
         if (!res.ok) throw new Error("خطا در بازخوانی از وب‌اپ گوگل اسکریپت");
         const data = await res.json();
-        const list = Array.isArray(data) ? data : (Array.isArray(data.dreams) ? data.dreams : []);
+        const list = extractListFromPayload(data);
         return list.map((item, idx) => ({
-          ...item,
-          id: item.id || ("webapp_" + idx),
+          ...normalizeDreamRecord(item, "webapp_" + idx),
           fromDrive: true
         }));
       }
@@ -846,8 +950,7 @@
           if (contentRes.ok) {
             const parsed = await contentRes.json();
             items.push({
-              ...parsed,
-              id: parsed.id || f.id,
+              ...normalizeDreamRecord(parsed, f.id),
               title: parsed.title || f.name,
               fromDrive: true
             });
@@ -872,7 +975,11 @@
         if (Array.isArray(cloudItems) && cloudItems.length > 0) {
           usedCloud = true;
           const seenIds = new Set(cloudItems.map(i => String(i.id)));
-          merged = [...cloudItems, ...localItems.filter(i => !seenIds.has(String(i.id)))];
+          const seenTitles = new Set(cloudItems.map(i => (i.title || "").trim()).filter(Boolean));
+          merged = [
+            ...cloudItems,
+            ...localItems.filter(i => !seenIds.has(String(i.id)) && !seenTitles.has((i.title || "").trim()))
+          ];
         }
       } catch (e) {}
 
@@ -890,7 +997,7 @@
 
       const filtered = loadedArchiveItems.filter(item => {
         if (!query) return true;
-        const hay = `${item.title || ""} ${item.body || ""} ${item.symbols || ""} ${item.mood || ""}`.toLowerCase();
+        const hay = `${item.title || ""} ${item.body || ""} ${item.symbols || ""} ${item.mood || ""} ${item.interpretation || ""}`.toLowerCase();
         return hay.includes(query);
       });
 
@@ -899,24 +1006,31 @@
         return;
       }
 
-      listBox.innerHTML = filtered.map((item, idx) => `
-        <div class="dream-item-card" onclick="openArchivedDream(${idx})">
-          <div class="dream-item-head">
-            <span>🌙 ${escapeHtml(item.title || "رویای ثبت‌شده")}</span>
-            <span style="font-size:0.68rem;color:#7dd3fc">${escapeHtml(item.persianDate || "")}</span>
+      listBox.innerHTML = filtered.map((item, idx) => {
+        const bodyPreview = item.body
+          ? (item.body.slice(0, 160) + (item.body.length > 160 ? "..." : ""))
+          : "متن روایت در این آیتم خالی ثبت شده است.";
+        return `
+          <div class="dream-item-card" onclick="openArchivedDream(${idx})">
+            <div class="dream-item-head">
+              <span>🌙 ${escapeHtml(item.title || "رویای ثبت‌شده")}</span>
+              <span style="font-size:0.68rem;color:#7dd3fc">${escapeHtml(item.persianDate || "")}</span>
+            </div>
+            <div class="dream-item-meta">${item.mood ? "حال‌وهوا: " + escapeHtml(item.mood) : ""} ${item.symbols ? " • نمادها: " + escapeHtml(item.symbols) : ""}</div>
+            <div class="dream-item-preview">${escapeHtml(bodyPreview)}</div>
           </div>
-          <div class="dream-item-meta">${item.mood ? "حال‌وهوا: " + escapeHtml(item.mood) : ""} ${item.symbols ? " • نمادها: " + escapeHtml(item.symbols) : ""}</div>
-          <div class="dream-item-preview">${escapeHtml((item.body || "").slice(0, 140))}${(item.body || "").length > 140 ? "..." : ""}</div>
-        </div>
-      `).join("");
+        `;
+      }).join("");
 
       window.__filteredArchiveCache = filtered;
     }
 
     function openArchivedDream(idx) {
       const arr = window.__filteredArchiveCache || [];
-      const item = arr[idx];
-      if (!item) return;
+      const rawItem = arr[idx];
+      if (!rawItem) return;
+
+      const item = normalizeDreamRecord(rawItem, rawItem.id);
 
       const titleInp = document.getElementById("dreamTitleInput");
       const bodyInp = document.getElementById("dreamBodyTextarea");
@@ -926,15 +1040,30 @@
       if (symInp) symInp.value = item.symbols || "";
       persistDraft();
 
+      const viewerBox = document.getElementById("selectedDreamViewer");
+      const viewerTitle = document.getElementById("selectedDreamTitle");
+      const viewerDate = document.getElementById("selectedDreamDate");
+      const viewerBody = document.getElementById("selectedDreamBody");
+
+      if (viewerBox) viewerBox.classList.add("visible");
+      if (viewerTitle) viewerTitle.textContent = "📜 " + (item.title || "رویای انتخاب‌شده");
+      if (viewerDate) viewerDate.textContent = item.persianDate || "";
+      if (viewerBody) {
+        viewerBody.textContent = item.body || "متن رویا در این رکورد پیدا نشد.";
+      }
+
+      const box = document.getElementById("interpBox");
+      const heading = document.getElementById("interpHeading");
+      const txtEl = document.getElementById("interpText");
       if (item.interpretation) {
-        const box = document.getElementById("interpBox");
-        const heading = document.getElementById("interpHeading");
-        const txtEl = document.getElementById("interpText");
         if (box) box.classList.add("visible");
         if (heading) heading.textContent = "✨ تعبیر ذخیره‌شده: " + (item.title || "");
         if (txtEl) txtEl.textContent = item.interpretation;
+      } else if (box) {
+        box.classList.remove("visible");
       }
-      window.scrollTo({ top: 0, behavior: "smooth" });
+
+      viewerBox?.scrollIntoView({ behavior: "smooth", block: "nearest" });
     }
 
     function escapeHtml(str) {
