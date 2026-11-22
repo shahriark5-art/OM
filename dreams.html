@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#070b16" />
+  <title>دفترچه رویاها | OLDMAN - شهریار</title>
+  <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
+  <style>
+    :root {
+      --bg-night: #070b16;
+      --paper-bg: linear-gradient(180deg, rgba(16, 23, 42, 0.96) 0%, rgba(11, 16, 31, 0.98) 100%);
+      --paper-border: rgba(245, 197, 107, 0.22);
+      --gold: #f5c56b;
+      --gold-soft: #fde68a;
+      --sky: #38bdf8;
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 16px 14px 90px;
+      min-height: 100vh;
+      font-family: "Vazirmatn", system-ui, -apple-system, sans-serif;
+      background:
+        radial-gradient(circle at 85% 8%, rgba(56, 189, 248, 0.11), transparent 36%),
+        radial-gradient(circle at 15% 20%, rgba(245, 197, 107, 0.1), transparent 40%),
+        var(--bg-night);
+      color: var(--text-main);
+      line-height: 1.75;
+    }
+
+    .diary-container {
+      max-width: 760px;
+      margin: 0 auto;
+    }
+
+    .diary-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 13px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: rgba(15, 23, 42, 0.85);
+      color: #e2e8f0;
+      text-decoration: none;
+      font-family: inherit;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .back-btn:hover {
+      border-color: var(--gold);
+      color: var(--gold-soft);
+    }
+
+    .diary-date-badge {
+      font-size: 0.74rem;
+      color: var(--gold-soft);
+      background: rgba(245, 197, 107, 0.1);
+      border: 1px solid rgba(245, 197, 107, 0.28);
+      padding: 6px 11px;
+      border-radius: 99px;
+    }
+
+    .diary-book {
+      position: relative;
+      background: var(--paper-bg);
+      border: 1px solid var(--paper-border);
+      border-right: 5px solid rgba(245, 197, 107, 0.55);
+      border-radius: 22px;
+      padding: 18px 16px;
+      box-shadow: 0 18px 44px rgba(0, 0, 0, 0.65);
+    }
+
+    .diary-heading-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding-bottom: 12px;
+      margin-bottom: 14px;
+      border-bottom: 1px dashed rgba(245, 197, 107, 0.24);
+    }
+
+    .diary-title {
+      margin: 0;
+      font-size: 1.05rem;
+      font-weight: 900;
+      color: var(--gold);
+    }
+
+    .draft-status {
+      font-size: 0.69rem;
+      color: #4ade80;
+    }
+
+    .field-block {
+      margin-bottom: 13px;
+    }
+
+    .field-label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 800;
+      color: #cbd5e1;
+      margin-bottom: 6px;
+    }
+
+    .diary-input {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(4, 7, 16, 0.75);
+      color: #f8fafc;
+      font-family: inherit;
+      font-size: 0.84rem;
+    }
+
+    .diary-input:focus,
+    .diary-textarea:focus {
+      outline: none;
+      border-color: var(--gold);
+      box-shadow: 0 0 0 2px rgba(245, 197, 107, 0.14);
+    }
+
+    .diary-textarea {
+      width: 100%;
+      min-height: 230px;
+      padding: 14px;
+      border-radius: 16px;
+      border: 1px solid rgba(245, 197, 107, 0.22);
+      background-color: rgba(5, 9, 20, 0.84);
+      background-image: repeating-linear-gradient(
+        to bottom,
+        transparent 0px,
+        transparent 31px,
+        rgba(148, 163, 184, 0.08) 32px
+      );
+      color: #f8fafc;
+      font-family: inherit;
+      font-size: 0.9rem;
+      line-height: 32px;
+      resize: vertical;
+    }
+
+    .mood-chips-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 6px;
+    }
+
+    .mood-chip {
+      padding: 5px 10px;
+      border-radius: 99px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(15, 23, 42, 0.75);
+      color: #cbd5e1;
+      font-family: inherit;
+      font-size: 0.72rem;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .mood-chip.active {
+      border-color: var(--gold);
+      background: rgba(245, 197, 107, 0.18);
+      color: var(--gold-soft);
+      font-weight: 800;
+    }
+
+    .actions-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    @media (max-width: 560px) {
+      .actions-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .btn-primary,
+    .btn-cloud,
+    .btn-library {
+      padding: 11px 12px;
+      border-radius: 12px;
+      font-family: inherit;
+      font-size: 0.8rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .btn-primary {
+      border: 1px solid rgba(245, 197, 107, 0.55);
+      background: linear-gradient(135deg, rgba(245, 197, 107, 0.24), rgba(217, 119, 6, 0.28));
+      color: var(--gold-soft);
+    }
+
+    .btn-cloud {
+      border: 1px solid rgba(56, 189, 248, 0.45);
+      background: rgba(56, 189, 248, 0.14);
+      color: #bae6fd;
+    }
+
+    .btn-library {
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      background: rgba(255, 255, 255, 0.06);
+      color: #e2e8f0;
+    }
+
+    .interp-card {
+      display: none;
+      margin-top: 18px;
+      padding: 15px;
+      border-radius: 16px;
+      background: rgba(4, 7, 16, 0.82);
+      border: 1px solid rgba(245, 197, 107, 0.32);
+      border-right: 4px solid var(--gold);
+    }
+
+    .interp-card.visible {
+      display: block;
+    }
+
+    .interp-title {
+      font-size: 0.88rem;
+      font-weight: 900;
+      color: var(--gold);
+      margin-bottom: 10px;
+    }
+
+    .interp-content {
+      font-size: 0.85rem;
+      line-height: 1.95;
+      color: #f1f5f9;
+      white-space: pre-line;
+      text-align: justify;
+    }
+
+    .archive-panel {
+      display: none;
+      margin-top: 18px;
+      padding: 14px;
+      border-radius: 16px;
+      background: rgba(4, 7, 16, 0.78);
+      border: 1px solid rgba(56, 189, 248, 0.28);
+    }
+
+    .archive-panel.visible {
+      display: block;
+    }
+
+    .archive-search {
+      width: 100%;
+      padding: 8px 11px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(15, 23, 42, 0.9);
+      color: #f8fafc;
+      font-family: inherit;
+      font-size: 0.78rem;
+      margin-bottom: 10px;
+    }
+
+    .dream-item-card {
+      padding: 11px 12px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      margin-bottom: 9px;
+      cursor: pointer;
+    }
+
+    .dream-item-card:hover {
+      border-color: rgba(56, 189, 248, 0.45);
+    }
+
+    .dream-item-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.82rem;
+      font-weight: 800;
+      color: var(--gold-soft);
+    }
+
+    .dream-item-meta {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-top: 3px;
+    }
+
+    .dream-item-preview {
+      font-size: 0.78rem;
+      color: #cbd5e1;
+      margin-top: 6px;
+      line-height: 1.65;
+    }
+
+    .drive-config-details {
+      margin-top: 14px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 0.74rem;
+      color: var(--text-muted);
+    }
+
+    .drive-config-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    @media (max-width: 560px) {
+      .drive-config-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .small-save-btn {
+      margin-top: 8px;
+      padding: 6px 12px;
+      border-radius: 9px;
+      border: 1px solid rgba(74, 222, 128, 0.4);
+      background: rgba(34, 197, 94, 0.14);
+      color: #bbf7d0;
+      font-family: inherit;
+      font-size: 0.74rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="diary-container">
+    <div class="diary-topbar">
+      <a class="back-btn" href="index.html">← بازگشت به داشبورد</a>
+      <div id="nightDateBadge" class="diary-date-badge">🌙 دفترچه رویاهای شبانه</div>
+    </div>
+
+    <div class="diary-book">
+      <div class="diary-heading-row">
+        <h1 class="diary-title">📖 دفتر خاطرات و تعبیر عمیق رویا</h1>
+        <span id="draftStatusTag" class="draft-status">پیش‌نویس آماده ✓</span>
+      </div>
+
+      <div class="field-block">
+        <label class="field-label" for="dreamTitleInput">عنوان رویا</label>
+        <input id="dreamTitleInput" class="diary-input" type="text" placeholder="مثلاً: پرواز بر فراز دریای آرام یا گفتگوی عجیب در خانه قدیمی..." />
+      </div>
+
+      <div class="field-block">
+        <label class="field-label">حال‌وهوای بیداری و نمادهای کلیدی</label>
+        <div class="mood-chips-row" id="moodChipsRow">
+          <button type="button" class="mood-chip" data-mood="آرام و شفاف">🌿 آرام و شفاف</button>
+          <button type="button" class="mood-chip" data-mood="پرهیجان و پرشتاب">⚡ پرهیجان</button>
+          <button type="button" class="mood-chip" data-mood="مبهم و رازآلود">🌫️ مبهم و رازآلود</button>
+          <button type="button" class="mood-chip" data-mood="عاطفی و عمیق">🌊 عاطفی و عمیق</button>
+          <button type="button" class="mood-chip" data-mood="هشداردهنده یا نمادین">🕯️ نمادین</button>
+        </div>
+        <input id="dreamSymbolsInput" class="diary-input" style="margin-top:8px" type="text" placeholder="نمادها، مکان‌ها، رنگ‌ها یا احساسات شاخص خواب (اختیاری)..." />
+      </div>
+
+      <div class="field-block">
+        <label class="field-label" for="dreamBodyTextarea">شرح کامل روایت خواب</label>
+        <textarea id="dreamBodyTextarea" class="diary-textarea" placeholder="هر آنچه از خواب به یاد داری را با جزئیات بنویس؛ صحنه‌ها، صداها، حس درونی و لحظه بیدار شدن..."></textarea>
+      </div>
+
+      <div class="actions-row">
+        <button id="interpretDreamBtn" type="button" class="btn-primary" onclick="interpretDreamDeeply()">🔮 تعبیر عمیق با Gemini</button>
+        <button id="saveDriveBtn" type="button" class="btn-cloud" onclick="saveDreamToDrive()">☁️ ذخیره در گوگل درایو</button>
+        <button id="loadDriveBtn" type="button" class="btn-library" onclick="loadDreamsFromDrive()">📚 بازخوانی از درایو</button>
+      </div>
+
+      <div id="interpBox" class="interp-card">
+        <div id="interpHeading" class="interp-title">✨ تعبیر عمیق رویا</div>
+        <div id="interpText" class="interp-content"></div>
+      </div>
+
+      <div id="archivePanel" class="archive-panel">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <b style="color:#7dd3fc;font-size:0.84rem">📚 آرشیو رویاهای ذخیره‌شده</b>
+          <span id="archiveSourceNote" style="font-size:0.69rem;color:#94a3b8"></span>
+        </div>
+        <input id="archiveSearchInp" class="archive-search" type="text" placeholder="جستجو در عنوان، متن یا نماد رویاها..." oninput="renderFilteredArchive()" />
+        <div id="archiveListBox"></div>
+      </div>
+
+      <details class="drive-config-details">
+        <summary style="cursor:pointer;font-weight:700;color:#cbd5e1">⚙️ تنظیمات اتصال گوگل درایو (شناسه فولدر یا توکن موقت)</summary>
+        <div class="drive-config-grid">
+          <div>
+            <label class="field-label" for="driveFolderIdInp">شناسه فولدر (Folder ID) در درایو</label>
+            <input id="driveFolderIdInp" class="diary-input" type="text" placeholder="شناسه فولدر Oldman یا زیرفولدر رویاها" />
+          </div>
+          <div>
+            <label class="field-label" for="driveTokenInp">توکن دسترسی گوگل درایو (Access Token)</label>
+            <input id="driveTokenInp" class="diary-input" type="password" placeholder="ya29. ..." />
+          </div>
+        </div>
+        <button type="button" class="small-save-btn" onclick="saveDriveSettings()">ذخیره تنظیمات درایو</button>
+        <span id="driveCfgSavedMsg" style="margin-right:8px;color:#4ade80"></span>
+      </details>
+    </div>
+  </div>
+
+  <script src="core.js?v=1.7"></script>
+  <script>
+    const DRAFT_STORAGE_KEY = "oldman_dream_diary_draft_v1";
+    const LOCAL_DREAMS_KEY = "oldman_dream_diary_archive_v1";
+    const DRIVE_FOLDER_KEY = "oldman_dreams_drive_folder_id";
+    const DRIVE_TOKEN_KEY = "oldman_dreams_drive_access_token";
+
+    let selectedMoodTag = "";
+    let loadedArchiveItems = [];
+
+    (function initDiaryPage() {
+      const now = new Date();
+      const badge = document.getElementById("nightDateBadge");
+      if (badge) {
+        badge.textContent = "🌙 " + now.toLocaleDateString("fa-IR", {
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric"
+        });
+      }
+
+      document.querySelectorAll(".mood-chip").forEach(chip => {
+        chip.addEventListener("click", () => {
+          const val = chip.dataset.mood || "";
+          if (selectedMoodTag === val) {
+            selectedMoodTag = "";
+            chip.classList.remove("active");
+          } else {
+            selectedMoodTag = val;
+            document.querySelectorAll(".mood-chip").forEach(c => c.classList.remove("active"));
+            chip.classList.add("active");
+          }
+          persistDraft();
+        });
+      });
+
+      const titleEl = document.getElementById("dreamTitleInput");
+      const bodyEl = document.getElementById("dreamBodyTextarea");
+      const symEl = document.getElementById("dreamSymbolsInput");
+
+      try {
+        const rawDraft = localStorage.getItem(DRAFT_STORAGE_KEY);
+        if (rawDraft) {
+          const d = JSON.parse(rawDraft);
+          if (titleEl && d.title) titleEl.value = d.title;
+          if (bodyEl && d.body) bodyEl.value = d.body;
+          if (symEl && d.symbols) symEl.value = d.symbols;
+          if (d.mood) {
+            selectedMoodTag = d.mood;
+            document.querySelectorAll(".mood-chip").forEach(c => {
+              if (c.dataset.mood === d.mood) c.classList.add("active");
+            });
+          }
+        }
+      } catch (e) {}
+
+      [titleEl, bodyEl, symEl].forEach(el => {
+        if (el) el.addEventListener("input", persistDraft);
+      });
+
+      const folderInp = document.getElementById("driveFolderIdInp");
+      const tokenInp = document.getElementById("driveTokenInp");
+      if (folderInp) {
+        folderInp.value = localStorage.getItem(DRIVE_FOLDER_KEY) || localStorage.getItem("oldman_drive_folder_id") || "";
+      }
+      if (tokenInp) {
+        tokenInp.value = localStorage.getItem(DRIVE_TOKEN_KEY) || localStorage.getItem("oldman_drive_access_token") || "";
+      }
+    })();
+
+    function persistDraft() {
+      const title = (document.getElementById("dreamTitleInput")?.value || "");
+      const body = (document.getElementById("dreamBodyTextarea")?.value || "");
+      const symbols = (document.getElementById("dreamSymbolsInput")?.value || "");
+      try {
+        localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify({
+          title,
+          body,
+          symbols,
+          mood: selectedMoodTag,
+          updatedAt: Date.now()
+        }));
+        const tag = document.getElementById("draftStatusTag");
+        if (tag) tag.textContent = "پیش‌نویس ذخیره شد ✓";
+      } catch (e) {}
+    }
+
+    function saveDriveSettings() {
+      const folderId = (document.getElementById("driveFolderIdInp")?.value || "").trim();
+      const token = (document.getElementById("driveTokenInp")?.value || "").trim();
+      localStorage.setItem(DRIVE_FOLDER_KEY, folderId);
+      localStorage.setItem(DRIVE_TOKEN_KEY, token);
+      const msg = document.getElementById("driveCfgSavedMsg");
+      if (msg) msg.textContent = "ذخیره شد ✓";
+    }
+
+    function getGeminiKeyForDreams() {
+      if (window.getStore) {
+        const k = window.getStore("key", "");
+        if (k && k.trim()) return k.trim();
+      }
+      if (window.EMBEDDED_GEMINI_KEY && window.EMBEDDED_GEMINI_KEY.trim()) {
+        return window.EMBEDDED_GEMINI_KEY.trim();
+      }
+      return "";
+    }
+
+    function getSkyContextSummary() {
+      try {
+        if (typeof window.calcPlanets === "function") {
+          const pls = window.calcPlanets(new Date());
+          const moon = pls && pls[2] ? pls[2] : null;
+          const sun = pls && pls[0] ? pls[0] : null;
+          if (moon && sun) {
+            return `خورشید در ${sun.gate}.${sun.line} و ماه در ${moon.gate}.${moon.line}`;
+          }
+        }
+      } catch (e) {}
+      return "چارت شبانه";
+    }
+
+    async function callGeminiDeepInterpretation(dreamObj) {
+      const apiKey = getGeminiKeyForDreams();
+      if (!apiKey) {
+        throw new Error("کلید API گوگل یافت نشد. لطفاً در بخش تنظیمات برنامه کلید Gemini را وارد کنید.");
+      }
+
+      const skyCtx = getSkyContextSummary();
+      const prompt = [
+        "شما یک مفسر عمیق، ظریف و خردمند رویا هستید که با لحنی گرم، ادبی و تأمل‌برانگیز با شهریار سخن می‌گویید.",
+        "این تعبیر نباید کوتاه یا سطحی باشد؛ یک تحلیل کامل، دقیق و چندبخشی بنویسید بدون اینکه خرافه یا پیشگویی قطعی بگویید.",
+        `عنوان رویا: ${dreamObj.title || "بی‌عنوان"}`,
+        `حال‌وهوای بیداری: ${dreamObj.mood || "ثبت‌نشده"}`,
+        `نمادها و نکات برجسته: ${dreamObj.symbols || "ثبت‌نشده"}`,
+        `فضای کیهانی لحظه: ${skyCtx}`,
+        "شرح کامل رویا:",
+        dreamObj.body,
+        "",
+        "پاسخ را دقیقاً با این چهار عنوان فرعی و به زبان فارسی روان بنویس:",
+        "۱. جوهره و پیام اصلی رویا",
+        "۲. کالبدشکافی نمادها، فضاها و تصاویر کلیدی",
+        "۳. لایه عاطفی و ناخودآگاه درونی",
+        "۴. کلید بیداری و پرسش تأملی برای امروز"
+      ].join("\n");
+
+      const endpoint = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + encodeURIComponent(apiKey);
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: {
+            temperature: 0.78,
+            maxOutputTokens: 1800
+          }
+        })
+      });
+
+      if (!response.ok) {
+        const errText = await response.text().catch(() => "");
+        throw new Error("خطا در ارتباط با Gemini (" + response.status + "): " + errText.slice(0, 140));
+      }
+
+      const data = await response.json();
+      const candidateText =
+        data?.candidates?.[0]?.content?.parts
+          ?.map(p => p.text || "")
+          .join("\n")
+          .trim() || "";
+
+      if (!candidateText) {
+        throw new Error("پاسخ خالی از مدل Gemini دریافت شد.");
+      }
+      return candidateText;
+    }
+
+    async function interpretDreamDeeply() {
+      const title = (document.getElementById("dreamTitleInput")?.value || "").trim();
+      const body = (document.getElementById("dreamBodyTextarea")?.value || "").trim();
+      const symbols = (document.getElementById("dreamSymbolsInput")?.value || "").trim();
+
+      if (!body) {
+        alert("لطفاً ابتدا شرح کامل خواب را در دفترچه بنویس.");
+        return;
+      }
+
+      const btn = document.getElementById("interpretDreamBtn");
+      const box = document.getElementById("interpBox");
+      const heading = document.getElementById("interpHeading");
+      const txtEl = document.getElementById("interpText");
+
+      if (btn) btn.disabled = true;
+      if (box) box.classList.add("visible");
+      if (heading) heading.textContent = "🔮 در حال واکاوی لایه‌های رویا با Gemini...";
+      if (txtEl) txtEl.textContent = "کمی صبر کن؛ دفترچه در حال بافتن یک تعبیر عمیق و دقیق است...";
+
+      try {
+        const result = await callGeminiDeepInterpretation({
+          title: title || "رویای بدون عنوان",
+          mood: selectedMoodTag,
+          symbols,
+          body
+        });
+
+        if (heading) heading.textContent = "✨ تعبیر عمیق رویا: " + (title || "دفترچه شبانه");
+        if (txtEl) txtEl.textContent = result;
+        localStorage.setItem("oldman_last_dream_interpretation", result);
+      } catch (err) {
+        if (heading) heading.textContent = "⚠️ خطا در دریافت تعبیر";
+        if (txtEl) txtEl.textContent = err.message || "امکان ارتباط با سرویس هوش مصنوعی وجود نداشت.";
+      } finally {
+        if (btn) btn.disabled = false;
+      }
+    }
+
+    function readLocalDreams() {
+      try {
+        const arr = JSON.parse(localStorage.getItem(LOCAL_DREAMS_KEY) || "[]");
+        return Array.isArray(arr) ? arr : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function writeLocalDreams(arr) {
+      try {
+        localStorage.setItem(LOCAL_DREAMS_KEY, JSON.stringify(arr));
+      } catch (e) {}
+    }
+
+    async function uploadDreamFileToGoogleDrive(record) {
+      const token = (localStorage.getItem(DRIVE_TOKEN_KEY) || localStorage.getItem("oldman_drive_access_token") || "").trim();
+      const folderId = (localStorage.getItem(DRIVE_FOLDER_KEY) || localStorage.getItem("oldman_drive_folder_id") || "").trim();
+      if (!token) return { uploaded: false, reason: "no-token" };
+
+      const fileName = `dream_${record.id}.json`;
+      const metadata = {
+        name: fileName,
+        mimeType: "application/json"
+      };
+      if (folderId) {
+        metadata.parents = [folderId];
+      }
+
+      const boundary = "-------oldman_dream_boundary_" + Date.now();
+      const multipartBody =
+        `--${boundary}\r\n` +
+        `Content-Type: application/json; charset=UTF-8\r\n\r\n` +
+        `${JSON.stringify(metadata)}\r\n` +
+        `--${boundary}\r\n` +
+        `Content-Type: application/json\r\n\r\n` +
+        `${JSON.stringify(record, null, 2)}\r\n` +
+        `--${boundary}--`;
+
+      const res = await fetch("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart", {
+        method: "POST",
+        headers: {
+          "Authorization": "Bearer " + token,
+          "Content-Type": `multipart/related; boundary=${boundary}`
+        },
+        body: multipartBody
+      });
+
+      if (!res.ok) {
+        const errT = await res.text().catch(() => "");
+        throw new Error("خطای گوگل درایو (" + res.status + "): " + errT.slice(0, 120));
+      }
+      const created = await res.json();
+      return { uploaded: true, driveFileId: created.id || "" };
+    }
+
+    async function saveDreamToDrive() {
+      const title = (document.getElementById("dreamTitleInput")?.value || "").trim() || "رویای شبانه";
+      const body = (document.getElementById("dreamBodyTextarea")?.value || "").trim();
+      const symbols = (document.getElementById("dreamSymbolsInput")?.value || "").trim();
+      const interpretation = (document.getElementById("interpText")?.textContent || "").trim();
+
+      if (!body) {
+        alert("ابتدا متن رویا را بنویس.");
+        return;
+      }
+
+      const btn = document.getElementById("saveDriveBtn");
+      if (btn) btn.disabled = true;
+
+      const record = {
+        id: Date.now(),
+        createdAt: new Date().toISOString(),
+        persianDate: new Date().toLocaleDateString("fa-IR", { dateStyle: "full" }),
+        title,
+        mood: selectedMoodTag,
+        symbols,
+        body,
+        interpretation: interpretation.includes("دفترچه در حال بافتن") ? "" : interpretation
+      };
+
+      const existing = readLocalDreams();
+      existing.unshift(record);
+      writeLocalDreams(existing);
+
+      try {
+        const driveRes = await uploadDreamFileToGoogleDrive(record);
+        if (driveRes.uploaded) {
+          alert("رویا در گوگل درایو با موفقیت بایگانی شد ☁️✨");
+        } else {
+          alert("رویا در دفترچه محلی ثبت شد (برای ارسال مستقیم ابری، توکن درایو را در تنظیمات پایین وارد کن).");
+        }
+      } catch (e) {
+        alert("رویا به صورت محلی ذخیره شد، اما ارسال مستقیم به درایو ناموفق بود: " + e.message);
+      } finally {
+        if (btn) btn.disabled = false;
+        if (document.getElementById("archivePanel")?.classList.contains("visible")) {
+          loadDreamsFromDrive();
+        }
+      }
+    }
+
+    async function fetchDreamsFromGoogleDrive() {
+      const token = (localStorage.getItem(DRIVE_TOKEN_KEY) || localStorage.getItem("oldman_drive_access_token") || "").trim();
+      const folderId = (localStorage.getItem(DRIVE_FOLDER_KEY) || localStorage.getItem("oldman_drive_folder_id") || "").trim();
+      if (!token) return null;
+
+      let q = "name contains 'dream_' and mimeType='application/json' and trashed = false";
+      if (folderId) {
+        q += ` and '${folderId}' in parents`;
+      }
+
+      const listUrl = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&fields=files(id,name,createdTime)&pageSize=30`;
+      const res = await fetch(listUrl, {
+        headers: { "Authorization": "Bearer " + token }
+      });
+      if (!res.ok) throw new Error("خطا در فهرست‌گیری از گوگل درایو");
+
+      const data = await res.json();
+      const files = Array.isArray(data.files) ? data.files : [];
+      const items = [];
+
+      for (const f of files.slice(0, 20)) {
+        try {
+          const contentRes = await fetch(`https://www.googleapis.com/drive/v3/files/${encodeURIComponent(f.id)}?alt=media`, {
+            headers: { "Authorization": "Bearer " + token }
+          });
+          if (contentRes.ok) {
+            const parsed = await contentRes.json();
+            items.push({
+              ...parsed,
+              id: parsed.id || f.id,
+              title: parsed.title || f.name,
+              fromDrive: true
+            });
+          }
+        } catch (e) {}
+      }
+      return items;
+    }
+
+    async function loadDreamsFromDrive() {
+      const panel = document.getElementById("archivePanel");
+      const noteEl = document.getElementById("archiveSourceNote");
+      if (panel) panel.classList.add("visible");
+      if (noteEl) noteEl.textContent = "در حال بازخوانی...";
+
+      const localItems = readLocalDreams();
+      let merged = [...localItems];
+      let usedCloud = false;
+
+      try {
+        const cloudItems = await fetchDreamsFromGoogleDrive();
+        if (Array.isArray(cloudItems) && cloudItems.length > 0) {
+          usedCloud = true;
+          const seenIds = new Set(cloudItems.map(i => String(i.id)));
+          merged = [...cloudItems, ...localItems.filter(i => !seenIds.has(String(i.id)))];
+        }
+      } catch (e) {}
+
+      loadedArchiveItems = merged;
+      if (noteEl) {
+        noteEl.textContent = usedCloud ? "☁️ همگام با گوگل درایو" : "💾 آرشیو دفترچه";
+      }
+      renderFilteredArchive();
+    }
+
+    function renderFilteredArchive() {
+      const query = (document.getElementById("archiveSearchInp")?.value || "").trim().toLowerCase();
+      const listBox = document.getElementById("archiveListBox");
+      if (!listBox) return;
+
+      const filtered = loadedArchiveItems.filter(item => {
+        if (!query) return true;
+        const hay = `${item.title || ""} ${item.body || ""} ${item.symbols || ""} ${item.mood || ""}`.toLowerCase();
+        return hay.includes(query);
+      });
+
+      if (filtered.length === 0) {
+        listBox.innerHTML = `<div style="color:#94a3b8;font-size:0.78rem;padding:8px">رویایی برای نمایش یافت نشد.</div>`;
+        return;
+      }
+
+      listBox.innerHTML = filtered.map((item, idx) => `
+        <div class="dream-item-card" onclick="openArchivedDream(${idx})">
+          <div class="dream-item-head">
+            <span>🌙 ${escapeHtml(item.title || "رویای ثبت‌شده")}</span>
+            <span style="font-size:0.68rem;color:#7dd3fc">${escapeHtml(item.persianDate || "")}</span>
+          </div>
+          <div class="dream-item-meta">${item.mood ? "حال‌وهوا: " + escapeHtml(item.mood) : ""} ${item.symbols ? " • نمادها: " + escapeHtml(item.symbols) : ""}</div>
+          <div class="dream-item-preview">${escapeHtml((item.body || "").slice(0, 140))}${(item.body || "").length > 140 ? "..." : ""}</div>
+        </div>
+      `).join("");
+
+      window.__filteredArchiveCache = filtered;
+    }
+
+    function openArchivedDream(idx) {
+      const arr = window.__filteredArchiveCache || [];
+      const item = arr[idx];
+      if (!item) return;
+
+      const titleInp = document.getElementById("dreamTitleInput");
+      const bodyInp = document.getElementById("dreamBodyTextarea");
+      const symInp = document.getElementById("dreamSymbolsInput");
+      if (titleInp) titleInp.value = item.title || "";
+      if (bodyInp) bodyInp.value = item.body || "";
+      if (symInp) symInp.value = item.symbols || "";
+      persistDraft();
+
+      if (item.interpretation) {
+        const box = document.getElementById("interpBox");
+        const heading = document.getElementById("interpHeading");
+        const txtEl = document.getElementById("interpText");
+        if (box) box.classList.add("visible");
+        if (heading) heading.textContent = "✨ تعبیر ذخیره‌شده: " + (item.title || "");
+        if (txtEl) txtEl.textContent = item.interpretation;
+      }
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+  </script>
+</body>
+</html>
