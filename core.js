@@ -1,5 +1,5 @@
 // =========================================================================
-// CORE MODULE: ASTRONOMY, REFLECTOR BODYGRAPH ENGINE, LUCK & SUPERNOVA v1.6
+// CORE MODULE: ASTRONOMY, BODYGRAPH ENGINE, LUCK & SUPERNOVA
 // =========================================================================
 window.EMBEDDED_GEMINI_KEY = "";
 window.MY_GATES = new Set([7,8,9,10,11,12,13,15,23,24,28,37,44,50,54,60,63]);
@@ -64,28 +64,6 @@ window.MANDALA = [41,19,13,49,30,55,37,63,22,36,25,17,21,51,42,3,27,24,2,23,8,20
       background: radial-gradient(circle at 50% 0%, rgba(56,189,248,0.15), rgba(15,23,42,0.9));
       border: 1px solid rgba(56,189,248,0.4); border-radius: 14px; padding: 12px;
       font-size: 0.8rem; line-height: 1.8; color: #e0f2fe;
-    }
-
-    /* هاله آینه‌ای پویا در حالت «فقط ماه» و خلاصه وضعیت رفلکتور */
-    .bg-box.moon-mirror-glow {
-      box-shadow: inset 0 0 38px var(--moon-tint, rgba(56, 189, 248, 0.16)), 0 0 22px var(--moon-tint, rgba(56, 189, 248, 0.14));
-      border-color: var(--moon-border, rgba(56, 189, 248, 0.42)) !important;
-      transition: box-shadow 0.4s ease, border-color 0.4s ease;
-    }
-    .reflector-state-strip {
-      margin-top: 8px;
-      padding: 8px 10px;
-      border-radius: 11px;
-      background: rgba(15, 23, 42, 0.78);
-      border: 1px solid rgba(255, 255, 255, 0.09);
-      font-size: 0.71rem;
-      line-height: 1.65;
-      color: #e2e8f0;
-    }
-    .reflector-resonance-line {
-      margin-top: 4px;
-      font-size: 0.67rem;
-      color: #7dd3fc;
     }
   `;
   document.head.appendChild(st);
@@ -208,13 +186,7 @@ function deg2g(lon) {
   const idx = Math.floor(s / 5.625);
   const rem = s - idx * 5.625;
   const line = Math.floor(rem / 0.9375) + 1;
-  const lineRemDeg = 0.9375 - (rem % 0.9375);
-  return {
-    gate: window.MANDALA[idx],
-    line: line,
-    left: 5.625 - rem,
-    lineLeftDeg: lineRemDeg
-  };
+  return { gate: window.MANDALA[idx], line: line, left: 5.625 - rem };
 }
 window.fmtH = function(h) {
   if (h < 24) {
@@ -278,17 +250,15 @@ window.calcPlanets = function(dt) {
     const inf = deg2g(p.l);
     const totalGateHours = (5.625 / p.sp) * 24;
     const hoursLeft = (inf.left / p.sp) * 24;
-    const lineHoursLeft = (inf.lineLeftDeg / p.sp) * 24;
     const pctLeft = Math.max(4, Math.min(100, Math.round((hoursLeft / totalGateHours) * 100)));
     return {
       n: p.n, s: p.s, lon: p.l, gate: inf.gate, line: inf.line,
-      h: hoursLeft, lineH: lineHoursLeft, totalH: totalGateHours,
-      pctLeft: pctLeft, wt: p.wt, fast: p.fast, isMoon: Boolean(p.isMoon)
+      h: hoursLeft, totalH: totalGateHours, pctLeft: pctLeft,
+      wt: p.wt, fast: p.fast, isMoon: Boolean(p.isMoon)
     };
   });
 };
 
-// موتور تطبیق دوطرفه دروازه‌های تولد (MY_GATES) و ترانزیت لحظه‌ای برای یک کانال
 function matchChannelBidirectional(ch, pls) {
   const transitGatesSet = new Set(pls.map(p => p.gate));
   const hasG1 = transitGatesSet.has(ch.g1) || window.MY_GATES.has(ch.g1);
@@ -300,19 +270,12 @@ function matchChannelBidirectional(ch, pls) {
   const pMoon = (moon && (moon.gate === ch.g1 || moon.gate === ch.g2)) ? moon : null;
   const pG2 = pls.find(p => p.gate === ch.g2);
   const pG1 = pls.find(p => p.gate === ch.g1);
-
   const triggerPlanet = pMoon || pG2 || pG1 || {
     n: "چارت تولد", s: "✦", gate: window.MY_GATES.has(ch.g2) ? ch.g2 : ch.g1,
     line: 1, h: 24, pctLeft: 100, wt: 1.0, fast: false, isMoon: false
   };
 
-  const natalInvolvement = window.MY_GATES.has(ch.g1) || window.MY_GATES.has(ch.g2);
-  return {
-    ch,
-    p: triggerPlanet,
-    isMoonLock: Boolean(pMoon),
-    natalInvolvement
-  };
+  return { ch, p: triggerPlanet, isMoonLock: Boolean(pMoon) };
 }
 
 function collectActiveChannels(pls) {
@@ -322,52 +285,6 @@ function collectActiveChannels(pls) {
     if (matched) act.push(matched);
   });
   return act;
-}
-
-function analyzeNatalResonance(pls) {
-  const moon = pls[2];
-  const directHits = [];
-  const approachingLocks = [];
-
-  pls.forEach(p => {
-    if (window.MY_GATES.has(p.gate)) {
-      directHits.push(p);
-    }
-  });
-
-  if (moon) {
-    window.DB.forEach(ch => {
-      const moonTouchesG1 = moon.gate === ch.g1;
-      const moonTouchesG2 = moon.gate === ch.g2;
-      if (moonTouchesG1 || moonTouchesG2) {
-        const partnerGate = moonTouchesG1 ? ch.g2 : ch.g1;
-        const partnerActiveNow = pls.some(p => p.gate === partnerGate);
-        const partnerInNatal = window.MY_GATES.has(partnerGate);
-        if (!partnerActiveNow && !partnerInNatal) {
-          approachingLocks.push({ ch, partnerGate });
-        }
-      }
-    });
-  }
-
-  return { directHits, approachingLocks };
-}
-
-function getMoonMirrorPalette(moon) {
-  if (!moon) {
-    return { tint: "rgba(56, 189, 248, 0.15)", border: "rgba(56, 189, 248, 0.4)", label: "آینه آبی شهود" };
-  }
-  const g = moon.gate;
-  if ([27, 50, 5, 15, 2, 46, 37, 19].includes(g)) {
-    return { tint: "rgba(34, 197, 94, 0.16)", border: "rgba(74, 222, 128, 0.45)", label: "هاله سبزِ حیات و هم‌نوایی" };
-  }
-  if ([41, 30, 55, 22, 36, 6, 49, 35].includes(g)) {
-    return { tint: "rgba(245, 197, 107, 0.17)", border: "rgba(251, 191, 36, 0.46)", label: "هاله طلاییِ اشتیاق و تجربه" };
-  }
-  if ([24, 61, 63, 4, 43, 11, 47, 64].includes(g)) {
-    return { tint: "rgba(168, 85, 247, 0.16)", border: "rgba(192, 132, 252, 0.45)", label: "هاله بنفشِ الهام و ادراک" };
-  }
-  return { tint: "rgba(56, 189, 248, 0.16)", border: "rgba(125, 211, 252, 0.45)", label: "هاله لاجوردیِ آینه رفلکتور" };
 }
 
 window.calcGalacticLuck = function(pls, act, dateObj = new Date()) {
@@ -563,61 +480,6 @@ function setupInteractiveCenters() {
   });
 }
 
-function updateReflectorStatusStrip(mode, pls, act, moonActiveChannels, resonance) {
-  const bgBox = document.querySelector(".bg-box");
-  if (!bgBox) return;
-
-  let strip = document.getElementById("reflectorStatusStrip");
-  if (!strip) {
-    strip = document.createElement("div");
-    strip.id = "reflectorStatusStrip";
-    strip.className = "reflector-state-strip";
-    bgBox.insertAdjacentElement("afterend", strip);
-  }
-
-  const moon = pls[2];
-  const moonTheme = (moon && window.GATE_THEMES && window.GATE_THEMES[moon.gate]) || "حضور و مشاهده";
-
-  let stateHeadline = "";
-  let actionHint = "";
-
-  if (mode === "moon") {
-    if (moonActiveChannels.length > 0) {
-      stateHeadline = "🌙 فاز «قفلِ ماه»: ماه در دروازه " + moon.gate + "." + moon.line + " کانال فعال را روشن کرده است.";
-      actionHint = "موجِ گذرای ماه (تغییر دروازه تا " + window.fmtH(moon.h) + ")؛ مناسب اقدامِ هم‌راستا با تم «" + moonTheme + "».";
-    } else {
-      stateHeadline = "🌕 فاز «میدان بازِ آینه‌ای با ماه»: هیچ مرکزی قفل نیست؛ ماه روی آینه روح تو نشسته است.";
-      actionHint = "تغییر خط بعدی ماه تا " + window.fmtH(moon.lineH) + " و تغییر دروازه تا " + window.fmtH(moon.h) + " — زمانِ مشاهده، یادداشت و پرهیز از شتاب.";
-    }
-  } else {
-    if (act.length > 0) {
-      stateHeadline = "⚡ فاز «ترانزیت/تولد فعال»: " + act.length + " کانال در چارت لحظه‌ای شما روشن است.";
-      actionHint = "مراکز روشن، رنگِ موقتِ فضا هستند؛ با آگاهی رفلکتوری از موج‌ها بهره‌برداری کن.";
-    } else {
-      stateHeadline = "🌕 فاز «رفلکتور خالص و باز»: در این ساعت هیچ کانالی قفل نیست.";
-      actionHint = "بهترین لحظه برای شفافیت درونی، خلوت و مشاهده بی‌طرفانه محیط پیرامون.";
-    }
-  }
-
-  const natalHitNames = resonance.directHits.map(p => p.n + " (" + p.gate + "." + p.line + ")");
-  const approachNames = resonance.approachingLocks.map(a => a.ch.name + " با دروازه " + a.partnerGate);
-
-  let resText = "🔭 رادار تولد: ";
-  if (natalHitNames.length > 0) {
-    resText += "هم‌نشینی با دروازه‌های تولد در " + natalHitNames.join("، ");
-  } else {
-    resText += "دروازه تولدی در لحظه لمس نشده است";
-  }
-  if (approachNames.length > 0) {
-    resText += " | در آستانه قفل ماه: " + approachNames.slice(0, 2).join(" ، ");
-  }
-
-  strip.innerHTML =
-    "<div style='font-weight:800;color:#fef08a'>" + stateHeadline + "</div>" +
-    "<div style='color:#cbd5e1;margin-top:2px'>" + actionHint + "</div>" +
-    "<div class='reflector-resonance-line'>" + resText + "</div>";
-}
-
 window.isSupernovaActiveGlobal = false;
 
 function renderBodyGraph(pls, act) {
@@ -626,7 +488,6 @@ function renderBodyGraph(pls, act) {
   setupInteractiveCenters();
   const mode = window.getStore("bgFilter", "all");
   const moon = pls[2];
-  const bgBox = document.querySelector(".bg-box");
   const capEl = document.getElementById("capText");
   const sidebarEl = document.getElementById("bgPlanetSidebar");
 
@@ -652,16 +513,7 @@ function renderBodyGraph(pls, act) {
     (moon && (moon.gate === x.ch.g1 || moon.gate === x.ch.g2))
   );
 
-  const resonance = analyzeNatalResonance(pls);
-
   if (mode === "moon") {
-    const palette = getMoonMirrorPalette(moon);
-    if (bgBox) {
-      bgBox.classList.add("moon-mirror-glow");
-      bgBox.style.setProperty("--moon-tint", palette.tint);
-      bgBox.style.setProperty("--moon-border", palette.border);
-    }
-
     moonActiveChannels.forEach(x => {
       x.ch.c.forEach(cn => activeCenters.add(cn));
       const lineEl = document.getElementById(x.ch.svg);
@@ -673,29 +525,14 @@ function renderBodyGraph(pls, act) {
       if (cEl) cEl.setAttribute("class", "c-shape on-blue");
     });
 
-    const moonTheme = (moon && window.GATE_THEMES[moon.gate]) || "سکوت و شهود";
-    const moonFeel = (moon && window.GATE_FEELINGS[moon.gate]) || "آرامش و حضور";
-    const moonNatRes = (moon && window.MY_GATES.has(moon.gate)) ? " • هم‌نوا با دروازه تولد ✨" : "";
-
     if (capEl && moon) {
       if (moonActiveChannels.length > 0) {
-        capEl.innerHTML =
-          "🌙 قفلِ ماه: <b>" + moonActiveChannels.map(x => x.ch.name).join(" | ") + "</b>" + moonNatRes +
-          "<br/><span style='font-size:0.74rem;color:#7dd3fc'>ماه در " + moon.gate + "." + moon.line + " («" + moonTheme + "») • تغییر دروازه تا " + window.fmtH(moon.h) + " • تغییر خط تا " + window.fmtH(moon.lineH) + "</span>";
+        capEl.innerHTML = "🌙 قفلِ ماه: <b>" + moonActiveChannels.map(x => x.ch.name).join(" | ") + "</b><br/><span style='font-size:0.74rem;color:#7dd3fc'>ماه در دروازه " + moon.gate + "." + moon.line + " • تغییر دروازه تا " + window.fmtH(moon.h) + "</span>";
       } else {
-        capEl.innerHTML =
-          "🌙 ماه در دروازه <b>" + moon.gate + "." + moon.line + "</b> (" + palette.label + ")" + moonNatRes +
-          "<br/><span style='font-size:0.74rem;color:#7dd3fc'>«" + moonTheme + "» — تغییر دروازه تا " + window.fmtH(moon.h) + " | تغییر خط تا " + window.fmtH(moon.lineH) + "</span>" +
-          "<br/><span style='font-size:0.7rem;color:#cbd5e1;font-weight:400'>✨ حس فضا: " + moonFeel + "</span>";
+        capEl.innerHTML = "🌙 ماه در دروازه <b>" + moon.gate + "." + moon.line + "</b> (هیچ کانالی قفل نیست)<br/><span style='font-size:0.74rem;color:#7dd3fc'>تغییر دروازه ماه تا " + window.fmtH(moon.h) + "</span>";
       }
     }
   } else {
-    if (bgBox) {
-      bgBox.classList.remove("moon-mirror-glow");
-      bgBox.style.removeProperty("--moon-tint");
-      bgBox.style.removeProperty("--moon-border");
-    }
-
     act.forEach(x => {
       x.ch.c.forEach(cn => activeCenters.add(cn));
       const lineEl = document.getElementById(x.ch.svg);
@@ -719,17 +556,12 @@ function renderBodyGraph(pls, act) {
 
     if (capEl) {
       if (act.length > 0) {
-        const resBadge = resonance.directHits.length > 0
-          ? "<br/><span style='font-size:0.71rem;color:#7dd3fc'>✦ هم‌نوایی تولد: " + resonance.directHits.map(p => p.n + " در " + p.gate + "." + p.line).join(" ، ") + "</span>"
-          : "";
-        capEl.innerHTML = act.map(x => x.ch.name).join(" | ") + resBadge;
+        capEl.textContent = act.map(x => x.ch.name).join(" | ");
       } else {
         capEl.textContent = "میدان باز و آینه‌ای رفلکتور (هیچ کانالی قفل نیست)";
       }
     }
   }
-
-  updateReflectorStatusStrip(mode, pls, act, moonActiveChannels, resonance);
 }
 
 function computeAuraShift(act) {
@@ -868,7 +700,7 @@ function renderActiveChannelsSection(now, pls, act) {
             '<span class="exp" style="color:' + (isUrgent ? "#fca5a5" : "#fde68a") + '">' + (isUrgent ? "⏳ رو به اتمام: " : "فعال تا ") + timeRemainingStr + '</span>' +
           '</div>' +
           '<div style="display:flex;justify-content:space-between;align-items:center;font-size:0.75rem;color:#cbd5e1">' +
-            '<span>توسط <b>' + pObj.n + ' (' + pObj.s + ')</b> در دروازه ' + pObj.gate + '.' + pObj.line + (x.natalInvolvement ? ' • هم‌نوا با تولد' : '') + '</span>' +
+            '<span>توسط <b>' + pObj.n + ' (' + pObj.s + ')</b> در دروازه ' + pObj.gate + '.' + pObj.line + '</span>' +
             '<span style="font-size:0.68rem;color:#7dd3fc">🔍 لمس برای کالبدشکافی ▾</span>' +
           '</div>' +
           '<div class="ch-fuel-bg" title="شارژ باقی‌مانده حضور سیاره در این دروازه">' +
@@ -1002,7 +834,7 @@ function renderLunarDecisions() {
 }
 
 // =========================================================================
-// RITUAL DUAL-THUMB SUPERNOVA & AUDIO/HAPTIC ENGINE (v1.6)
+// RITUAL DUAL-THUMB SUPERNOVA & AUDIO/HAPTIC ENGINE
 // =========================================================================
 (function initCosmicRitualSensors() {
   let leftPressed = false;
@@ -1065,10 +897,7 @@ function renderLunarDecisions() {
     const filterRow = document.querySelector(".bg-filter-row");
     const capEl = document.getElementById("capText");
 
-    if (bgBox) {
-      bgBox.classList.remove("moon-mirror-glow");
-      bgBox.classList.add("supernova-active");
-    }
+    if (bgBox) bgBox.classList.add("supernova-active");
 
     if (filterRow) {
       filterRow.style.display = "none";
@@ -1218,8 +1047,7 @@ window.runApp = function(resetDeep) {
     pg.innerHTML = "";
     pls.forEach(p => {
       const hit = window.DB.some(c => c.g2 === p.gate || c.g1 === p.gate);
-      const isNatal = window.MY_GATES.has(p.gate);
-      const cls = hit ? " hit" : (isNatal ? " natal-res" : "");
+      const cls = hit ? " hit" : "";
       pg.innerHTML += '<div class="p-chip' + cls + '"><span>' + p.s + ' ' + p.n + '</span><b style="color:#f5c56b">' + p.gate + '.' + p.line + '</b></div>';
     });
   }
