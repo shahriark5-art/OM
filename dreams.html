@@ -425,6 +425,10 @@
             <input id="driveTokenInp" class="diary-input" type="password" placeholder="ya29. ..." />
           </div>
         </div>
+        <div style="margin-top:8px">
+          <label class="field-label" for="driveWebAppUrlInp">لینک وب‌اپ گوگل اسکریپت (Web App URL)</label>
+          <input id="driveWebAppUrlInp" class="diary-input" type="text" placeholder="https://script.google.com/macros/s/.../exec" />
+        </div>
         <button type="button" class="small-save-btn" onclick="saveDriveSettings()">ذخیره تنظیمات درایو</button>
         <span id="driveCfgSavedMsg" style="margin-right:8px;color:#4ade80"></span>
       </details>
@@ -433,13 +437,42 @@
 
   <script src="core.js?v=1.7"></script>
   <script>
+    const DEFAULT_DRIVE_FOLDER_ID = "1_4qa4ImfxRJFcjbuzUNOVs8UNWu-R70n";
+    const DEFAULT_DRIVE_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbx7t49G3f3aUqfeTk0QnA-FdblXaiQlAhYOyaXZ50WPkQLhsTsakXYe_0QCMo9MpfEJ/exec";
+    const DEFAULT_DRIVE_ACCESS_TOKEN = "";
+
     const DRAFT_STORAGE_KEY = "oldman_dream_diary_draft_v1";
     const LOCAL_DREAMS_KEY = "oldman_dream_diary_archive_v1";
     const DRIVE_FOLDER_KEY = "oldman_dreams_drive_folder_id";
     const DRIVE_TOKEN_KEY = "oldman_dreams_drive_access_token";
+    const DRIVE_WEBAPP_KEY = "oldman_dreams_drive_webapp_url";
 
     let selectedMoodTag = "";
     let loadedArchiveItems = [];
+
+    function getActiveFolderId() {
+      return (
+        localStorage.getItem(DRIVE_FOLDER_KEY) ||
+        localStorage.getItem("oldman_drive_folder_id") ||
+        DEFAULT_DRIVE_FOLDER_ID
+      ).trim();
+    }
+
+    function getActiveWebAppUrl() {
+      return (
+        localStorage.getItem(DRIVE_WEBAPP_KEY) ||
+        localStorage.getItem("oldman_drive_webapp_url") ||
+        DEFAULT_DRIVE_WEBAPP_URL
+      ).trim();
+    }
+
+    function getActiveAccessToken() {
+      return (
+        localStorage.getItem(DRIVE_TOKEN_KEY) ||
+        localStorage.getItem("oldman_drive_access_token") ||
+        DEFAULT_DRIVE_ACCESS_TOKEN
+      ).trim();
+    }
 
     (function initDiaryPage() {
       const now = new Date();
@@ -494,12 +527,10 @@
 
       const folderInp = document.getElementById("driveFolderIdInp");
       const tokenInp = document.getElementById("driveTokenInp");
-      if (folderInp) {
-        folderInp.value = localStorage.getItem(DRIVE_FOLDER_KEY) || localStorage.getItem("oldman_drive_folder_id") || "";
-      }
-      if (tokenInp) {
-        tokenInp.value = localStorage.getItem(DRIVE_TOKEN_KEY) || localStorage.getItem("oldman_drive_access_token") || "";
-      }
+      const webAppInp = document.getElementById("driveWebAppUrlInp");
+      if (folderInp) folderInp.value = getActiveFolderId();
+      if (tokenInp) tokenInp.value = getActiveAccessToken();
+      if (webAppInp) webAppInp.value = getActiveWebAppUrl();
     })();
 
     function persistDraft() {
@@ -520,10 +551,12 @@
     }
 
     function saveDriveSettings() {
-      const folderId = (document.getElementById("driveFolderIdInp")?.value || "").trim();
+      const folderId = (document.getElementById("driveFolderIdInp")?.value || "").trim() || DEFAULT_DRIVE_FOLDER_ID;
       const token = (document.getElementById("driveTokenInp")?.value || "").trim();
+      const webAppUrl = (document.getElementById("driveWebAppUrlInp")?.value || "").trim() || DEFAULT_DRIVE_WEBAPP_URL;
       localStorage.setItem(DRIVE_FOLDER_KEY, folderId);
       localStorage.setItem(DRIVE_TOKEN_KEY, token);
+      localStorage.setItem(DRIVE_WEBAPP_KEY, webAppUrl);
       const msg = document.getElementById("driveCfgSavedMsg");
       if (msg) msg.textContent = "ذخیره شد ✓";
     }
@@ -663,9 +696,28 @@
     }
 
     async function uploadDreamFileToGoogleDrive(record) {
-      const token = (localStorage.getItem(DRIVE_TOKEN_KEY) || localStorage.getItem("oldman_drive_access_token") || "").trim();
-      const folderId = (localStorage.getItem(DRIVE_FOLDER_KEY) || localStorage.getItem("oldman_drive_folder_id") || "").trim();
-      if (!token) return { uploaded: false, reason: "no-token" };
+      const folderId = getActiveFolderId();
+      const webAppUrl = getActiveWebAppUrl();
+      const token = getActiveAccessToken();
+
+      if (webAppUrl) {
+        const res = await fetch(webAppUrl, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({
+            action: "saveDream",
+            folderId,
+            fileName: `dream_${record.id}.json`,
+            record
+          })
+        });
+        if (!res.ok) {
+          throw new Error("خطا در وب‌اپ گوگل اسکریپت (" + res.status + ")");
+        }
+        return { uploaded: true, via: "webapp" };
+      }
+
+      if (!token) return { uploaded: false, reason: "no-auth" };
 
       const fileName = `dream_${record.id}.json`;
       const metadata = {
@@ -700,7 +752,7 @@
         throw new Error("خطای گوگل درایو (" + res.status + "): " + errT.slice(0, 120));
       }
       const created = await res.json();
-      return { uploaded: true, driveFileId: created.id || "" };
+      return { uploaded: true, driveFileId: created.id || "", via: "token" };
     }
 
     async function saveDreamToDrive() {
@@ -719,6 +771,7 @@
 
       const record = {
         id: Date.now(),
+        folderId: getActiveFolderId(),
         createdAt: new Date().toISOString(),
         persianDate: new Date().toLocaleDateString("fa-IR", { dateStyle: "full" }),
         title,
@@ -737,7 +790,7 @@
         if (driveRes.uploaded) {
           alert("رویا در گوگل درایو با موفقیت بایگانی شد ☁️✨");
         } else {
-          alert("رویا در دفترچه محلی ثبت شد (برای ارسال مستقیم ابری، توکن درایو را در تنظیمات پایین وارد کن).");
+          alert("رویا در دفترچه محلی ثبت شد.");
         }
       } catch (e) {
         alert("رویا به صورت محلی ذخیره شد، اما ارسال مستقیم به درایو ناموفق بود: " + e.message);
@@ -750,16 +803,32 @@
     }
 
     async function fetchDreamsFromGoogleDrive() {
-      const token = (localStorage.getItem(DRIVE_TOKEN_KEY) || localStorage.getItem("oldman_drive_access_token") || "").trim();
-      const folderId = (localStorage.getItem(DRIVE_FOLDER_KEY) || localStorage.getItem("oldman_drive_folder_id") || "").trim();
+      const folderId = getActiveFolderId();
+      const webAppUrl = getActiveWebAppUrl();
+      const token = getActiveAccessToken();
+
+      if (webAppUrl) {
+        const sep = webAppUrl.includes("?") ? "&" : "?";
+        const url = `${webAppUrl}${sep}action=listDreams&folderId=${encodeURIComponent(folderId)}`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error("خطا در بازخوانی از وب‌اپ گوگل اسکریپت");
+        const data = await res.json();
+        const list = Array.isArray(data) ? data : (Array.isArray(data.dreams) ? data.dreams : []);
+        return list.map((item, idx) => ({
+          ...item,
+          id: item.id || ("webapp_" + idx),
+          fromDrive: true
+        }));
+      }
+
       if (!token) return null;
 
-      let q = "name contains 'dream_' and mimeType='application/json' and trashed = false";
+      let q = "mimeType='application/json' and trashed = false";
       if (folderId) {
         q += ` and '${folderId}' in parents`;
       }
 
-      const listUrl = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&fields=files(id,name,createdTime)&pageSize=30`;
+      const listUrl = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&fields=files(id,name,createdTime)&orderBy=createdTime desc&pageSize=30`;
       const res = await fetch(listUrl, {
         headers: { "Authorization": "Bearer " + token }
       });
