@@ -419,7 +419,7 @@
           </div>
         </div>
         <div style="margin-top:8px">
-          <label style="display:block;margin-bottom:4px">مدل دلخواه Gemini (اختیاری - مثلاً gemini-2.5-flash-lite):</label>
+          <label style="display:block;margin-bottom:4px">مدل دلخواه Gemini (اختیاری - مثلاً gemini-2.0-flash):</label>
           <input id="geminiCustomModelInp" class="engine-input" type="text" placeholder="خالی بماند تا مدل متنی خودکار انتخاب شود" />
         </div>
         <div style="margin-top:8px">
@@ -443,7 +443,7 @@
     const ORACLE_OR_MODEL_KEY = "oldman_sage_openrouter_model_v1";
     const ORACLE_GEMINI_MODEL_KEY = "oldman_sage_gemini_model_v1";
     const ORACLE_CUSTOM_KEY = "oldman_sage_custom_api_key_v1";
-    const GEMINI_CANDIDATE_MODELS = ["gemini-2.5-flash-lite", "gemini-2.0-flash-lite", "gemini-2.0-flash", "gemini-2.5-flash"];
+    const GEMINI_CANDIDATE_MODELS = ["gemini-2.0-flash", "gemini-2.5-flash-lite", "gemini-2.0-flash-lite", "gemini-2.5-flash"];
 
     let threadsList = [];
     let activeThreadFilter = "all";
@@ -451,7 +451,15 @@
 
     function isNonTextOnlyModel(modelName) {
       const lower = String(modelName || "").toLowerCase();
-      return lower.includes("-tts") || lower.includes("tts-") || lower.includes("audio") || lower.includes("imagen") || lower.includes("veo") || lower.includes("live");
+      return (
+        lower.includes("-tts") ||
+        lower.includes("tts-") ||
+        lower.includes("audio") ||
+        lower.includes("imagen") ||
+        lower.includes("veo") ||
+        lower.includes("live") ||
+        lower.includes("gemma")
+      );
     }
 
     function cleanPersianSageOutput(rawText) {
@@ -462,7 +470,6 @@
       const persianRegex = /[\u0600-\u06FF]/;
       const firstPersianIdx = lines.findIndex(line => persianRegex.test(line));
 
-      // اگر بخش اول فقط یادداشت انگلیسی/ساختاری بدون فارسی باشد، از اولین خط فارسی شروع می‌کنیم
       if (firstPersianIdx > 0) {
         const prefixLines = lines.slice(0, firstPersianIdx).join("\n").trim();
         const isEnglishMetaPrefix =
@@ -723,15 +730,15 @@
       }
 
       let lastError = null;
-      let hitQuota429 = false;
+      let hitTransientError = false;
 
       for (const modelName of queue) {
         try {
           return await trySingleGeminiModel(apiKey, modelName, systemPrompt, fullUserPrompt);
         } catch (err) {
           lastError = err;
-          if (err.status === 429) {
-            hitQuota429 = true;
+          if (err.status === 429 || err.status === 503 || err.status === 500) {
+            hitTransientError = true;
             continue;
           }
           if (err.status !== 404 && err.status !== 400) {
@@ -750,13 +757,15 @@
             return out;
           } catch (liveErr) {
             lastError = liveErr;
-            if (liveErr.status === 429) hitQuota429 = true;
+            if (liveErr.status === 429 || liveErr.status === 503 || liveErr.status === 500) {
+              hitTransientError = true;
+            }
           }
         }
       } catch (listErr) {}
 
-      if (hitQuota429) {
-        throw new Error("سهمیه یا نرخ درخواست (429 Quota Exceeded) برای مدل‌های فعال این کلید در حال حاضر پر شده است.");
+      if (hitTransientError) {
+        throw new Error("در حال حاضر مدل‌های Gemini با شلوغی سرور یا محدودیت موقت سهمیه مواجه هستند؛ چند لحظه بعد دوباره تلاش کن.");
       }
       throw lastError || new Error("هیچ مدل فعالی از Gemini پاسخ نداد.");
     }
