@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#050814" />
+  <title>خلوتگاه پیرمرد | OLDMAN - شهریار</title>
+  <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
+  <style>
+    :root {
+      --bg-sanctuary: #050814;
+      --card-bg: linear-gradient(165deg, rgba(17, 24, 46, 0.96), rgba(8, 13, 28, 0.98));
+      --border-soft: rgba(245, 197, 107, 0.24);
+      --gold: #f5c56b;
+      --gold-soft: #fde68a;
+      --sky: #38bdf8;
+      --emerald: #4ade80;
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 16px 14px 90px;
+      min-height: 100vh;
+      font-family: "Vazirmatn", system-ui, -apple-system, sans-serif;
+      background:
+        radial-gradient(circle at 80% 10%, rgba(168, 85, 247, 0.12), transparent 38%),
+        radial-gradient(circle at 18% 18%, rgba(245, 197, 107, 0.12), transparent 42%),
+        var(--bg-sanctuary);
+      color: var(--text-main);
+      line-height: 1.8;
+    }
+
+    .sanctuary-wrap {
+      max-width: 780px;
+      margin: 0 auto;
+    }
+
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 13px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: rgba(15, 23, 42, 0.85);
+      color: #e2e8f0;
+      text-decoration: none;
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+
+    .back-link:hover {
+      border-color: var(--gold);
+      color: var(--gold-soft);
+    }
+
+    .pulse-pill {
+      font-size: 0.72rem;
+      color: #bae6fd;
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.34);
+      padding: 6px 12px;
+      border-radius: 99px;
+    }
+
+    .sanctuary-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-soft);
+      border-radius: 22px;
+      padding: 18px 16px;
+      box-shadow: 0 20px 48px rgba(0, 0, 0, 0.68);
+    }
+
+    .sage-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding-bottom: 14px;
+      margin-bottom: 14px;
+      border-bottom: 1px dashed rgba(245, 197, 107, 0.25);
+    }
+
+    .sage-orb {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.55rem;
+      background: radial-gradient(circle at 35% 30%, rgba(245, 197, 107, 0.32), rgba(15, 23, 42, 0.95));
+      border: 1px solid rgba(245, 197, 107, 0.5);
+      flex-shrink: 0;
+    }
+
+    .sage-title {
+      margin: 0;
+      font-size: 1.05rem;
+      font-weight: 900;
+      color: var(--gold);
+    }
+
+    .sage-sub {
+      font-size: 0.76rem;
+      color: #cbd5e1;
+      margin-top: 3px;
+    }
+
+    .sky-context-strip {
+      padding: 9px 12px;
+      border-radius: 13px;
+      background: rgba(4, 7, 16, 0.72);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 0.73rem;
+      color: #cbd5e1;
+      margin-bottom: 13px;
+    }
+
+    .prompts-label {
+      font-size: 0.74rem;
+      font-weight: 800;
+      color: var(--gold-soft);
+      margin-bottom: 6px;
+    }
+
+    .starter-prompts-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      margin-bottom: 14px;
+    }
+
+    .starter-chip {
+      text-align: right;
+      padding: 8px 11px;
+      border-radius: 12px;
+      border: 1px solid rgba(245, 197, 107, 0.24);
+      background: rgba(255, 255, 255, 0.03);
+      color: #e2e8f0;
+      font-family: inherit;
+      font-size: 0.75rem;
+      line-height: 1.55;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .starter-chip:hover {
+      border-color: var(--gold);
+      background: rgba(245, 197, 107, 0.11);
+      color: var(--gold-soft);
+    }
+
+    .question-textarea {
+      width: 100%;
+      min-height: 118px;
+      padding: 12px 13px;
+      border-radius: 15px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: rgba(4, 7, 16, 0.82);
+      color: #f8fafc;
+      font-family: inherit;
+      font-size: 0.86rem;
+      line-height: 1.8;
+      resize: vertical;
+    }
+
+    .question-textarea:focus {
+      outline: none;
+      border-color: var(--gold);
+    }
+
+    .action-btns {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    .ask-main-btn {
+      flex: 1;
+      min-width: 180px;
+      padding: 11px 14px;
+      border-radius: 12px;
+      border: 1px solid rgba(245, 197, 107, 0.55);
+      background: linear-gradient(135deg, rgba(245, 197, 107, 0.25), rgba(217, 119, 6, 0.28));
+      color: var(--gold-soft);
+      font-family: inherit;
+      font-size: 0.82rem;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .secondary-btn {
+      padding: 11px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.05);
+      color: #cbd5e1;
+      font-family: inherit;
+      font-size: 0.76rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .filter-tabs {
+      display: flex;
+      gap: 8px;
+      margin-top: 18px;
+      margin-bottom: 10px;
+    }
+
+    .filter-pill {
+      padding: 6px 12px;
+      border-radius: 99px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(15, 23, 42, 0.8);
+      color: #cbd5e1;
+      font-family: inherit;
+      font-size: 0.72rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .filter-pill.active {
+      border-color: var(--sky);
+      background: rgba(56, 189, 248, 0.18);
+      color: #bae6fd;
+    }
+
+    .thread-card {
+      padding: 13px 14px;
+      border-radius: 15px;
+      background: rgba(4, 7, 16, 0.84);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-right: 3.5px solid var(--gold);
+      margin-bottom: 12px;
+    }
+
+    .thread-q {
+      font-size: 0.8rem;
+      font-weight: 800;
+      color: var(--gold-soft);
+      margin-bottom: 7px;
+    }
+
+    .thread-a {
+      font-size: 0.84rem;
+      line-height: 1.95;
+      color: #f1f5f9;
+      white-space: pre-line;
+      text-align: justify;
+    }
+
+    .thread-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-top: 10px;
+      padding-top: 8px;
+      border-top: 1px dashed rgba(255, 255, 255, 0.1);
+      flex-wrap: wrap;
+    }
+
+    .thread-meta {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+    }
+
+    .thread-actions {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .mini-act-btn {
+      padding: 4px 9px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.05);
+      color: #e2e8f0;
+      font-family: inherit;
+      font-size: 0.69rem;
+      cursor: pointer;
+    }
+
+    .mini-act-btn.starred {
+      border-color: var(--gold);
+      color: var(--gold-soft);
+      background: rgba(245, 197, 107, 0.16);
+    }
+
+    .ai-engine-box {
+      margin-top: 16px;
+      padding: 11px 13px;
+      border-radius: 13px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 0.74rem;
+      color: var(--text-muted);
+    }
+
+    .engine-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    @media (max-width: 560px) {
+      .engine-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .engine-input {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(4, 7, 16, 0.8);
+      color: #f8fafc;
+      font-family: inherit;
+      font-size: 0.78rem;
+    }
+
+    .save-engine-btn {
+      margin-top: 8px;
+      padding: 6px 12px;
+      border-radius: 9px;
+      border: 1px solid rgba(74, 222, 128, 0.4);
+      background: rgba(34, 197, 94, 0.14);
+      color: #bbf7d0;
+      font-family: inherit;
+      font-size: 0.73rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="sanctuary-wrap">
+    <div class="top-bar">
+      <a class="back-link" href="index.html">← بازگشت به داشبورد</a>
+      <div id="oraclePulsePill" class="pulse-pill">✨ در حال هم‌گام‌سازی با نبض لحظه...</div>
+    </div>
+
+    <div class="sanctuary-card">
+      <div class="sage-header">
+        <div class="sage-orb">🧙‍♂️</div>
+        <div>
+          <h1 class="sage-title">خلوتگاه «پیرمرد»</h1>
+          <div class="sage-sub">«شهریار جان، از لایه‌های پنهانِ ترانزیت، کانال‌ها و آینه رفلکتورِ تو می‌نگرم؛ بپرس تا عمیق‌تر ببینیم.»</div>
+        </div>
+      </div>
+
+      <div id="skyContextStrip" class="sky-context-strip">در حال خواندن ترانزیت‌ها، کانال‌های فعال و شاخص شانس...</div>
+
+      <div class="prompts-label">🌱 پرسش‌های آغازینِ هم‌نوا با همین لحظه:</div>
+      <div id="starterPromptsBox" class="starter-prompts-grid"></div>
+
+      <label class="prompts-label" for="oracleQuestionBox">پرسش یا تأمل خود را با پیرمرد در میان بگذار:</label>
+      <textarea id="oracleQuestionBox" class="question-textarea" placeholder="از چه لایه‌ای در زندگی، تصمیم، رابطه یا مسیرت می‌پرسی؟"></textarea>
+
+      <div class="action-btns">
+        <button id="askSageBtn" type="button" class="ask-main-btn" onclick="askOldmanDeep()">✨ پرسش عمیق از پیرمرد</button>
+        <button type="button" class="secondary-btn" onclick="clearInputBox()">پاک کردن متن</button>
+        <button type="button" class="secondary-btn" onclick="clearAllHistory()">پاک‌سازی تاریخچه</button>
+      </div>
+
+      <div class="filter-tabs">
+        <button id="tabAllThreads" type="button" class="filter-pill active" onclick="setThreadFilter('all')">📜 همه مکالمات</button>
+        <button id="tabStarredThreads" type="button" class="filter-pill" onclick="setThreadFilter('starred')">⭐ نشان‌دارها</button>
+      </div>
+
+      <div id="threadsContainer"></div>
+
+      <details class="ai-engine-box">
+        <summary style="cursor:pointer;font-weight:700;color:#cbd5e1">⚙️ تنظیمات موتور هوش مصنوعی (Google Gemini / OpenRouter)</summary>
+        <div class="engine-grid">
+          <div>
+            <label style="display:block;margin-bottom:4px">موتور فعال:</label>
+            <select id="oracleProviderSel" class="engine-input">
+              <option value="gemini">Google Gemini API</option>
+              <option value="openrouter">OpenRouter API</option>
+            </select>
+          </div>
+          <div>
+            <label style="display:block;margin-bottom:4px">مدل OpenRouter (در صورت انتخاب):</label>
+            <input id="openRouterModelInp" class="engine-input" type="text" placeholder="openai/gpt-4o-mini یا anthropic/claude-3.5-sonnet" />
+          </div>
+        </div>
+        <div style="margin-top:8px">
+          <label style="display:block;margin-bottom:4px">کلید API (اگر خالی بماند از کلید ذخیره‌شده در برنامه استفاده می‌شود):</label>
+          <input id="oracleApiKeyInp" class="engine-input" type="password" placeholder="کلید Gemini یا OpenRouter" />
+        </div>
+        <button type="button" class="save-engine-btn" onclick="saveOracleEngineSettings()">ذخیره تنظیمات موتور</button>
+        <span id="oracleEngineSavedMsg" style="margin-right:8px;color:#4ade80"></span>
+      </details>
+    </div>
+  </div>
+
+  <script src="core.js?v=1.7"></script>
+  <script>
+    const ORACLE_HISTORY_KEY = "oldman_sage_threads_v1";
+    const ORACLE_PROVIDER_KEY = "oldman_sage_provider_v1";
+    const ORACLE_OR_MODEL_KEY = "oldman_sage_openrouter_model_v1";
+    const ORACLE_CUSTOM_KEY = "oldman_sage_custom_api_key_v1";
+
+    let threadsList = [];
+    let activeThreadFilter = "all";
+    let currentSkySnapshot = null;
+
+    (function initSanctuary() {
+      try {
+        const raw = localStorage.getItem(ORACLE_HISTORY_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) threadsList = parsed;
+        }
+      } catch (e) {}
+
+      const provSel = document.getElementById("oracleProviderSel");
+      const orModelInp = document.getElementById("openRouterModelInp");
+      const keyInp = document.getElementById("oracleApiKeyInp");
+
+      const savedProv = localStorage.getItem(ORACLE_PROVIDER_KEY) || (window.getStore ? window.getStore("prov", "gemini") : "gemini");
+      if (provSel) provSel.value = savedProv === "openrouter" ? "openrouter" : "gemini";
+      if (orModelInp) orModelInp.value = localStorage.getItem(ORACLE_OR_MODEL_KEY) || "openai/gpt-4o-mini";
+      if (keyInp) keyInp.value = localStorage.getItem(ORACLE_CUSTOM_KEY) || "";
+
+      refreshSkyContextAndPrompts();
+      renderThreads();
+    })();
+
+    function saveOracleEngineSettings() {
+      const prov = document.getElementById("oracleProviderSel")?.value || "gemini";
+      const model = (document.getElementById("openRouterModelInp")?.value || "").trim() || "openai/gpt-4o-mini";
+      const key = (document.getElementById("oracleApiKeyInp")?.value || "").trim();
+
+      localStorage.setItem(ORACLE_PROVIDER_KEY, prov);
+      localStorage.setItem(ORACLE_OR_MODEL_KEY, model);
+      if (key) {
+        localStorage.setItem(ORACLE_CUSTOM_KEY, key);
+        if (window.setStore) window.setStore("key", key);
+      }
+      if (window.setStore) window.setStore("prov", prov);
+
+      const msg = document.getElementById("oracleEngineSavedMsg");
+      if (msg) msg.textContent = "ذخیره شد ✓";
+    }
+
+    function buildLiveSkySnapshot() {
+      const now = new Date();
+      let pls = [];
+      let act = [];
+      let lk = { total: 50, wealth: 50, love: 50, action: 50 };
+
+      if (typeof window.calcPlanets === "function") {
+        pls = window.calcPlanets(now);
+      }
+      if (Array.isArray(pls) && pls.length > 0 && Array.isArray(window.DB)) {
+        const tSet = new Set(pls.map(p => p.gate));
+        window.DB.forEach(ch => {
+          const hasG1 = tSet.has(ch.g1) || (window.MY_GATES && window.MY_GATES.has(ch.g1));
+          const hasG2 = tSet.has(ch.g2) || (window.MY_GATES && window.MY_GATES.has(ch.g2));
+          if (hasG1 && hasG2) {
+            const moon = pls[2];
+            const trigger = (moon && (moon.gate === ch.g1 || moon.gate === ch.g2))
+              ? moon
+              : (pls.find(p => p.gate === ch.g2) || pls.find(p => p.gate === ch.g1) || { n: "تولد", gate: ch.g2, line: 1, h: 24 });
+            act.push({ ch, p: trigger });
+          }
+        });
+      }
+      if (typeof window.calcGalacticLuck === "function" && pls.length > 0) {
+        lk = window.calcGalacticLuck(pls, act, now);
+      }
+
+      const moon = pls && pls[2] ? pls[2] : null;
+      const sun = pls && pls[0] ? pls[0] : null;
+      const fastTransits = (pls || [])
+        .filter(p => p.fast)
+        .slice(0, 6)
+        .map(p => `${p.n} (${p.gate}.${p.line})`);
+
+      const activeChannelNames = act.map(x => `${x.ch.name} [${x.p.n}]`);
+      const moonTheme = (moon && window.GATE_THEMES && window.GATE_THEMES[moon.gate]) || "مشاهده و حضور";
+
+      return {
+        timeStr: now.toLocaleTimeString("fa-IR", { hour: "2-digit", minute: "2-digit" }),
+        moon,
+        sun,
+        moonTheme,
+        fastTransits,
+        activeChannelNames,
+        luck: lk
+      };
+    }
+
+    function refreshSkyContextAndPrompts() {
+      const snap = buildLiveSkySnapshot();
+      currentSkySnapshot = snap;
+
+      const pill = document.getElementById("oraclePulsePill");
+      const strip = document.getElementById("skyContextStrip");
+      const promptsBox = document.getElementById("starterPromptsBox");
+
+      const moonTxt = snap.moon ? `ماه در ${snap.moon.gate}.${snap.moon.line} («${snap.moonTheme}»)` : "ماه در حال رصد";
+      const chTxt = snap.activeChannelNames.length > 0 ? snap.activeChannelNames.join(" | ") : "میدان باز آینه‌ای (بدون کانال قفل‌شده)";
+      const luckTxt = `شانس کل ${snap.luck.total}% | مالی ${snap.luck.wealth}% | روابط ${snap.luck.love}% | اقدام ${snap.luck.action}%`;
+
+      if (pill) {
+        pill.textContent = `🌙 ${snap.moon ? snap.moon.gate + "." + snap.moon.line : "--"} • شانس ${snap.luck.total}%`;
+      }
+
+      if (strip) {
+        strip.innerHTML =
+          `<div><b>📡 نبض لحظه (${snap.timeStr}):</b> ${moonTxt}</div>` +
+          `<div style="margin-top:3px"><b>⚡ کانال‌ها:</b> ${chTxt}</div>` +
+          `<div style="margin-top:3px;color:#fde68a"><b>🧭 شاخص‌ها:</b> ${luckTxt}</div>`;
+      }
+
+      const starters = [
+        snap.activeChannelNames.length > 0
+          ? `در حضور «${snap.activeChannelNames[0]}» و شانس ${snap.luck.total}%، چه لایه پنهانی در تصمیم امروز من نهفته است؟`
+          : `در این میدان بازِ آینه‌ای با ماه در دروازه ${snap.moon ? snap.moon.gate : "-"} («${snap.moonTheme}»)، چه حقیقتی در سکوت دارد به من نزدیک می‌شود؟`,
+        `با توجه به شاخص مالی ${snap.luck.wealth}% و اقدام ${snap.luck.action}%، کجا باید گام بردارم و کجا در نقش شاهدِ رفلکتور بمانم؟`,
+        `پیرمرد، زیر پوستِ اضطراب یا تردیدِ این روزهای من چه پیام پنهانیِ تکاملی خوابیده است؟`
+      ];
+
+      if (promptsBox) {
+        promptsBox.innerHTML = starters.map(q =>
+          `<button type="button" class="starter-chip" onclick="useStarterPrompt(this)">${escapeHtml(q)}</button>`
+        ).join("");
+      }
+    }
+
+    function useStarterPrompt(btnEl) {
+      const qBox = document.getElementById("oracleQuestionBox");
+      if (qBox && btnEl) {
+        qBox.value = btnEl.textContent.trim();
+        qBox.focus();
+      }
+    }
+
+    function clearInputBox() {
+      const qBox = document.getElementById("oracleQuestionBox");
+      if (qBox) qBox.value = "";
+    }
+
+    function clearAllHistory() {
+      if (!confirm("تمام تاریخچه مکالمات با پیرمرد پاک شود؟")) return;
+      threadsList = [];
+      localStorage.removeItem(ORACLE_HISTORY_KEY);
+      renderThreads();
+    }
+
+    function resolveActiveApiConfig() {
+      const provider = localStorage.getItem(ORACLE_PROVIDER_KEY) || (window.getStore ? window.getStore("prov", "gemini") : "gemini");
+      const customKey = (localStorage.getItem(ORACLE_CUSTOM_KEY) || "").trim();
+      const storeKey = (window.getStore ? window.getStore("key", "") : "").trim();
+      const embeddedKey = (window.EMBEDDED_GEMINI_KEY || "").trim();
+      const apiKey = customKey || storeKey || embeddedKey;
+      const openRouterModel = (localStorage.getItem(ORACLE_OR_MODEL_KEY) || "openai/gpt-4o-mini").trim();
+      return {
+        provider: provider === "openrouter" ? "openrouter" : "gemini",
+        apiKey,
+        openRouterModel
+      };
+    }
+
+    async function generateSageResponse(question, snap, parentContextText) {
+      const cfg = resolveActiveApiConfig();
+      if (!cfg.apiKey) {
+        throw new Error("کلید API یافت نشد. لطفاً کلید Gemini یا OpenRouter را در تنظیمات پایین یا تنظیمات برنامه وارد کن.");
+      }
+
+      const systemPrompt = [
+        "شما «پیرمرد» هستید؛ یک راهنما و حکیمِ عمیق‌بین، شاعرانه، دقیق و آگاه به مکانیک هیومن دیزاین (به‌ویژه چارت یک Reflector 6/2 با مراکز باز).",
+        "پاسخ‌های شما باید حکیمانه، عمیق، تعاملی و چندلایه باشند؛ یعنی فقط سطح ظاهر را نبینید، بلکه لایه‌های پنهانِ ناخودآگاه، سایه/هدیه، تله شرطی‌شدن و پیوند آن با ترانزیت‌ها و شانس‌های لحظه را آشکار کنید.",
+        "در پایان هر پاسخ، یک «پرسش بازتابیِ عمیق» برای ادامه گفت‌وگو بگذار تا شهریار بتواند لایه‌ای عمیق‌تر را بکاود.",
+        "لحن شما گرم، باوقار، صمیمی و خالی از کلیشه‌های سطحی یا خرافه‌گوییِ قطعی باشد."
+      ].join("\n");
+
+      const contextBlock = [
+        `زمان: ${snap.timeStr}`,
+        `ماه لحظه: ${snap.moon ? `${snap.moon.gate}.${snap.moon.line} (${snap.moonTheme})` : "نامشخص"}`,
+        `ترانزیت‌های فعال شاخص: ${snap.fastTransits.join("، ") || "در حال رصد"}`,
+        `کانال‌های فعال: ${snap.activeChannelNames.join(" | ") || "هیچ کانالی قفل نیست؛ آینه رفلکتور باز است"}`,
+        `شانس‌ها: کل ${snap.luck.total}% | مالی ${snap.luck.wealth}% | روابط ${snap.luck.love}% | اقدام ${snap.luck.action}%`,
+        parentContextText ? `بافت گفت‌وگوی پیشینِ همین نکته:\n${parentContextText}` : ""
+      ].filter(Boolean).join("\n");
+
+      const fullUserPrompt = `${contextBlock}\n\nپرسش شهریار:\n${question}`;
+
+      if (cfg.provider === "openrouter") {
+        const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + cfg.apiKey,
+            "HTTP-Referer": location.origin || "https://shahriark5-art.github.io",
+            "X-Title": "OLDMAN Sanctuary"
+          },
+          body: JSON.stringify({
+            model: cfg.openRouterModel || "openai/gpt-4o-mini",
+            messages: [
+              { role: "system", content: systemPrompt },
+              { role: "user", content: fullUserPrompt }
+            ],
+            temperature: 0.8,
+            max_tokens: 1600
+          })
+        });
+        if (!res.ok) {
+          const errTxt = await res.text().catch(() => "");
+          throw new Error("خطای OpenRouter (" + res.status + "): " + errTxt.slice(0, 140));
+        }
+        const data = await res.json();
+        const text = data?.choices?.[0]?.message?.content?.trim() || "";
+        if (!text) throw new Error("پاسخ خالی از OpenRouter دریافت شد.");
+        return text;
+      }
+
+      const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + encodeURIComponent(cfg.apiKey);
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: systemPrompt }] },
+          contents: [{ parts: [{ text: fullUserPrompt }] }],
+          generationConfig: {
+            temperature: 0.8,
+            maxOutputTokens: 1600
+          }
+        })
+      });
+
+      if (!res.ok) {
+        const errTxt = await res.text().catch(() => "");
+        throw new Error("خطای Gemini (" + res.status + "): " + errTxt.slice(0, 140));
+      }
+      const data = await res.json();
+      const text =
+        data?.candidates?.[0]?.content?.parts
+          ?.map(p => p.text || "")
+          .join("\n")
+          .trim() || "";
+      if (!text) throw new Error("پاسخ خالی از Gemini دریافت شد.");
+      return text;
+    }
+
+    async function askOldmanDeep(overrideQuestion, parentContext) {
+      const qBox = document.getElementById("oracleQuestionBox");
+      const question = (typeof overrideQuestion === "string" ? overrideQuestion : (qBox?.value || "")).trim();
+      if (!question) {
+        alert("لطفاً ابتدا پرسش خود را بنویس.");
+        return;
+      }
+
+      const btn = document.getElementById("askSageBtn");
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = "🧙‍♂️ پیرمرد در حال کاوش لایه‌ها...";
+      }
+
+      refreshSkyContextAndPrompts();
+      const snap = currentSkySnapshot || buildLiveSkySnapshot();
+
+      try {
+        const answer = await generateSageResponse(question, snap, parentContext || "");
+        const item = {
+          id: "t_" + Date.now(),
+          question,
+          answer,
+          starred: false,
+          meta: `${snap.timeStr} • ماه ${snap.moon ? snap.moon.gate + "." + snap.moon.line : "-"} • شانس ${snap.luck.total}%`
+        };
+        threadsList.unshift(item);
+        saveThreads();
+        if (!overrideQuestion && qBox) qBox.value = "";
+        renderThreads();
+      } catch (err) {
+        alert(err.message || "خطا در برقراری ارتباط با پیرمرد.");
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = "✨ پرسش عمیق از پیرمرد";
+        }
+      }
+    }
+
+    function saveThreads() {
+      try {
+        localStorage.setItem(ORACLE_HISTORY_KEY, JSON.stringify(threadsList.slice(0, 50)));
+      } catch (e) {}
+    }
+
+    function setThreadFilter(mode) {
+      activeThreadFilter = mode;
+      document.getElementById("tabAllThreads")?.classList.toggle("active", mode === "all");
+      document.getElementById("tabStarredThreads")?.classList.toggle("active", mode === "starred");
+      renderThreads();
+    }
+
+    function toggleStarThread(id) {
+      const target = threadsList.find(t => t.id === id);
+      if (!target) return;
+      target.starred = !target.starred;
+      saveThreads();
+      renderThreads();
+    }
+
+    function copyThreadAnswer(id) {
+      const target = threadsList.find(t => t.id === id);
+      if (!target) return;
+      const payload = `پرسش: ${target.question}\n\nپیرمرد:\n${target.answer}`;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(payload).then(() => alert("پاسخ کپی شد ✓")).catch(() => {});
+      }
+    }
+
+    function digDeeperFromThread(id) {
+      const target = threadsList.find(t => t.id === id);
+      if (!target) return;
+      const followUpQ = `عمیق‌تر شو در لایه پنهانِ این پاسخ درباره «${target.question}»؛ چه زاویه دید نادیده‌گرفته‌شده‌ای اینجا هست؟`;
+      askOldmanDeep(followUpQ, `پرسش قبلی: ${target.question}\nپاسخ قبلی پیرمرد:\n${target.answer}`);
+    }
+
+    function renderThreads() {
+      const box = document.getElementById("threadsContainer");
+      if (!box) return;
+
+      const list = activeThreadFilter === "starred"
+        ? threadsList.filter(t => t.starred)
+        : threadsList;
+
+      if (list.length === 0) {
+        box.innerHTML = `<div style="color:#94a3b8;font-size:0.78rem;text-align:center;padding:14px">هنوز مکالمه‌ای در این بخش ثبت نشده است.</div>`;
+        return;
+      }
+
+      box.innerHTML = list.map(t => `
+        <div class="thread-card">
+          <div class="thread-q">❓ ${escapeHtml(t.question)}</div>
+          <div class="thread-a">${escapeHtml(t.answer)}</div>
+          <div class="thread-footer">
+            <span class="thread-meta">${escapeHtml(t.meta || "")}</span>
+            <div class="thread-actions">
+              <button type="button" class="mini-act-btn ${t.starred ? "starred" : ""}" onclick="toggleStarThread('${t.id}')">${t.starred ? "⭐ نشان‌شده" : "☆ نشان کن"}</button>
+              <button type="button" class="mini-act-btn" onclick="digDeeperFromThread('${t.id}')">🔎 لایه عمیق‌تر</button>
+              <button type="button" class="mini-act-btn" onclick="copyThreadAnswer('${t.id}')">📋 کپی</button>
+            </div>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+  </script>
+</body>
+</html>
