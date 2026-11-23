@@ -419,8 +419,8 @@
           </div>
         </div>
         <div style="margin-top:8px">
-          <label style="display:block;margin-bottom:4px">مدل دلخواه Gemini (اختیاری - مثلاً gemini-2.5-flash یا gemini-2.0-flash-lite):</label>
-          <input id="geminiCustomModelInp" class="engine-input" type="text" placeholder="خالی بماند تا خودکار انتخاب شود" />
+          <label style="display:block;margin-bottom:4px">مدل دلخواه Gemini (اختیاری - مثلاً gemini-2.5-flash-lite):</label>
+          <input id="geminiCustomModelInp" class="engine-input" type="text" placeholder="خالی بماند تا مدل متنی خودکار انتخاب شود" />
         </div>
         <div style="margin-top:8px">
           <label style="display:block;margin-bottom:4px">کلید API (در مرورگر شما ذخیره می‌شود):</label>
@@ -443,11 +443,16 @@
     const ORACLE_OR_MODEL_KEY = "oldman_sage_openrouter_model_v1";
     const ORACLE_GEMINI_MODEL_KEY = "oldman_sage_gemini_model_v1";
     const ORACLE_CUSTOM_KEY = "oldman_sage_custom_api_key_v1";
-    const GEMINI_CANDIDATE_MODELS = ["gemini-2.5-flash-lite", "gemini-2.5-flash", "gemini-2.0-flash-lite", "gemini-2.0-flash"];
+    const GEMINI_CANDIDATE_MODELS = ["gemini-2.5-flash-lite", "gemini-2.0-flash-lite", "gemini-2.0-flash", "gemini-2.5-flash"];
 
     let threadsList = [];
     let activeThreadFilter = "all";
     let currentSkySnapshot = null;
+
+    function isNonTextOnlyModel(modelName) {
+      const lower = String(modelName || "").toLowerCase();
+      return lower.includes("-tts") || lower.includes("tts-") || lower.includes("audio") || lower.includes("imagen") || lower.includes("veo") || lower.includes("live");
+    }
 
     (function initSanctuary() {
       try {
@@ -466,7 +471,10 @@
       const savedProv = localStorage.getItem(ORACLE_PROVIDER_KEY) || (window.getStore ? window.getStore("prov", "gemini") : "gemini");
       if (provSel) provSel.value = savedProv === "openrouter" ? "openrouter" : "gemini";
       if (orModelInp) orModelInp.value = localStorage.getItem(ORACLE_OR_MODEL_KEY) || "openai/gpt-4o-mini";
-      if (gemModelInp) gemModelInp.value = localStorage.getItem(ORACLE_GEMINI_MODEL_KEY) || "";
+
+      const savedGemModel = localStorage.getItem(ORACLE_GEMINI_MODEL_KEY) || "";
+      if (gemModelInp) gemModelInp.value = isNonTextOnlyModel(savedGemModel) ? "" : savedGemModel;
+
       if (keyInp) keyInp.value = localStorage.getItem(ORACLE_CUSTOM_KEY) || (window.getStore ? window.getStore("key", "") : "");
 
       refreshSkyContextAndPrompts();
@@ -481,7 +489,7 @@
 
       localStorage.setItem(ORACLE_PROVIDER_KEY, prov);
       localStorage.setItem(ORACLE_OR_MODEL_KEY, model);
-      localStorage.setItem(ORACLE_GEMINI_MODEL_KEY, gemModel);
+      localStorage.setItem(ORACLE_GEMINI_MODEL_KEY, isNonTextOnlyModel(gemModel) ? "" : gemModel);
       if (key) {
         localStorage.setItem(ORACLE_CUSTOM_KEY, key);
         if (window.setStore) window.setStore("key", key);
@@ -492,7 +500,7 @@
       if (msg) msg.textContent = "ذخیره شد ✓";
     }
 
-    async function fetchGenerateContentModelsList(apiKey) {
+    async function fetchTextGenerateModelsList(apiKey) {
       const url = "https://generativelanguage.googleapis.com/v1beta/models?key=" + encodeURIComponent(apiKey);
       const res = await fetch(url);
       if (!res.ok) {
@@ -504,7 +512,7 @@
       return models
         .filter(m => Array.isArray(m.supportedGenerationMethods) && m.supportedGenerationMethods.includes("generateContent"))
         .map(m => (m.name || "").replace(/^models\//, ""))
-        .filter(Boolean);
+        .filter(name => Boolean(name) && !isNonTextOnlyModel(name));
     }
 
     async function listAvailableGeminiModels() {
@@ -516,13 +524,13 @@
         box.textContent = "ابتدا کلید Gemini را در کادر بالا وارد و ذخیره کن.";
         return;
       }
-      box.textContent = "در حال دریافت لیست مدل‌های فعال از گوگل...";
+      box.textContent = "در حال دریافت لیست مدل‌های متنی فعال از گوگل...";
 
       try {
-        const genModels = await fetchGenerateContentModelsList(cfg.apiKey);
-        box.textContent = genModels.length > 0
-          ? "مدل‌های فعال با قابلیت generateContent:\n• " + genModels.join("\n• ")
-          : "مدل فعالی در خروجی یافت نشد.";
+        const textModels = await fetchTextGenerateModelsList(cfg.apiKey);
+        box.textContent = textModels.length > 0
+          ? "مدل‌های متنی فعال با قابلیت generateContent:\n• " + textModels.join("\n• ")
+          : "مدل متنی فعالی در خروجی یافت نشد.";
       } catch (e) {
         box.textContent = "خطا در بررسی مدل‌ها: " + e.message;
       }
@@ -641,7 +649,8 @@
       const embeddedKey = (window.EMBEDDED_GEMINI_KEY || "").trim();
       const apiKey = customKey || storeKey || embeddedKey;
       const openRouterModel = (localStorage.getItem(ORACLE_OR_MODEL_KEY) || "openai/gpt-4o-mini").trim();
-      const geminiCustomModel = (localStorage.getItem(ORACLE_GEMINI_MODEL_KEY) || "").trim().replace(/^models\//, "");
+      const rawGemModel = (localStorage.getItem(ORACLE_GEMINI_MODEL_KEY) || "").trim().replace(/^models\//, "");
+      const geminiCustomModel = isNonTextOnlyModel(rawGemModel) ? "" : rawGemModel;
       return {
         provider: provider === "openrouter" ? "openrouter" : "gemini",
         apiKey,
@@ -692,21 +701,26 @@
       }
 
       let lastError = null;
+      let hitQuota429 = false;
+
       for (const modelName of queue) {
         try {
           return await trySingleGeminiModel(apiKey, modelName, systemPrompt, fullUserPrompt);
         } catch (err) {
           lastError = err;
+          if (err.status === 429) {
+            hitQuota429 = true;
+            continue;
+          }
           if (err.status !== 404 && err.status !== 400) {
             throw err;
           }
         }
       }
 
-      // اگر هیچ‌کدام از مدل‌های پیش‌فرض در دسترس نبود، لیست واقعی مدل‌های فعالِ کلید را می‌گیریم
       try {
-        const liveModels = await fetchGenerateContentModelsList(apiKey);
-        for (const liveM of liveModels.slice(0, 4)) {
+        const liveTextModels = await fetchTextGenerateModelsList(apiKey);
+        for (const liveM of liveTextModels.slice(0, 5)) {
           if (queue.includes(liveM)) continue;
           try {
             const out = await trySingleGeminiModel(apiKey, liveM, systemPrompt, fullUserPrompt);
@@ -714,10 +728,14 @@
             return out;
           } catch (liveErr) {
             lastError = liveErr;
+            if (liveErr.status === 429) hitQuota429 = true;
           }
         }
       } catch (listErr) {}
 
+      if (hitQuota429) {
+        throw new Error("سهمیه یا نرخ درخواست (429 Quota Exceeded) برای مدل‌های فعال این کلید در حال حاضر پر شده است. کمی صبر کن یا کلید/موتور دیگری را در تنظیمات تست کن.");
+      }
       throw lastError || new Error("هیچ مدل فعالی از Gemini پاسخ نداد.");
     }
 
