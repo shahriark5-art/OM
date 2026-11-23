@@ -469,6 +469,8 @@
 
   <script src="core.js?v=1.7"></script>
   <script>
+    const GEMINI_FALLBACK_MODELS = ["gemini-2.5-flash-lite", "gemini-2.0-flash", "gemini-1.5-flash"];
+
     const DEFAULT_DRIVE_FOLDER_ID = "1_4qa4ImfxRJFcjbuzUNOVs8UNWu-R70n";
     const DEFAULT_DRIVE_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbx7t49G3f3aUqfeTk0QnA-FdblXaiQlAhYOyaXZ50WPkQLhsTsakXYe_0QCMo9MpfEJ/exec";
     const DEFAULT_DRIVE_ACCESS_TOKEN = "";
@@ -658,6 +660,10 @@
     }
 
     function getGeminiKeyForDreams() {
+      try {
+        const oracleKey = (localStorage.getItem("oldman_sage_custom_api_key_v1") || "").trim();
+        if (oracleKey) return oracleKey;
+      } catch (e) {}
       if (window.getStore) {
         const k = window.getStore("key", "");
         if (k && k.trim()) return k.trim();
@@ -685,7 +691,7 @@
     async function callGeminiDeepInterpretation(dreamObj) {
       const apiKey = getGeminiKeyForDreams();
       if (!apiKey) {
-        throw new Error("کلید API گوگل یافت نشد. لطفاً در بخش تنظیمات برنامه کلید Gemini را وارد کنید.");
+        throw new Error("کلید API گوگل یافت نشد. لطفاً در تنظیمات برنامه یا خلوتگاه پیرمرد کلید Gemini را وارد و ذخیره کن.");
       }
 
       const skyCtx = getSkyContextSummary();
@@ -706,35 +712,40 @@
         "۴. کلید بیداری و پرسش تأملی برای امروز"
       ].join("\n");
 
-      const endpoint = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + encodeURIComponent(apiKey);
-      const response = await fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: {
-            temperature: 0.78,
-            maxOutputTokens: 1800
-          }
-        })
-      });
+      let lastError = null;
+      for (const modelName of GEMINI_FALLBACK_MODELS) {
+        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${encodeURIComponent(apiKey)}`;
+        const response = await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: {
+              temperature: 0.78,
+              maxOutputTokens: 1800
+            }
+          })
+        });
 
-      if (!response.ok) {
+        if (response.ok) {
+          const data = await response.json();
+          const candidateText =
+            data?.candidates?.[0]?.content?.parts
+              ?.map(p => p.text || "")
+              .join("\n")
+              .trim() || "";
+          if (candidateText) return candidateText;
+          lastError = new Error(`پاسخ خالی از مدل ${modelName} دریافت شد.`);
+          continue;
+        }
+
         const errText = await response.text().catch(() => "");
-        throw new Error("خطا در ارتباط با Gemini (" + response.status + "): " + errText.slice(0, 140));
+        lastError = new Error(`خطا در ارتباط با Gemini (${modelName} - ${response.status}): ${errText.slice(0, 140)}`);
+        if (response.status !== 404 && response.status !== 400) {
+          throw lastError;
+        }
       }
-
-      const data = await response.json();
-      const candidateText =
-        data?.candidates?.[0]?.content?.parts
-          ?.map(p => p.text || "")
-          .join("\n")
-          .trim() || "";
-
-      if (!candidateText) {
-        throw new Error("پاسخ خالی از مدل Gemini دریافت شد.");
-      }
-      return candidateText;
+      throw lastError || new Error("هیچ مدل فعالی از Gemini پاسخ نداد.");
     }
 
     async function interpretDreamDeeply() {
