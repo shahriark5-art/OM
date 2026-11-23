@@ -454,6 +454,27 @@
       return lower.includes("-tts") || lower.includes("tts-") || lower.includes("audio") || lower.includes("imagen") || lower.includes("veo") || lower.includes("live");
     }
 
+    function cleanPersianSageOutput(rawText) {
+      const txt = String(rawText || "").trim();
+      if (!txt) return "";
+
+      const lines = txt.split(/\r?\n/);
+      const persianRegex = /[\u0600-\u06FF]/;
+      const firstPersianIdx = lines.findIndex(line => persianRegex.test(line));
+
+      // اگر بخش اول فقط یادداشت انگلیسی/ساختاری بدون فارسی باشد، از اولین خط فارسی شروع می‌کنیم
+      if (firstPersianIdx > 0) {
+        const prefixLines = lines.slice(0, firstPersianIdx).join("\n").trim();
+        const isEnglishMetaPrefix =
+          /persona|target user|current cosmic|active channels|core question|analysis|hidden message|closing/i.test(prefixLines) ||
+          !/[\u0600-\u06FF]/.test(prefixLines);
+        if (isEnglishMetaPrefix) {
+          return lines.slice(firstPersianIdx).join("\n").trim();
+        }
+      }
+      return txt;
+    }
+
     (function initSanctuary() {
       try {
         const raw = localStorage.getItem(ORACLE_HISTORY_KEY);
@@ -676,11 +697,12 @@
 
       if (res.ok) {
         const data = await res.json();
-        const text =
+        const rawText =
           data?.candidates?.[0]?.content?.parts
             ?.map(p => p.text || "")
             .join("\n")
             .trim() || "";
+        const text = cleanPersianSageOutput(rawText);
         if (!text) {
           throw new Error(`پاسخ خالی از مدل ${modelName} دریافت شد.`);
         }
@@ -734,7 +756,7 @@
       } catch (listErr) {}
 
       if (hitQuota429) {
-        throw new Error("سهمیه یا نرخ درخواست (429 Quota Exceeded) برای مدل‌های فعال این کلید در حال حاضر پر شده است. کمی صبر کن یا کلید/موتور دیگری را در تنظیمات تست کن.");
+        throw new Error("سهمیه یا نرخ درخواست (429 Quota Exceeded) برای مدل‌های فعال این کلید در حال حاضر پر شده است.");
       }
       throw lastError || new Error("هیچ مدل فعالی از Gemini پاسخ نداد.");
     }
@@ -747,13 +769,13 @@
 
       const systemPrompt = [
         "شما «پیرمرد» هستید؛ یک راهنما و حکیمِ عمیق‌بین، شاعرانه، دقیق و آگاه به مکانیک هیومن دیزاین (به‌ویژه چارت یک Reflector 6/2 با مراکز باز).",
-        "پاسخ‌های شما باید حکیمانه، عمیق، تعاملی و چندلایه باشند؛ یعنی فقط سطح ظاهر را نبینید، بلکه لایه‌های پنهانِ ناخودآگاه، سایه/هدیه، تله شرطی‌شدن و پیوند آن با ترانزیت‌ها و شانس‌های لحظه را آشکار کنید.",
-        "در پایان هر پاسخ، یک «پرسش بازتابیِ عمیق» برای ادامه گفت‌وگو بگذار تا شهریار بتواند لایه‌ای عمیق‌تر را بکاود.",
-        "لحن شما گرم، باوقار، صمیمی و خالی از کلیشه‌های سطحی یا خرافه‌گوییِ قطعی باشد."
+        "بسیار مهم: کلِ پاسخ شما باید کاملاً به زبان فارسی و مستقیماً به زبانِ یک پیرمردِ حکیم و عمیق‌بین باشد.",
+        "هیچ‌گونه یادداشت انگلیسی، خلاصه انگلیسی، یادداشت پیش‌نویس یا بخش انگلیسی در ابتدای پاسخ ننویس؛ از همان جمله اول با «شهریار جان...» یا عبارتی حکیمانه و فارسی آغاز کن.",
+        "پاسخ‌هایت باید لایه‌های پنهانِ ناخودآگاه، سایه و هدیه، تله شرطی‌شدن، و پیوند آن را با ترانزیت‌های فعال، کانال‌های فعال و شاخص‌های شانسِ همان لحظه واکاوی کنند، و در پایان یک پرسش بازتابیِ عمیق برای ادامه گفت‌وگو بگذارند."
       ].join("\n");
 
       const contextBlock = [
-        `زمان: ${snap.timeStr}`,
+        `زمان لحظه: ${snap.timeStr}`,
         `ماه لحظه: ${snap.moon ? `${snap.moon.gate}.${snap.moon.line} (${snap.moonTheme})` : "نامشخص"}`,
         `ترانزیت‌های فعال شاخص: ${snap.fastTransits.join("، ") || "در حال رصد"}`,
         `کانال‌های فعال: ${snap.activeChannelNames.join(" | ") || "هیچ کانالی قفل نیست؛ آینه رفلکتور باز است"}`,
@@ -761,7 +783,7 @@
         parentContextText ? `بافت گفت‌وگوی پیشینِ همین نکته:\n${parentContextText}` : ""
       ].filter(Boolean).join("\n");
 
-      const fullUserPrompt = `${contextBlock}\n\nپرسش شهریار:\n${question}`;
+      const fullUserPrompt = `${contextBlock}\n\nپرسش شهریار:\n${question}\n\nپاسخ را فقط به زبان فارسی و از زبان پیرمرد بنویس:`;
 
       if (cfg.provider === "openrouter") {
         const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -787,7 +809,7 @@
           throw new Error("خطای OpenRouter (" + res.status + "): " + errTxt.slice(0, 140));
         }
         const data = await res.json();
-        const text = data?.choices?.[0]?.message?.content?.trim() || "";
+        const text = cleanPersianSageOutput(data?.choices?.[0]?.message?.content?.trim() || "");
         if (!text) throw new Error("پاسخ خالی از OpenRouter دریافت شد.");
         return text;
       }
