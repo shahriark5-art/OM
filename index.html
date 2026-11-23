@@ -103,24 +103,6 @@
 
     <div id="timerBar" class="timer">⏱️ در حال محاسبه...</div>
 
-    <!-- خلوتگاه پیرمرد -->
-    <div id="oldmanOracleSection" class="card oldman-sanctuary">
-      <div class="c-head">
-        <span class="c-title">🧙‍♂️ خلوتگاه «پیرمرد»</span>
-        <span id="oracleStatusTag" style="font-size:0.68rem;color:#4ade80">آماده ✨</span>
-      </div>
-      <div class="oldman-avatar-row">
-        <div class="oldman-orb">🧙‍♂️</div>
-        <div class="oldman-intro">«شهریار جان، از ورای افلاک به حالِ تو می‌نگرم. پرسشی داری بپرس...»</div>
-      </div>
-      <textarea id="oracleQuestionInput" class="oracle-input" placeholder="سوال خود را بنویس..."></textarea>
-      <div class="oracle-btn-row">
-        <button id="oracleAskBtn" class="oracle-btn" onclick="window.OldmanOracleModule.ask()"><span>✨ پرسش از پیرمرد</span></button>
-        <button class="oracle-clear-btn" onclick="window.OldmanOracleModule.clear()">پاک‌سازی</button>
-      </div>
-      <div id="oracleAnswersList" class="oracle-history-box"></div>
-    </div>
-
     <!-- رادار هواشناسی و فالگیر -->
     <div class="card">
       <div class="c-head"><span class="c-title">🌤️🔮 رادار آب‌وهوا و فالگیر</span><span id="srcTag" style="font-size:0.68rem;color:#4ade80">آماده ✅</span></div>
@@ -147,7 +129,7 @@
 
   <nav class="b-nav">
     <button class="n-btn act" onclick="runApp(true)"><span>🔄</span><span>بروزرسانی</span></button>
-    <button class="n-btn" onclick="scrollToId('oldmanOracleSection')"><span>🧙‍♂️</span><span>پیرمرد</span></button>
+    <button class="n-btn" onclick="location.href='oracle.html'"><span>🧙‍♂️</span><span>پیرمرد</span></button>
     <button class="n-btn" onclick="location.href='dreams.html'"><span>🌙</span><span>رویاها</span></button>
     <button class="n-btn" onclick="scrollToId('lunarTrackerMount')"><span>🌕</span><span>قطب‌نما</span></button>
     <button class="n-btn" onclick="openSetModal()"><span>⚙️</span><span>تنظیمات</span></button>
@@ -201,7 +183,6 @@
   <script src="gems.js?v=1.7"></script>
   <script src="luck.js?v=1.7"></script>
   <script src="lunar.js?v=1.7"></script>
-  <script src="oracle.js?v=1.7"></script>
   <script src="weather.js?v=1.7"></script>
   <script src="picology.js?v=1.7"></script>
   <script>
