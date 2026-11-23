@@ -421,6 +421,7 @@
     const ORACLE_PROVIDER_KEY = "oldman_sage_provider_v1";
     const ORACLE_OR_MODEL_KEY = "oldman_sage_openrouter_model_v1";
     const ORACLE_CUSTOM_KEY = "oldman_sage_custom_api_key_v1";
+    const GEMINI_FALLBACK_MODELS = ["gemini-2.5-flash-lite", "gemini-2.0-flash", "gemini-1.5-flash"];
 
     let threadsList = [];
     let activeThreadFilter = "all";
@@ -585,6 +586,44 @@
       };
     }
 
+    async function callGeminiWithFallback(apiKey, systemPrompt, fullUserPrompt) {
+      let lastError = null;
+      for (const modelName of GEMINI_FALLBACK_MODELS) {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${encodeURIComponent(apiKey)}`;
+        const res = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            systemInstruction: { parts: [{ text: systemPrompt }] },
+            contents: [{ parts: [{ text: fullUserPrompt }] }],
+            generationConfig: {
+              temperature: 0.8,
+              maxOutputTokens: 1600
+            }
+          })
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          const text =
+            data?.candidates?.[0]?.content?.parts
+              ?.map(p => p.text || "")
+              .join("\n")
+              .trim() || "";
+          if (text) return text;
+          lastError = new Error(`پاسخ خالی از مدل ${modelName} دریافت شد.`);
+          continue;
+        }
+
+        const errTxt = await res.text().catch(() => "");
+        lastError = new Error(`خطای Gemini روی مدل ${modelName} (${res.status}): ${errTxt.slice(0, 140)}`);
+        if (res.status !== 404 && res.status !== 400) {
+          throw lastError;
+        }
+      }
+      throw lastError || new Error("هیچ مدل فعالی از Gemini پاسخ نداد.");
+    }
+
     async function generateSageResponse(question, snap, parentContextText) {
       const cfg = resolveActiveApiConfig();
       if (!cfg.apiKey) {
@@ -638,32 +677,7 @@
         return text;
       }
 
-      const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + encodeURIComponent(cfg.apiKey);
-      const res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          systemInstruction: { parts: [{ text: systemPrompt }] },
-          contents: [{ parts: [{ text: fullUserPrompt }] }],
-          generationConfig: {
-            temperature: 0.8,
-            maxOutputTokens: 1600
-          }
-        })
-      });
-
-      if (!res.ok) {
-        const errTxt = await res.text().catch(() => "");
-        throw new Error("خطای Gemini (" + res.status + "): " + errTxt.slice(0, 140));
-      }
-      const data = await res.json();
-      const text =
-        data?.candidates?.[0]?.content?.parts
-          ?.map(p => p.text || "")
-          .join("\n")
-          .trim() || "";
-      if (!text) throw new Error("پاسخ خالی از Gemini دریافت شد.");
-      return text;
+      return await callGeminiWithFallback(cfg.apiKey, systemPrompt, fullUserPrompt);
     }
 
     async function askOldmanDeep(overrideQuestion, parentContext) {
