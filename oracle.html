@@ -351,6 +351,19 @@
       font-weight: 700;
       cursor: pointer;
     }
+
+    .models-list-box {
+      margin-top: 8px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      background: rgba(4, 7, 16, 0.85);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      color: #bae6fd;
+      font-size: 0.7rem;
+      line-height: 1.7;
+      display: none;
+      white-space: pre-line;
+    }
   </style>
 </head>
 <body>
@@ -406,11 +419,15 @@
           </div>
         </div>
         <div style="margin-top:8px">
-          <label style="display:block;margin-bottom:4px">کلید API (اگر خالی بماند از کلید ذخیره‌شده در برنامه استفاده می‌شود):</label>
+          <label style="display:block;margin-bottom:4px">کلید API (در مرورگر شما ذخیره می‌شود):</label>
           <input id="oracleApiKeyInp" class="engine-input" type="password" placeholder="کلید Gemini یا OpenRouter" />
         </div>
-        <button type="button" class="save-engine-btn" onclick="saveOracleEngineSettings()">ذخیره تنظیمات موتور</button>
-        <span id="oracleEngineSavedMsg" style="margin-right:8px;color:#4ade80"></span>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <button type="button" class="save-engine-btn" onclick="saveOracleEngineSettings()">ذخیره تنظیمات موتور</button>
+          <button type="button" class="save-engine-btn" style="border-color:rgba(56,189,248,0.45);background:rgba(56,189,248,0.14);color:#bae6fd" onclick="listAvailableGeminiModels()">🔍 بررسی مدل‌های فعال کلید</button>
+          <span id="oracleEngineSavedMsg" style="color:#4ade80"></span>
+        </div>
+        <div id="geminiModelsOutput" class="models-list-box"></div>
       </details>
     </div>
   </div>
@@ -443,7 +460,7 @@
       const savedProv = localStorage.getItem(ORACLE_PROVIDER_KEY) || (window.getStore ? window.getStore("prov", "gemini") : "gemini");
       if (provSel) provSel.value = savedProv === "openrouter" ? "openrouter" : "gemini";
       if (orModelInp) orModelInp.value = localStorage.getItem(ORACLE_OR_MODEL_KEY) || "openai/gpt-4o-mini";
-      if (keyInp) keyInp.value = localStorage.getItem(ORACLE_CUSTOM_KEY) || "";
+      if (keyInp) keyInp.value = localStorage.getItem(ORACLE_CUSTOM_KEY) || (window.getStore ? window.getStore("key", "") : "");
 
       refreshSkyContextAndPrompts();
       renderThreads();
@@ -464,6 +481,38 @@
 
       const msg = document.getElementById("oracleEngineSavedMsg");
       if (msg) msg.textContent = "ذخیره شد ✓";
+    }
+
+    async function listAvailableGeminiModels() {
+      const cfg = resolveActiveApiConfig();
+      const box = document.getElementById("geminiModelsOutput");
+      if (!box) return;
+      box.style.display = "block";
+      if (!cfg.apiKey) {
+        box.textContent = "ابتدا کلید Gemini را در کادر بالا وارد و ذخیره کن.";
+        return;
+      }
+      box.textContent = "در حال دریافت لیست مدل‌های فعال از گوگل...";
+
+      try {
+        const url = "https://generativelanguage.googleapis.com/v1beta/models?key=" + encodeURIComponent(cfg.apiKey);
+        const res = await fetch(url);
+        if (!res.ok) {
+          const errT = await res.text().catch(() => "");
+          throw new Error("خطا (" + res.status + "): " + errT.slice(0, 140));
+        }
+        const data = await res.json();
+        const models = Array.isArray(data.models) ? data.models : [];
+        const genModels = models
+          .filter(m => Array.isArray(m.supportedGenerationMethods) && m.supportedGenerationMethods.includes("generateContent"))
+          .map(m => (m.name || "").replace(/^models\//, ""));
+
+        box.textContent = genModels.length > 0
+          ? "مدل‌های فعال با قابلیت generateContent:\n• " + genModels.join("\n• ")
+          : "مدل فعالی در خروجی یافت نشد.";
+      } catch (e) {
+        box.textContent = "خطا در بررسی مدل‌ها: " + e.message;
+      }
     }
 
     function buildLiveSkySnapshot() {
@@ -627,7 +676,7 @@
     async function generateSageResponse(question, snap, parentContextText) {
       const cfg = resolveActiveApiConfig();
       if (!cfg.apiKey) {
-        throw new Error("کلید API یافت نشد. لطفاً کلید Gemini یا OpenRouter را در تنظیمات پایین یا تنظیمات برنامه وارد کن.");
+        throw new Error("کلید API یافت نشد. لطفاً کلید Gemini یا OpenRouter را در تنظیمات پایین یا تنظیمات برنامه وارد و ذخیره کن.");
       }
 
       const systemPrompt = [
