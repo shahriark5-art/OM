@@ -71,7 +71,7 @@
 
     <div class="banner">تطبیق چارت تولد شما ✨ چارت لحظه‌ای زمین</div>
 
-    <!-- بادی‌گراف حرفه‌ای (با سنسورهای نامرئی دو شست در طرفین مرکز گلو) -->
+    <!-- بادی‌گراف حرفه‌ای -->
     <div class="bodygraph-container">
       <div class="bg-top-meta">
         <div class="bg-user-info">
@@ -79,9 +79,7 @@
           <div>Reflector | No Inner Authority</div>
           <div>No Definition | 6/2 Role Model</div>
         </div>
-        <div id="bgPlanetSidebar" class="bg-planet-sidebar">
-          <!-- جدول سیارات داینامیک -->
-        </div>
+        <div id="bgPlanetSidebar" class="bg-planet-sidebar"></div>
       </div>
 
       <div class="bg-filter-row">
@@ -103,16 +101,11 @@
 
     <div id="timerBar" class="timer">⏱️ در حال محاسبه...</div>
 
-    <!-- رادار هواشناسی و فالگیر -->
-    <div class="card">
-      <div class="c-head"><span class="c-title">🌤️🔮 رادار آب‌وهوا و فالگیر</span><span id="srcTag" style="font-size:0.68rem;color:#4ade80">آماده ✅</span></div>
-      <div id="scrollBox" class="scroll-box"><div id="fcBase"></div><div id="fcDeep"></div></div>
-      <div class="hint"><span id="depthLevelIndicator">گام پایه</span><span>↕️ اسکرول</span></div>
-      <button id="deepExploreBtn" class="ai-btn" onclick="window.WeatherFortuneModule.exploreNext()"><span id="aiBtnTxt">🌤️ کلیک ۱: پیش‌بینی ۳ تا ۶ ساعت آینده</span></button>
-    </div>
+    <!-- جایگاه ماژول کانال‌های فعال (منتقل‌شده به بالا) -->
+    <div id="activeChannelsMount"></div>
 
-    <!-- کانال‌های فعال -->
-    <div class="card"><div class="c-head"><span class="c-title">⚡ کانال‌های فعال</span><span style="font-size:0.72rem;color:#38bdf8">● زنده</span></div><div id="chList"></div></div>
+    <!-- جایگاه ماژول رادار آب‌وهوا و فالگیر (منتقل‌شده به پایینِ کانال‌های فعال) -->
+    <div id="weatherFortuneMount"></div>
 
     <!-- تقویم آینده -->
     <div id="upcomingChannelsSection" class="card"><div class="c-head"><span class="c-title">📅 تقویم ۵ روز آینده</span></div><div id="upcomingListBox" class="upcoming-scroll"></div></div>
@@ -177,6 +170,10 @@
       window.openModal('setModal');
     };
   </script>
+
+  <!-- بارگذاری ماژول‌های ساختار کارت‌ها پیش از هسته -->
+  <script src="channels.js?v=1.7"></script>
+  <script src="fortune.js?v=1.7"></script>
 
   <!-- بارگذاری فایل‌های ماژولار نسخه 1.7 با ضد کش -->
   <script src="core.js?v=1.7"></script>
