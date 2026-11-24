@@ -131,6 +131,21 @@
       margin-bottom: 13px;
     }
 
+    .status-banner {
+      display: none;
+      margin-bottom: 12px;
+      padding: 8px 12px;
+      border-radius: 11px;
+      font-size: 0.73rem;
+      background: rgba(245, 197, 107, 0.1);
+      border: 1px solid rgba(245, 197, 107, 0.28);
+      color: var(--gold-soft);
+    }
+
+    .status-banner.visible {
+      display: block;
+    }
+
     .prompts-label {
       font-size: 0.74rem;
       font-weight: 800;
@@ -351,19 +366,6 @@
       font-weight: 700;
       cursor: pointer;
     }
-
-    .models-list-box {
-      margin-top: 8px;
-      padding: 8px 10px;
-      border-radius: 10px;
-      background: rgba(4, 7, 16, 0.85);
-      border: 1px solid rgba(56, 189, 248, 0.25);
-      color: #bae6fd;
-      font-size: 0.7rem;
-      line-height: 1.7;
-      display: none;
-      white-space: pre-line;
-    }
   </style>
 </head>
 <body>
@@ -383,6 +385,7 @@
       </div>
 
       <div id="skyContextStrip" class="sky-context-strip">در حال خواندن ترانزیت‌ها، کانال‌های فعال و شاخص شانس...</div>
+      <div id="oracleStatusBanner" class="status-banner"></div>
 
       <div class="prompts-label">🌱 پرسش‌های آغازینِ هم‌نوا با همین لحظه:</div>
       <div id="starterPromptsBox" class="starter-prompts-grid"></div>
@@ -404,10 +407,10 @@
       <div id="threadsContainer"></div>
 
       <details class="ai-engine-box">
-        <summary style="cursor:pointer;font-weight:700;color:#cbd5e1">⚙️ تنظیمات موتور هوش مصنوعی (Google Gemini / OpenRouter)</summary>
+        <summary style="cursor:pointer;font-weight:700;color:#cbd5e1">⚙️ تنظیمات موتور ابری (اختیاری - Gemini / OpenRouter)</summary>
         <div class="engine-grid">
           <div>
-            <label style="display:block;margin-bottom:4px">موتور فعال:</label>
+            <label style="display:block;margin-bottom:4px">موتور بیرونی:</label>
             <select id="oracleProviderSel" class="engine-input" onchange="onProviderChanged()">
               <option value="gemini">Google Gemini API</option>
               <option value="openrouter">OpenRouter API</option>
@@ -419,19 +422,15 @@
           </div>
         </div>
         <div style="margin-top:8px">
-          <label style="display:block;margin-bottom:4px">مدل دلخواه Gemini (اختیاری):</label>
-          <input id="geminiCustomModelInp" class="engine-input" type="text" placeholder="خالی بماند تا مدل متنی خودکار انتخاب شود" />
+          <label style="display:block;margin-bottom:4px">مدل Gemini (اختیاری):</label>
+          <input id="geminiCustomModelInp" class="engine-input" type="text" placeholder="gemini-2.0-flash" />
         </div>
         <div style="margin-top:8px">
           <label id="oracleKeyLabel" style="display:block;margin-bottom:4px">کلید API:</label>
-          <input id="oracleApiKeyInp" class="engine-input" type="password" placeholder="کلید موتور انتخاب‌شده را وارد کن" />
+          <input id="oracleApiKeyInp" class="engine-input" type="password" placeholder="در صورت خالی بودن، از موتور تحلیلی پیرمرد استفاده می‌شود" />
         </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-          <button type="button" class="save-engine-btn" onclick="saveOracleEngineSettings()">ذخیره تنظیمات موتور</button>
-          <button type="button" class="save-engine-btn" style="border-color:rgba(56,189,248,0.45);background:rgba(56,189,248,0.14);color:#bae6fd" onclick="listAvailableGeminiModels()">🔍 بررسی مدل‌های فعال Gemini</button>
-          <span id="oracleEngineSavedMsg" style="color:#4ade80"></span>
-        </div>
-        <div id="geminiModelsOutput" class="models-list-box"></div>
+        <button type="button" class="save-engine-btn" onclick="saveOracleEngineSettings()">ذخیره تنظیمات</button>
+        <span id="oracleEngineSavedMsg" style="margin-right:8px;color:#4ade80"></span>
       </details>
     </div>
   </div>
@@ -444,39 +443,32 @@
     const ORACLE_GEMINI_MODEL_KEY = "oldman_sage_gemini_model_v1";
     const ORACLE_GEMINI_KEY = "oldman_sage_gemini_key_v1";
     const ORACLE_OR_KEY = "oldman_sage_openrouter_key_v1";
-    const GEMINI_CANDIDATE_MODELS = ["gemini-2.0-flash", "gemini-2.5-flash-lite", "gemini-2.0-flash-lite", "gemini-2.5-flash"];
 
     let threadsList = [];
     let activeThreadFilter = "all";
     let currentSkySnapshot = null;
 
-    function isNonTextOnlyModel(modelName) {
-      const lower = String(modelName || "").toLowerCase();
-      return (
-        lower.includes("-tts") ||
-        lower.includes("tts-") ||
-        lower.includes("audio") ||
-        lower.includes("imagen") ||
-        lower.includes("veo") ||
-        lower.includes("live") ||
-        lower.includes("gemma")
-      );
+    function showBanner(msg) {
+      const el = document.getElementById("oracleStatusBanner");
+      if (!el) return;
+      if (!msg) {
+        el.classList.remove("visible");
+        el.textContent = "";
+        return;
+      }
+      el.classList.add("visible");
+      el.textContent = msg;
     }
 
     function cleanPersianSageOutput(rawText) {
       const txt = String(rawText || "").trim();
       if (!txt) return "";
-
       const lines = txt.split(/\r?\n/);
       const persianRegex = /[\u0600-\u06FF]/;
       const firstPersianIdx = lines.findIndex(line => persianRegex.test(line));
-
       if (firstPersianIdx > 0) {
         const prefixLines = lines.slice(0, firstPersianIdx).join("\n").trim();
-        const isEnglishMetaPrefix =
-          /persona|target user|current cosmic|active channels|core question|analysis|hidden message|closing/i.test(prefixLines) ||
-          !/[\u0600-\u06FF]/.test(prefixLines);
-        if (isEnglishMetaPrefix) {
+        if (!persianRegex.test(prefixLines)) {
           return lines.slice(firstPersianIdx).join("\n").trim();
         }
       }
@@ -498,7 +490,7 @@
       const keyInp = document.getElementById("oracleApiKeyInp");
       const lbl = document.getElementById("oracleKeyLabel");
       if (lbl) {
-        lbl.textContent = prov === "openrouter" ? "کلید OpenRouter API (sk-or-...):" : "کلید Google Gemini API:";
+        lbl.textContent = prov === "openrouter" ? "کلید OpenRouter API:" : "کلید Google Gemini API:";
       }
       if (keyInp) {
         keyInp.value = getStoredKeyForProvider(prov);
@@ -521,9 +513,7 @@
       const savedProv = localStorage.getItem(ORACLE_PROVIDER_KEY) || (window.getStore ? window.getStore("prov", "gemini") : "gemini");
       if (provSel) provSel.value = savedProv === "openrouter" ? "openrouter" : "gemini";
       if (orModelInp) orModelInp.value = localStorage.getItem(ORACLE_OR_MODEL_KEY) || "openai/gpt-4o-mini";
-
-      const savedGemModel = localStorage.getItem(ORACLE_GEMINI_MODEL_KEY) || "";
-      if (gemModelInp) gemModelInp.value = isNonTextOnlyModel(savedGemModel) ? "" : savedGemModel;
+      if (gemModelInp) gemModelInp.value = localStorage.getItem(ORACLE_GEMINI_MODEL_KEY) || "gemini-2.0-flash";
 
       onProviderChanged();
       refreshSkyContextAndPrompts();
@@ -538,7 +528,7 @@
 
       localStorage.setItem(ORACLE_PROVIDER_KEY, prov);
       localStorage.setItem(ORACLE_OR_MODEL_KEY, model);
-      localStorage.setItem(ORACLE_GEMINI_MODEL_KEY, isNonTextOnlyModel(gemModel) ? "" : gemModel);
+      localStorage.setItem(ORACLE_GEMINI_MODEL_KEY, gemModel || "gemini-2.0-flash");
 
       if (key) {
         if (prov === "openrouter") {
@@ -553,42 +543,6 @@
 
       const msg = document.getElementById("oracleEngineSavedMsg");
       if (msg) msg.textContent = "ذخیره شد ✓";
-    }
-
-    async function fetchTextGenerateModelsList(apiKey) {
-      const url = "https://generativelanguage.googleapis.com/v1beta/models?key=" + encodeURIComponent(apiKey);
-      const res = await fetch(url);
-      if (!res.ok) {
-        const errT = await res.text().catch(() => "");
-        throw new Error("خطا در دریافت لیست مدل‌ها (" + res.status + "): " + errT.slice(0, 140));
-      }
-      const data = await res.json();
-      const models = Array.isArray(data.models) ? data.models : [];
-      return models
-        .filter(m => Array.isArray(m.supportedGenerationMethods) && m.supportedGenerationMethods.includes("generateContent"))
-        .map(m => (m.name || "").replace(/^models\//, ""))
-        .filter(name => Boolean(name) && !isNonTextOnlyModel(name));
-    }
-
-    async function listAvailableGeminiModels() {
-      const gKey = getStoredKeyForProvider("gemini");
-      const box = document.getElementById("geminiModelsOutput");
-      if (!box) return;
-      box.style.display = "block";
-      if (!gKey) {
-        box.textContent = "ابتدا کلید Gemini را در کادر بالا وارد و ذخیره کن.";
-        return;
-      }
-      box.textContent = "در حال دریافت لیست مدل‌های متنی فعال از گوگل...";
-
-      try {
-        const textModels = await fetchTextGenerateModelsList(gKey);
-        box.textContent = textModels.length > 0
-          ? "مدل‌های متنی فعال با قابلیت generateContent:\n• " + textModels.join("\n• ")
-          : "مدل متنی فعالی در خروجی یافت نشد.";
-      } catch (e) {
-        box.textContent = "خطا در بررسی مدل‌ها: " + e.message;
-      }
     }
 
     function buildLiveSkySnapshot() {
@@ -677,6 +631,159 @@
       }
     }
 
+    function buildLocalLayeredSageReply(question, snap) {
+      const moonGate = snap.moon ? `${snap.moon.gate}.${snap.moon.line}` : "لحظه";
+      const chSummary = snap.activeChannelNames.length > 0
+        ? `کانال‌های فعالِ «${snap.activeChannelNames.join(" و ")}»`
+        : "میدان بازِ آینه‌ایِ یک رفلکتور که بدون قفل‌شدگیِ دائمی، طعمِ گذرای محیط را مزه می‌کند";
+
+      const highestLuck = [
+        { name: "اقدام", val: snap.luck.action },
+        { name: "مالی", val: snap.luck.wealth },
+        { name: "روابط", val: snap.luck.love },
+        { name: "کل", val: snap.luck.total }
+      ].sort((a, b) => b.val - a.val)[0];
+
+      return [
+        `شهریار جان، در سکوتِ ساعت ${snap.timeStr} که ماه در ${moonGate} («${snap.moonTheme}») نشسته و ${chSummary} در جریان است، پرسش تو بیش از آنکه به دنبال یک جوابِ بیرونی باشد، به دنبال «آشکار شدنِ لایه‌ای است که زیرِ سطحِ روزمرگی پنهان مانده است».`,
+        "",
+        `۱. لایه پنهانِ وضعیت فعلی: وقتی شاخص ${highestLuck.name} در محدوده ${highestLuck.val}% قرار می‌گیرد و ترانزیت‌های ${snap.fastTransits.slice(0, 3).join("، ") || "آسمان"} رنگِ خود را به فضا می‌پاشند، بخشِ هشیارِ ذهن معمولاً می‌خواهد فوراً «نتیجه» بگیرد؛ اما لایه‌ی عمیق‌تر این است که در چارتِ بازِ یک رفلکتور ۶/۲، آنچه اکنون در تو می‌گذرد لزوماً «مالِ تو» نیست، بلکه بازتابِ دقیقِ میدانِ پیرامون است که آمده تا ببینی چه چیزی تو را می‌کشد و چه چیزی فقط سروصدای گذراست.`,
+        "",
+        `۲. تله و پیام درونیِ نهفته: اگر در پسِ این پرسشِ «${question.slice(0, 80)}${question.length > 80 ? "..." : ""}» کمی عجله، وسواس برای «درست بودن» یا سنگینیِ مسئولیتِ دیگران هست، بدان که ذهن دارد نقشِ داور را بازی می‌کند. پیامِ پنهان این است که در همین فضا بمانی، بدون اینکه با عجله حکم صادر کنی، تا ببینی با گذرِ زمان و تغییرِ جایِ ماه، کدام احساس واقعاً در استخوان‌هایت ته‌نشین می‌شود.`,
+        "",
+        `🔍 پرسش بازتابی برای لایه عمیق‌تر: اگر امروز از عجله برای «حل کردنِ فوری» دست برداری و فقط مانند یک آینه شفاف ببینی چه چیزی در این موقعیت بی‌معنا یا تحمیلی است، اولین چیزی که رها می‌کنی چیست؟`
+      ].join("\n");
+    }
+
+    async function tryExternalProvider(question, snap, parentContextText) {
+      const prov = localStorage.getItem(ORACLE_PROVIDER_KEY) || (window.getStore ? window.getStore("prov", "gemini") : "gemini");
+      const activeProv = prov === "openrouter" ? "openrouter" : "gemini";
+      const inputKey = (document.getElementById("oracleApiKeyInp")?.value || "").trim();
+      const apiKey = inputKey || getStoredKeyForProvider(activeProv);
+      if (!apiKey) return null;
+
+      const systemPrompt = [
+        "شما «پیرمرد» هستید؛ یک راهنما و حکیمِ عمیق‌بین، شاعرانه، دقیق و آگاه به مکانیک هیومن دیزاین (به‌ویژه چارت یک Reflector 6/2 با مراکز باز).",
+        "کلِ پاسخ شما باید کاملاً به زبان فارسی و مستقیماً از زبان پیرمرد باشد؛ بدون هیچ مقدمه یا یادداشت انگلیسی.",
+        "لایه‌های پنهانِ ناخودآگاه، سایه و هدیه، تله شرطی‌شدن، و پیوند آن را با ترانزیت‌ها، کانال‌های فعال و شاخص‌های شانسِ لحظه تحلیل کن و در پایان یک پرسش بازتابیِ عمیق بگذار."
+      ].join("\n");
+
+      const contextBlock = [
+        `زمان لحظه: ${snap.timeStr}`,
+        `ماه لحظه: ${snap.moon ? `${snap.moon.gate}.${snap.moon.line} (${snap.moonTheme})` : "نامشخص"}`,
+        `ترانزیت‌های فعال: ${snap.fastTransits.join("، ") || "در حال رصد"}`,
+        `کانال‌های فعال: ${snap.activeChannelNames.join(" | ") || "میدان باز آینه‌ای"}`,
+        `شانس‌ها: کل ${snap.luck.total}% | مالی ${snap.luck.wealth}% | روابط ${snap.luck.love}% | اقدام ${snap.luck.action}%`,
+        parentContextText ? `بافت گفت‌وگوی پیشین:\n${parentContextText}` : ""
+      ].filter(Boolean).join("\n");
+
+      const fullPrompt = `${contextBlock}\n\nپرسش شهریار:\n${question}`;
+
+      if (activeProv === "openrouter") {
+        const model = (document.getElementById("openRouterModelInp")?.value || "").trim() || "openai/gpt-4o-mini";
+        const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + apiKey,
+            "HTTP-Referer": location.origin || "https://shahriark5-art.github.io",
+            "X-Title": "OLDMAN Sanctuary"
+          },
+          body: JSON.stringify({
+            model,
+            messages: [
+              { role: "system", content: systemPrompt },
+              { role: "user", content: fullPrompt }
+            ],
+            temperature: 0.8,
+            max_tokens: 1500
+          })
+        });
+        if (!res.ok) throw new Error("OR_" + res.status);
+        const data = await res.json();
+        const out = cleanPersianSageOutput(data?.choices?.[0]?.message?.content?.trim() || "");
+        if (!out) throw new Error("OR_EMPTY");
+        return { text: out, sourceLabel: "OpenRouter" };
+      }
+
+      const gemModel = (document.getElementById("geminiCustomModelInp")?.value || "").trim().replace(/^models\//, "") || "gemini-2.0-flash";
+      const candidates = Array.from(new Set([gemModel, "gemini-2.0-flash", "gemini-2.5-flash-lite"]));
+      for (const m of candidates) {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(m)}:generateContent?key=${encodeURIComponent(apiKey)}`;
+        const res = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            systemInstruction: { parts: [{ text: systemPrompt }] },
+            contents: [{ parts: [{ text: fullPrompt }] }],
+            generationConfig: { temperature: 0.8, maxOutputTokens: 1500 }
+          })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const out = cleanPersianSageOutput(
+            data?.candidates?.[0]?.content?.parts?.map(p => p.text || "").join("\n").trim() || ""
+          );
+          if (out) return { text: out, sourceLabel: "Gemini (" + m + ")" };
+        }
+      }
+      return null;
+    }
+
+    async function askOldmanDeep(overrideQuestion, parentContext) {
+      const qBox = document.getElementById("oracleQuestionBox");
+      const question = (typeof overrideQuestion === "string" ? overrideQuestion : (qBox?.value || "")).trim();
+      if (!question) {
+        showBanner("لطفاً ابتدا پرسش خود را در کادر بالا بنویس.");
+        return;
+      }
+
+      showBanner("");
+      const btn = document.getElementById("askSageBtn");
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = "🧙‍♂️ پیرمرد در حال کاوش لایه‌ها...";
+      }
+
+      refreshSkyContextAndPrompts();
+      const snap = currentSkySnapshot || buildLiveSkySnapshot();
+
+      let finalAnswer = "";
+      let modeTag = "موتور تحلیلی پیرمرد";
+
+      try {
+        const extRes = await tryExternalProvider(question, snap, parentContext || "");
+        if (extRes && extRes.text) {
+          finalAnswer = extRes.text;
+          modeTag = extRes.sourceLabel;
+        } else {
+          finalAnswer = buildLocalLayeredSageReply(question, snap);
+          modeTag = "موتور تحلیلی پیرمرد";
+        }
+      } catch (e) {
+        finalAnswer = buildLocalLayeredSageReply(question, snap);
+        modeTag = "موتور تحلیلی پیرمرد";
+        showBanner("سرویس بیرونی در لحظه پاسخ نداد؛ پیرمرد از تحلیلِ لایه‌ایِ مستقیمِ چارت و لحظه پاسخ داد.");
+      }
+
+      const item = {
+        id: "t_" + Date.now(),
+        question,
+        answer: finalAnswer,
+        starred: false,
+        meta: `${snap.timeStr} • ${modeTag} • شانس ${snap.luck.total}%`
+      };
+      threadsList.unshift(item);
+      saveThreads();
+      if (!overrideQuestion && qBox) qBox.value = "";
+      renderThreads();
+
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = "✨ پرسش عمیق از پیرمرد";
+      }
+    }
+
     function useStarterPrompt(btnEl) {
       const qBox = document.getElementById("oracleQuestionBox");
       if (qBox && btnEl) {
@@ -688,212 +795,14 @@
     function clearInputBox() {
       const qBox = document.getElementById("oracleQuestionBox");
       if (qBox) qBox.value = "";
+      showBanner("");
     }
 
     function clearAllHistory() {
-      if (!confirm("تمام تاریخچه مکالمات با پیرمرد پاک شود؟")) return;
       threadsList = [];
       localStorage.removeItem(ORACLE_HISTORY_KEY);
       renderThreads();
-    }
-
-    function resolveActiveApiConfig() {
-      const provider = localStorage.getItem(ORACLE_PROVIDER_KEY) || (window.getStore ? window.getStore("prov", "gemini") : "gemini");
-      const activeProv = provider === "openrouter" ? "openrouter" : "gemini";
-      const inputKey = (document.getElementById("oracleApiKeyInp")?.value || "").trim();
-      const apiKey = inputKey || getStoredKeyForProvider(activeProv);
-      const openRouterModel = (document.getElementById("openRouterModelInp")?.value || "").trim() || "openai/gpt-4o-mini";
-      const rawGemModel = (document.getElementById("geminiCustomModelInp")?.value || "").trim().replace(/^models\//, "");
-      const geminiCustomModel = isNonTextOnlyModel(rawGemModel) ? "" : rawGemModel;
-      return {
-        provider: activeProv,
-        apiKey,
-        openRouterModel,
-        geminiCustomModel
-      };
-    }
-
-    async function trySingleGeminiModel(apiKey, modelName, systemPrompt, fullUserPrompt) {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modelName)}:generateContent?key=${encodeURIComponent(apiKey)}`;
-      const res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          systemInstruction: { parts: [{ text: systemPrompt }] },
-          contents: [{ parts: [{ text: fullUserPrompt }] }],
-          generationConfig: {
-            temperature: 0.8,
-            maxOutputTokens: 1600
-          }
-        })
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        const rawText =
-          data?.candidates?.[0]?.content?.parts
-            ?.map(p => p.text || "")
-            .join("\n")
-            .trim() || "";
-        const text = cleanPersianSageOutput(rawText);
-        if (!text) {
-          throw new Error(`پاسخ خالی از مدل ${modelName} دریافت شد.`);
-        }
-        return text;
-      }
-
-      const errTxt = await res.text().catch(() => "");
-      const err = new Error(`خطای Gemini روی مدل ${modelName} (${res.status}): ${errTxt.slice(0, 140)}`);
-      err.status = res.status;
-      throw err;
-    }
-
-    async function callGeminiWithFallback(apiKey, customModel, systemPrompt, fullUserPrompt) {
-      const queue = [];
-      if (customModel) queue.push(customModel);
-      for (const m of GEMINI_CANDIDATE_MODELS) {
-        if (!queue.includes(m)) queue.push(m);
-      }
-
-      let lastError = null;
-      let hitTransientError = false;
-
-      for (const modelName of queue) {
-        try {
-          return await trySingleGeminiModel(apiKey, modelName, systemPrompt, fullUserPrompt);
-        } catch (err) {
-          lastError = err;
-          if (err.status === 429 || err.status === 503 || err.status === 500) {
-            hitTransientError = true;
-            continue;
-          }
-          if (err.status !== 404 && err.status !== 400) {
-            throw err;
-          }
-        }
-      }
-
-      try {
-        const liveTextModels = await fetchTextGenerateModelsList(apiKey);
-        for (const liveM of liveTextModels.slice(0, 5)) {
-          if (queue.includes(liveM)) continue;
-          try {
-            const out = await trySingleGeminiModel(apiKey, liveM, systemPrompt, fullUserPrompt);
-            localStorage.setItem(ORACLE_GEMINI_MODEL_KEY, liveM);
-            return out;
-          } catch (liveErr) {
-            lastError = liveErr;
-            if (liveErr.status === 429 || liveErr.status === 503 || liveErr.status === 500) {
-              hitTransientError = true;
-            }
-          }
-        }
-      } catch (listErr) {}
-
-      if (hitTransientError) {
-        throw new Error("در حال حاضر مدل‌های Gemini با شلوغی سرور یا محدودیت سهمیه مواجه هستند؛ چند لحظه بعد دوباره تلاش کن یا از OpenRouter استفاده کن.");
-      }
-      throw lastError || new Error("هیچ مدل فعالی از Gemini پاسخ نداد.");
-    }
-
-    async function generateSageResponse(question, snap, parentContextText) {
-      const cfg = resolveActiveApiConfig();
-      if (!cfg.apiKey) {
-        throw new Error(
-          cfg.provider === "openrouter"
-            ? "کلید OpenRouter یافت نشد. لطفاً کلید sk-or-... را در تنظیمات پایین وارد و ذخیره کن."
-            : "کلید Gemini یافت نشد. لطفاً کلید Gemini را در تنظیمات پایین وارد و ذخیره کن."
-        );
-      }
-
-      const systemPrompt = [
-        "شما «پیرمرد» هستید؛ یک راهنما و حکیمِ عمیق‌بین، شاعرانه، دقیق و آگاه به مکانیک هیومن دیزاین (به‌ویژه چارت یک Reflector 6/2 با مراکز باز).",
-        "بسیار مهم: کلِ پاسخ شما باید کاملاً به زبان فارسی و مستقیماً به زبانِ یک پیرمردِ حکیم و عمیق‌بین باشد.",
-        "هیچ‌گونه یادداشت انگلیسی، خلاصه انگلیسی، یادداشت پیش‌نویس یا بخش انگلیسی در ابتدای پاسخ ننویس؛ از همان جمله اول با «شهریار جان...» یا عبارتی حکیمانه و فارسی آغاز کن.",
-        "پاسخ‌هایت باید لایه‌های پنهانِ ناخودآگاه، سایه و هدیه، تله شرطی‌شدن، و پیوند آن را با ترانزیت‌های فعال، کانال‌های فعال و شاخص‌های شانسِ همان لحظه واکاوی کنند، و در پایان یک پرسش بازتابیِ عمیق برای ادامه گفت‌وگو بگذارند."
-      ].join("\n");
-
-      const contextBlock = [
-        `زمان لحظه: ${snap.timeStr}`,
-        `ماه لحظه: ${snap.moon ? `${snap.moon.gate}.${snap.moon.line} (${snap.moonTheme})` : "نامشخص"}`,
-        `ترانزیت‌های فعال شاخص: ${snap.fastTransits.join("، ") || "در حال رصد"}`,
-        `کانال‌های فعال: ${snap.activeChannelNames.join(" | ") || "هیچ کانالی قفل نیست؛ آینه رفلکتور باز است"}`,
-        `شانس‌ها: کل ${snap.luck.total}% | مالی ${snap.luck.wealth}% | روابط ${snap.luck.love}% | اقدام ${snap.luck.action}%`,
-        parentContextText ? `بافت گفت‌وگوی پیشینِ همین نکته:\n${parentContextText}` : ""
-      ].filter(Boolean).join("\n");
-
-      const fullUserPrompt = `${contextBlock}\n\nپرسش شهریار:\n${question}\n\nپاسخ را فقط به زبان فارسی و از زبان پیرمرد بنویس:`;
-
-      if (cfg.provider === "openrouter") {
-        const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer " + cfg.apiKey,
-            "HTTP-Referer": location.origin || "https://shahriark5-art.github.io",
-            "X-Title": "OLDMAN Sanctuary"
-          },
-          body: JSON.stringify({
-            model: cfg.openRouterModel || "openai/gpt-4o-mini",
-            messages: [
-              { role: "system", content: systemPrompt },
-              { role: "user", content: fullUserPrompt }
-            ],
-            temperature: 0.8,
-            max_tokens: 1600
-          })
-        });
-        if (!res.ok) {
-          const errTxt = await res.text().catch(() => "");
-          throw new Error("خطای OpenRouter (" + res.status + "): " + errTxt.slice(0, 140));
-        }
-        const data = await res.json();
-        const text = cleanPersianSageOutput(data?.choices?.[0]?.message?.content?.trim() || "");
-        if (!text) throw new Error("پاسخ خالی از OpenRouter دریافت شد.");
-        return text;
-      }
-
-      return await callGeminiWithFallback(cfg.apiKey, cfg.geminiCustomModel, systemPrompt, fullUserPrompt);
-    }
-
-    async function askOldmanDeep(overrideQuestion, parentContext) {
-      const qBox = document.getElementById("oracleQuestionBox");
-      const question = (typeof overrideQuestion === "string" ? overrideQuestion : (qBox?.value || "")).trim();
-      if (!question) {
-        alert("لطفاً ابتدا پرسش خود را بنویس.");
-        return;
-      }
-
-      const btn = document.getElementById("askSageBtn");
-      if (btn) {
-        btn.disabled = true;
-        btn.textContent = "🧙‍♂️ پیرمرد در حال کاوش لایه‌ها...";
-      }
-
-      refreshSkyContextAndPrompts();
-      const snap = currentSkySnapshot || buildLiveSkySnapshot();
-
-      try {
-        const answer = await generateSageResponse(question, snap, parentContext || "");
-        const item = {
-          id: "t_" + Date.now(),
-          question,
-          answer,
-          starred: false,
-          meta: `${snap.timeStr} • ماه ${snap.moon ? snap.moon.gate + "." + snap.moon.line : "-"} • شانس ${snap.luck.total}%`
-        };
-        threadsList.unshift(item);
-        saveThreads();
-        if (!overrideQuestion && qBox) qBox.value = "";
-        renderThreads();
-      } catch (err) {
-        alert(err.message || "خطا در برقراری ارتباط با پیرمرد.");
-      } finally {
-        if (btn) {
-          btn.disabled = false;
-          btn.textContent = "✨ پرسش عمیق از پیرمرد";
-        }
-      }
+      showBanner("تاریخچه مکالمات پاک شد.");
     }
 
     function saveThreads() {
@@ -922,7 +831,7 @@
       if (!target) return;
       const payload = `پرسش: ${target.question}\n\nپیرمرد:\n${target.answer}`;
       if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(payload).then(() => alert("پاسخ کپی شد ✓")).catch(() => {});
+        navigator.clipboard.writeText(payload).then(() => showBanner("پاسخ در کلیپ‌بورد کپی شد ✓")).catch(() => {});
       }
     }
 
