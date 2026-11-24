@@ -131,6 +131,8 @@
       border: 1px solid rgba(239, 68, 68, 0.35);
       color: #fecaca;
       white-space: pre-line;
+      direction: ltr;
+      text-align: left;
     }
 
     .status-banner.visible {
@@ -369,6 +371,8 @@
       line-height: 1.7;
       display: none;
       white-space: pre-line;
+      direction: ltr;
+      text-align: left;
     }
   </style>
 </head>
@@ -425,7 +429,7 @@
           </div>
         </div>
         <div style="margin-top:8px">
-          <label style="display:block;margin-bottom:4px">مدل Gemini:</label>
+          <label style="display:block;margin-bottom:4px">مدل Gemini (دقیقاً همین مدل صدا زده می‌شود):</label>
           <input id="geminiCustomModelInp" class="engine-input" type="text" value="gemini-3.5-flash-lite" placeholder="gemini-3.5-flash-lite" />
         </div>
         <div style="margin-top:8px">
@@ -447,17 +451,11 @@
     const ORACLE_HISTORY_KEY = "oldman_sage_threads_v1";
     const ORACLE_PROVIDER_KEY = "oldman_sage_provider_v1";
     const ORACLE_OR_MODEL_KEY = "oldman_sage_openrouter_model_v1";
-    const ORACLE_GEMINI_MODEL_KEY = "oldman_sage_gemini_model_v1";
+    const ORACLE_GEMINI_MODEL_KEY = "oldman_sage_gemini_model_v2";
     const ORACLE_GEMINI_KEY = "oldman_sage_gemini_key_v1";
     const ORACLE_OR_KEY = "oldman_sage_openrouter_key_v1";
 
     const DEFAULT_GEMINI_MODEL = "gemini-3.5-flash-lite";
-    const GEMINI_FALLBACK_MODELS = [
-      "gemini-3.5-flash-lite",
-      "gemini-2.0-flash",
-      "gemini-2.5-flash",
-      "gemini-2.5-flash-lite"
-    ];
 
     let threadsList = [];
     let activeThreadFilter = "all";
@@ -555,7 +553,7 @@
       if (orModelInp) orModelInp.value = localStorage.getItem(ORACLE_OR_MODEL_KEY) || "openai/gpt-4o-mini";
 
       const savedGemModel = (localStorage.getItem(ORACLE_GEMINI_MODEL_KEY) || DEFAULT_GEMINI_MODEL).trim();
-      const activeGemModel = isNonTextOnlyModel(savedGemModel) ? DEFAULT_GEMINI_MODEL : savedGemModel;
+      const activeGemModel = (!savedGemModel || isNonTextOnlyModel(savedGemModel)) ? DEFAULT_GEMINI_MODEL : savedGemModel;
       if (gemModelInp) gemModelInp.value = activeGemModel;
 
       const pill = document.getElementById("oraclePulsePill");
@@ -574,7 +572,7 @@
 
       localStorage.setItem(ORACLE_PROVIDER_KEY, prov);
       localStorage.setItem(ORACLE_OR_MODEL_KEY, model);
-      localStorage.setItem(ORACLE_GEMINI_MODEL_KEY, isNonTextOnlyModel(gemModel) ? DEFAULT_GEMINI_MODEL : gemModel);
+      localStorage.setItem(ORACLE_GEMINI_MODEL_KEY, gemModel);
 
       if (key) {
         if (prov === "openrouter") {
@@ -600,7 +598,7 @@
       const res = await fetch(url);
       if (!res.ok) {
         const errT = await res.text().catch(() => "");
-        throw new Error("خطا در دریافت لیست مدل‌ها (" + res.status + "): " + errT.slice(0, 140));
+        throw new Error("Error (" + res.status + "): " + errT.slice(0, 160));
       }
       const data = await res.json();
       const models = Array.isArray(data.models) ? data.models : [];
@@ -624,10 +622,10 @@
       try {
         const textModels = await fetchTextGenerateModelsList(gKey);
         box.textContent = textModels.length > 0
-          ? "مدل‌های فعال با قابلیت generateContent:\n• " + textModels.join("\n• ")
-          : "مدل متنی فعالی در خروجی یافت نشد.";
+          ? "Available models:\n• " + textModels.join("\n• ")
+          : "No active text models found.";
       } catch (e) {
-        box.textContent = "خطا در بررسی مدل‌ها: " + e.message;
+        box.textContent = e.message;
       }
     }
 
@@ -684,52 +682,38 @@
     }
 
     async function callGeminiRealAI(apiKey, customModel, systemPrompt, userPrompt) {
-      const primaryModel = (customModel && !isNonTextOnlyModel(customModel)) ? customModel : DEFAULT_GEMINI_MODEL;
-      const queue = [primaryModel];
-      for (const m of GEMINI_FALLBACK_MODELS) {
-        if (!queue.includes(m)) queue.push(m);
-      }
+      const modelName = (customModel || "").trim().replace(/^models\//, "") || DEFAULT_GEMINI_MODEL;
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modelName)}:generateContent?key=${encodeURIComponent(apiKey)}`;
 
-      let lastErrMsg = "";
-
-      for (const modelName of queue) {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modelName)}:generateContent?key=${encodeURIComponent(apiKey)}`;
-        const res = await fetch(url, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            systemInstruction: { parts: [{ text: systemPrompt }] },
-            contents: [{ parts: [{ text: userPrompt }] }],
-            generationConfig: {
-              temperature: 0.82,
-              maxOutputTokens: 1700
-            }
-          })
-        });
-
-        if (res.ok) {
-          const data = await res.json();
-          const rawOut =
-            data?.candidates?.[0]?.content?.parts
-              ?.map(p => p.text || "")
-              .join("\n")
-              .trim() || "";
-          const cleaned = cleanPersianSageOutput(rawOut);
-          if (cleaned) {
-            return { text: cleaned, usedModel: "Gemini • " + modelName };
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: systemPrompt }] },
+          contents: [{ parts: [{ text: userPrompt }] }],
+          generationConfig: {
+            temperature: 0.82,
+            maxOutputTokens: 1700
           }
-          lastErrMsg = `پاسخ خالی از مدل ${modelName}`;
-          continue;
-        }
+        })
+      });
 
+      if (!res.ok) {
         const errTxt = await res.text().catch(() => "");
-        lastErrMsg = `Gemini (${modelName} - ${res.status}): ${errTxt.slice(0, 140)}`;
-        if (res.status !== 404 && res.status !== 429 && res.status !== 503 && res.status !== 500) {
-          throw new Error(lastErrMsg);
-        }
+        throw new Error(`Gemini (${modelName} - ${res.status}):\n${errTxt.slice(0, 260)}`);
       }
 
-      throw new Error(lastErrMsg || "ارتباط با سرویس Gemini برقرار نشد.");
+      const data = await res.json();
+      const rawOut =
+        data?.candidates?.[0]?.content?.parts
+          ?.map(p => p.text || "")
+          .join("\n")
+          .trim() || "";
+      const cleaned = cleanPersianSageOutput(rawOut);
+      if (!cleaned) {
+        throw new Error(`پاسخ خالی از مدل ${modelName} دریافت شد.`);
+      }
+      return { text: cleaned, usedModel: "Gemini • " + modelName };
     }
 
     async function callOpenRouterRealAI(apiKey, modelName, systemPrompt, userPrompt) {
@@ -755,7 +739,7 @@
 
       if (!res.ok) {
         const errTxt = await res.text().catch(() => "");
-        throw new Error(`OpenRouter (${res.status}): ${errTxt.slice(0, 140)}`);
+        throw new Error(`OpenRouter (${res.status}):\n${errTxt.slice(0, 260)}`);
       }
 
       const data = await res.json();
@@ -775,7 +759,7 @@
         return;
       }
 
-      const prov = localStorage.getItem(ORACLE_PROVIDER_KEY) || (window.getStore ? window.getStore("prov", "gemini") : "gemini");
+      const prov = document.getElementById("oracleProviderSel")?.value || localStorage.getItem(ORACLE_PROVIDER_KEY) || "gemini";
       const activeProv = prov === "openrouter" ? "openrouter" : "gemini";
       const inputKey = (document.getElementById("oracleApiKeyInp")?.value || "").trim();
       const apiKey = inputKey || getStoredKeyForProvider(activeProv);
@@ -783,8 +767,8 @@
       if (!apiKey) {
         showBanner(
           activeProv === "openrouter"
-            ? "کلید OpenRouter وارد نشده است. در بخش «تنظیمات موتور هوش مصنوعی» کلید را وارد و ذخیره کن."
-            : "کلید Gemini وارد نشده است. در بخش «تنظیمات موتور هوش مصنوعی» کلید را وارد و ذخیره کن."
+            ? "کلید OpenRouter وارد نشده است. در بخش تنظیمات کلید را وارد و ذخیره کن."
+            : "کلید Gemini وارد نشده است. در بخش تنظیمات کلید را وارد و ذخیره کن."
         );
         return;
       }
