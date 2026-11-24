@@ -200,36 +200,75 @@ window.fmtH = function(h) {
 window.calcPlanets = function(dt) {
   const jd = dt.getTime() / 86400000 + 2440587.5;
   const d = jd - 2451545.0;
-  const d26 = jd - 2461333.5;
+  const T = d / 36525.0;
   const r = Math.PI / 180;
 
-  const gS = norm(357.529 + 0.98560028 * d);
-  const qS = norm(280.459 + 0.98564736 * d);
-  const sLon = norm(qS + 1.915 * Math.sin(gS * r) + 0.020 * Math.sin(2 * gS * r));
-  const eLon = norm(sLon + 180);
-
-  const lM = norm(218.316 + 13.176396 * d);
-  const mM = norm(134.963 + 13.064993 * d);
-  const fM = norm(93.272 + 13.229350 * d);
-  const dM = norm(297.850 + 12.190749 * d);
-  const mLon = norm(
-    lM + 6.289 * Math.sin(mM * r)
-    + 1.274 * Math.sin((2 * dM - mM) * r)
-    + 0.658 * Math.sin(2 * dM * r)
-    + 0.214 * Math.sin(2 * mM * r)
-    - 0.186 * Math.sin(gS * r)
-    - 0.114 * Math.sin(2 * fM * r)
+  // محاسبه گره حقیقی ماه (True Node - منطبق با هیومن دیزاین)
+  const gS = norm(357.5291 + 0.98560028 * d);
+  const mM = norm(134.9634 + 13.06499295 * d);
+  const fM = norm(93.2721 + 13.22935024 * d);
+  const dM = norm(297.8502 + 12.19074912 * d);
+  const meanNode = norm(125.0445479 - 1934.1362891 * T + 0.0020754 * T * T);
+  const nLon = norm(
+    meanNode
+    - 1.4979 * Math.sin(2 * (dM - fM) * r)
+    - 0.1500 * Math.sin(gS * r)
+    - 0.1226 * Math.sin(2 * dM * r)
+    + 0.1176 * Math.sin(2 * fM * r)
+    - 0.0801 * Math.sin(2 * (mM - fM) * r)
   );
 
-  const nLon = norm(125.0445 - 0.05295376 * d);
-  const mercLon = norm(226.2 + 1.18 * d26 + 4.5 * Math.sin((110 + 3.1 * d26) * r));
-  const venLon  = norm(234.8 + 0.62 * d26);
-  const marsLon = norm(133.4 + 0.54 * d26);
-  const jupLon  = norm(142.1 + 0.095 * d26);
-  const satLon  = norm(18.6 - 0.032 * d26);
-  const uraLon  = norm(64.5 - 0.018 * d26);
-  const nepLon  = norm(1.9 - 0.012 * d26);
-  const pluLon  = norm(303.4 + 0.008 * d26);
+  let sLon, eLon, mLon, mercLon, venLon, marsLon, jupLon, satLon, uraLon, nepLon, pluLon;
+
+  if (window.Astronomy) {
+    const A = window.Astronomy;
+    const rot = A.Rotation_EQJ_ECT ? A.Rotation_EQJ_ECT(dt) : null;
+    const precession = 0.013969 * (d / 365.25);
+
+    const getTropicalLon = (bodyName) => {
+      const vec = A.GeoVector(A.Body[bodyName], dt, true);
+      if (rot && A.RotateVector) {
+        const eclVec = A.RotateVector(rot, vec);
+        return norm(Math.atan2(eclVec.y, eclVec.x) * (180 / Math.PI));
+      }
+      return norm(A.Ecliptic(vec).elon + precession);
+    };
+
+    sLon = norm(A.SunPosition(dt).elon);
+    eLon = norm(sLon + 180);
+    mLon = norm(A.EclipticGeoMoon(dt).lon);
+    mercLon = getTropicalLon("Mercury");
+    venLon  = getTropicalLon("Venus");
+    marsLon = getTropicalLon("Mars");
+    jupLon  = getTropicalLon("Jupiter");
+    satLon  = getTropicalLon("Saturn");
+    uraLon  = getTropicalLon("Uranus");
+    nepLon  = getTropicalLon("Neptune");
+    pluLon  = getTropicalLon("Pluto");
+  } else {
+    // فرمول پشتیبان در صورت عدم دسترسی به کتابخانه
+    const d26 = jd - 2461333.5;
+    const qS = norm(280.459 + 0.98564736 * d);
+    sLon = norm(qS + 1.915 * Math.sin(gS * r) + 0.020 * Math.sin(2 * gS * r));
+    eLon = norm(sLon + 180);
+    const lM = norm(218.316 + 13.176396 * d);
+    mLon = norm(
+      lM + 6.289 * Math.sin(mM * r)
+      + 1.274 * Math.sin((2 * dM - mM) * r)
+      + 0.658 * Math.sin(2 * dM * r)
+      + 0.214 * Math.sin(2 * mM * r)
+      - 0.186 * Math.sin(gS * r)
+      - 0.114 * Math.sin(2 * fM * r)
+    );
+    mercLon = norm(226.2 + 1.18 * d26 + 4.5 * Math.sin((110 + 3.1 * d26) * r));
+    venLon  = norm(234.8 + 0.62 * d26);
+    marsLon = norm(133.4 + 0.54 * d26);
+    jupLon  = norm(142.1 + 0.095 * d26);
+    satLon  = norm(18.6 - 0.032 * d26);
+    uraLon  = norm(64.5 - 0.018 * d26);
+    nepLon  = norm(1.9 - 0.012 * d26);
+    pluLon  = norm(303.4 + 0.008 * d26);
+  }
 
   const raw = [
     {n:"خورشید",s:"☉",l:sLon,sp:0.9856,wt:1.2,fast:true},
@@ -246,6 +285,7 @@ window.calcPlanets = function(dt) {
     {n:"نپتون",s:"♆",l:nepLon,sp:0.012,wt:0.35,fast:false},
     {n:"پلوتو",s:"♇",l:pluLon,sp:0.008,wt:0.35,fast:false}
   ];
+
   return raw.map(p => {
     const inf = deg2g(p.l);
     const totalGateHours = (5.625 / p.sp) * 24;
@@ -258,6 +298,7 @@ window.calcPlanets = function(dt) {
     };
   });
 };
+
 
 function matchChannelBidirectional(ch, pls) {
   const transitGatesSet = new Set(pls.map(p => p.gate));
