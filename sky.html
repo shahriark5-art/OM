@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#030712" />
+  <title>تلسکوپ کهکشانی | OLDMAN - شهریار</title>
+  <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
+  <style>
+    :root {
+      --bg: #030712;
+      --gold: #f5c56b;
+      --gold-soft: #fde68a;
+      --sky: #38bdf8;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+    }
+
+    * { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
+
+    body {
+      margin: 0;
+      padding: 14px 12px 32px;
+      min-height: 100vh;
+      font-family: "Vazirmatn", system-ui, sans-serif;
+      background:
+        radial-gradient(circle at 50% 25%, rgba(56, 189, 248, 0.1), transparent 55%),
+        radial-gradient(circle at 80% 80%, rgba(245, 197, 107, 0.08), transparent 45%),
+        var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .wrap {
+      width: 100%;
+      max-width: 520px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .top-bar {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .back-btn {
+      padding: 7px 13px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: rgba(15, 23, 42, 0.85);
+      color: #e2e8f0;
+      text-decoration: none;
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+
+    .title-pill {
+      font-size: 0.76rem;
+      font-weight: 800;
+      color: var(--gold-soft);
+      background: rgba(245, 197, 107, 0.12);
+      border: 1px solid rgba(245, 197, 107, 0.35);
+      padding: 6px 12px;
+      border-radius: 99px;
+    }
+
+    /* قاب دایره‌ای تلسکوپ */
+    .telescope-shell {
+      position: relative;
+      width: min(88vw, 370px);
+      height: min(88vw, 370px);
+      border-radius: 50%;
+      padding: 8px;
+      background: radial-gradient(circle, #1e293b 0%, #0f172a 70%, #020617 100%);
+      border: 2px solid rgba(245, 197, 107, 0.55);
+      box-shadow:
+        0 0 0 5px rgba(15, 23, 42, 0.9),
+        0 0 38px rgba(56, 189, 248, 0.2),
+        inset 0 0 28px rgba(0, 0, 0, 0.95);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #skyCanvas {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: #020617;
+      touch-action: none;
+      cursor: grab;
+    }
+
+    #skyCanvas:active { cursor: grabbing; }
+
+    .readout-bar {
+      width: 100%;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 14px;
+      padding: 8px 10px;
+      text-align: center;
+      font-size: 0.72rem;
+    }
+
+    .readout-lbl { color: var(--muted); font-size: 0.65rem; display: block; }
+    .readout-val { color: var(--gold-soft); font-weight: 800; direction: ltr; display: inline-block; }
+
+    .primary-sensor-btn {
+      width: 100%;
+      padding: 11px 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(56, 189, 248, 0.55);
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.22), rgba(14, 165, 233, 0.28));
+      color: #e0f2fe;
+      font-family: inherit;
+      font-size: 0.82rem;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .primary-sensor-btn.active {
+      border-color: rgba(74, 222, 128, 0.65);
+      background: linear-gradient(135deg, rgba(34, 197, 94, 0.24), rgba(16, 185, 129, 0.28));
+      color: #dcfce7;
+    }
+
+    .controls-grid {
+      width: 100%;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 7px;
+    }
+
+    .toggle-btn {
+      padding: 8px 6px;
+      border-radius: 11px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(15, 23, 42, 0.8);
+      color: var(--muted);
+      font-family: inherit;
+      font-size: 0.71rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .toggle-btn.on {
+      border-color: var(--gold);
+      background: rgba(245, 197, 107, 0.15);
+      color: var(--gold-soft);
+    }
+
+    .zoom-row {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(15, 23, 42, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 8px 12px;
+      font-size: 0.72rem;
+      color: #cbd5e1;
+    }
+
+    .zoom-row input[type="range"] {
+      flex: 1;
+      accent-color: var(--sky);
+    }
+
+    .status-note {
+      font-size: 0.7rem;
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top-bar">
+      <a class="back-btn" href="index.html">← بازگشت به داشبورد</a>
+      <div class="title-pill">🔭 تلسکوپ زنده کهکشانی</div>
+    </div>
+
+    <div class="telescope-shell">
+      <canvas id="skyCanvas"></canvas>
+    </div>
+
+    <div class="readout-bar">
+      <div><span class="readout-lbl">سمت (قطب‌نما)</span><span id="azVal" class="readout-val">180°</span></div>
+      <div><span class="readout-lbl">ارتفاع از افق</span><span id="altVal" class="readout-val">+35°</span></div>
+      <div><span class="readout-lbl">موقعیت GPS</span><span id="gpsVal" class="readout-val">تهران</span></div>
+    </div>
+
+    <button id="sensorToggleBtn" class="primary-sensor-btn" onclick="toggleSensorMode()">
+      📡 فعال‌سازی سنسور قطب‌نما و GPS (رصد زنده)
+    </button>
+
+    <div class="controls-grid">
+      <button id="btnConst" class="toggle-btn on" onclick="toggleOpt('constellations', this)">✨ صور فلکی</button>
+      <button id="btnLabels" class="toggle-btn on" onclick="toggleOpt('labels', this)">🏷️ نام اجرام</button>
+      <button id="btnEcliptic" class="toggle-btn on" onclick="toggleOpt('ecliptic', this)">🟡 دایرةالبروج</button>
+    </div>
+
+    <div class="zoom-row">
+      <span>🔍 بزرگ‌نمایی:</span>
+      <input id="fovSlider" type="range" min="30" max="90" value="62" oninput="updateFov(this.value)" />
+      <span id="fovLbl">62°</span>
+    </div>
+
+    <div id="statusNote" class="status-note">
+      حالت فعلی: لمسی (با انگشت روی دایره بکشید تا آسمان را بچرخانید، یا دکمه‌ی بالا را برای اتصال به سنسور گوشی بزنید).
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/astronomy-engine@2.1.19/astronomy.browser.min.js"></script>
+  <script>
+    const canvas = document.getElementById("skyCanvas");
+    const ctx = canvas.getContext("2d");
+
+    // وضعیت دید و تنظیمات
+    const state = {
+      lat: 35.6892,
+      lon: 51.3890,
+      gpsLocked: false,
+      sensorActive: false,
+      viewAz: 180,     // جنوب
+      viewAlt: 35,     // ۳۵ درجه بالای افق
+      smoothVec: null,
+      fovDeg: 62,
+      opts: {
+        constellations: true,
+        labels: true,
+        ecliptic: true
+      }
+    };
+
+    // کاتالوگ ستاره‌های شاخص (RA به ساعت، Dec به درجه، Mag قدر ظاهری)
+    const STARS = [
+      // شکارچی (Orion) 0..6
+      { id: "Betelgeuse", fa: "ابط‌الجوزا", ra: 5.919, dec: 7.407, mag: 0.45, c: "#ffb07c" },
+      { id: "Rigel", fa: "رجل‌الجبار", ra: 5.242, dec: -8.202, mag: 0.18, c: "#b5d8ff" },
+      { id: "Bellatrix", fa: "بلاتریکس", ra: 5.419, dec: 6.350, mag: 1.64, c: "#cce4ff" },
+      { id: "Saiph", fa: "سیف", ra: 5.796, dec: -9.670, mag: 2.07, c: "#cce4ff" },
+      { id: "Alnitak", fa: "النطاق", ra: 5.679, dec: -1.943, mag: 1.74, c: "#cfe6ff" },
+      { id: "Alnilam", fa: "النظام", ra: 5.604, dec: -1.202, mag: 1.69, c: "#cfe6ff" },
+      { id: "Mintaka", fa: "منطقه", ra: 5.533, dec: -0.299, mag: 2.25, c: "#cfe6ff" },
+
+      // دب اکبر (Ursa Major) 7..13
+      { id: "Dubhe", fa: "دبه", ra: 11.062, dec: 61.751, mag: 1.81, c: "#ffe3b3" },
+      { id: "Merak", fa: "مراق", ra: 11.031, dec: 56.382, mag: 2.34, c: "#e6f0ff" },
+      { id: "Phecda", fa: "فخذ", ra: 11.897, dec: 53.695, mag: 2.41, c: "#e6f0ff" },
+      { id: "Megrez", fa: "مغرز", ra: 12.257, dec: 57.033, mag: 3.32, c: "#e6f0ff" },
+      { id: "Alioth", fa: "جون", ra: 12.900, dec: 55.960, mag: 1.76, c: "#e6f0ff" },
+      { id: "Mizar", fa: "مئزر", ra: 13.399, dec: 54.925, mag: 2.23, c: "#e6f0ff" },
+      { id: "Alkaid", fa: "قائد", ra: 13.792, dec: 49.313, mag: 1.85, c: "#cce4ff" },
+
+      // ذات‌الکرسی (Cassiopeia) 14..18
+      { id: "Caph", fa: "کف‌الخضیب", ra: 0.153, dec: 59.150, mag: 2.28, c: "#fff2d6" },
+      { id: "Schedar", fa: "صدر", ra: 0.675, dec: 56.537, mag: 2.24, c: "#ffd8a6" },
+      { id: "GammaCas", fa: "", ra: 0.945, dec: 60.717, mag: 2.15, c: "#cce4ff" },
+      { id: "Ruchbah", fa: "رکبه", ra: 1.430, dec: 60.235, mag: 2.66, c: "#e6f0ff" },
+      { id: "Segin", fa: "", ra: 1.907, dec: 63.670, mag: 3.35, c: "#cce4ff" },
+
+      // ثور (Taurus) 19..22
+      { id: "Aldebaran", fa: "دبران", ra: 4.599, dec: 16.509, mag: 0.87, c: "#ffae70" },
+      { id: "Elnath", fa: "النطح", ra: 5.438, dec: 28.607, mag: 1.65, c: "#cce4ff" },
+      { id: "ZetaTau", fa: "", ra: 5.627, dec: 21.143, mag: 2.97, c: "#cce4ff" },
+      { id: "Alcyone", fa: "پروین", ra: 3.791, dec: 24.105, mag: 2.85, c: "#b5d8ff" },
+
+      // جوزا (Gemini) 23..27
+      { id: "Castor", fa: "کاستور", ra: 7.577, dec: 31.888, mag: 1.58, c: "#e6f0ff" },
+      { id: "Pollux", fa: "پولوکس", ra: 7.755, dec: 28.026, mag: 1.16, c: "#ffd8a6" },
+      { id: "Alhena", fa: "الهنعه", ra: 6.629, dec: 16.399, mag: 1.93, c: "#e6f0ff" },
+      { id: "Wasat", fa: "", ra: 7.335, dec: 21.982, mag: 3.53, c: "#fff2d6" },
+      { id: "Tejat", fa: "", ra: 6.383, dec: 22.514, mag: 2.87, c: "#ffb07c" },
+
+      // اسد (Leo) 28..33
+      { id: "Regulus", fa: "قلب‌الاسد", ra: 10.139, dec: 11.967, mag: 1.36, c: "#cce4ff" },
+      { id: "Denebola", fa: "ذنب‌الاسد", ra: 11.818, dec: 14.572, mag: 2.14, c: "#e6f0ff" },
+      { id: "Algieba", fa: "جبهه", ra: 10.333, dec: 19.841, mag: 2.01, c: "#ffd8a6" },
+      { id: "Zosma", fa: "", ra: 11.235, dec: 20.524, mag: 2.56, c: "#e6f0ff" },
+      { id: "Chertan", fa: "", ra: 11.237, dec: 15.430, mag: 3.33, c: "#e6f0ff" },
+      { id: "Adhafera", fa: "", ra: 10.278, dec: 23.417, mag: 3.44, c: "#fff2d6" },
+
+      // عقرب (Scorpius) 34..39
+      { id: "Antares", fa: "قلب‌العقرب", ra: 16.490, dec: -26.432, mag: 1.06, c: "#ff8c5a" },
+      { id: "Shaula", fa: "شوله", ra: 17.560, dec: -37.104, mag: 1.62, c: "#cce4ff" },
+      { id: "Sargas", fa: "", ra: 17.622, dec: -42.998, mag: 1.86, c: "#fff2d6" },
+      { id: "Dschubba", fa: "", ra: 16.006, dec: -22.622, mag: 2.29, c: "#cce4ff" },
+      { id: "Graffias", fa: "", ra: 16.091, dec: -19.805, mag: 2.56, c: "#cce4ff" },
+      { id: "EpsSco", fa: "", ra: 16.836, dec: -34.293, mag: 2.29, c: "#ffd8a6" },
+
+      // ماکیان (Cygnus) 40..44
+      { id: "Deneb", fa: "ذنب", ra: 20.691, dec: 45.280, mag: 1.25, c: "#e6f0ff" },
+      { id: "Sadr", fa: "صدر ماکیان", ra: 20.370, dec: 40.257, mag: 2.23, c: "#fff2d6" },
+      { id: "Gienah", fa: "", ra: 20.770, dec: 33.970, mag: 2.48, c: "#ffd8a6" },
+      { id: "DeltaCyg", fa: "", ra: 19.750, dec: 45.131, mag: 2.86, c: "#e6f0ff" },
+      { id: "Albireo", fa: "منقار", ra: 19.512, dec: 27.960, mag: 3.05, c: "#ffd8a6" },
+
+      // شلیاق (Lyra) 45..47
+      { id: "Vega", fa: "نسر واقع", ra: 18.616, dec: 38.784, mag: 0.03, c: "#cce4ff" },
+      { id: "Sheliak", fa: "", ra: 18.835, dec: 33.363, mag: 3.52, c: "#e6f0ff" },
+      { id: "Sulafat", fa: "", ra: 18.982, dec: 32.690, mag: 3.25, c: "#e6f0ff" },
+
+      // عقاب (Aquila) 48..50
+      { id: "Altair", fa: "نسر طایر", ra: 19.846, dec: 8.868, mag: 0.76, c: "#f0f7ff" },
+      { id: "Tarazed", fa: "", ra: 19.771, dec: 10.613, mag: 2.72, c: "#ffd8a6" },
+      { id: "Alshain", fa: "", ra: 19.922, dec: 6.407, mag: 3.71, c: "#fff2d6" },
+
+      // سگ بزرگ (Canis Major) 51..55
+      { id: "Sirius", fa: "شباهنگ", ra: 6.752, dec: -16.716, mag: -1.46, c: "#d9eeff" },
+      { id: "Adhara", fa: "عذارا", ra: 6.977, dec: -28.972, mag: 1.50, c: "#cce4ff" },
+      { id: "Wezen", fa: "وزن", ra: 7.140, dec: -26.393, mag: 1.83, c: "#fff2d6" },
+      { id: "Mirzam", fa: "مرزم", ra: 6.378, dec: -17.956, mag: 1.98, c: "#cce4ff" },
+      { id: "Aludra", fa: "", ra: 7.402, dec: -29.303, mag: 2.45, c: "#cce4ff" },
+
+      // فرس اعظم (Pegasus) 56..59
+      { id: "Markab", fa: "مرکب", ra: 23.079, dec: 15.205, mag: 2.49, c: "#e6f0ff" },
+      { id: "Scheat", fa: "ساعد", ra: 23.063, dec: 28.083, mag: 2.44, c: "#ffb07c" },
+      { id: "Algenib", fa: "جنب", ra: 0.221, dec: 15.184, mag: 2.83, c: "#cce4ff" },
+      { id: "Alpheratz", fa: "سرةالفرس", ra: 0.140, dec: 29.091, mag: 2.07, c: "#cce4ff" },
+
+      // ستارگان تک و قطبی 60..65
+      { id: "Polaris", fa: "ستاره قطبی", ra: 2.530, dec: 89.264, mag: 1.97, c: "#fff2d6" },
+      { id: "Arcturus", fa: "سماک رامح", ra: 14.261, dec: 19.182, mag: -0.05, c: "#ffb570" },
+      { id: "Capella", fa: "عیوق", ra: 5.278, dec: 45.998, mag: 0.08, c: "#ffe8a3" },
+      { id: "Procyon", fa: "شعرای شامی", ra: 7.655, dec: 5.225, mag: 0.40, c: "#fff5d6" },
+      { id: "Spica", fa: "سماک اعزل", ra: 13.420, dec: -11.161, mag: 0.98, c: "#b5d8ff" },
+      { id: "Fomalhaut", fa: "فم‌الحوت", ra: 22.961, dec: -29.622, mag: 1.17, c: "#e6f0ff" }
+    ];
+
+    // خطوط اتصال صور فلکی (بر اساس ایندکس آرایه STARS)
+    const CONSTELLATIONS = [
+      { name: "شکارچی", lines: [[0,2],[0,4],[2,6],[4,5],[5,6],[4,3],[6,1],[1,3]] },
+      { name: "دب اکبر", lines: [[7,8],[8,9],[9,10],[10,7],[10,11],[11,12],[12,13]] },
+      { name: "ذات‌الکرسی", lines: [[14,15],[15,16],[16,17],[17,18]] },
+      { name: "ثور", lines: [[22,19],[19,20],[19,21]] },
+      { name: "جوزا", lines: [[23,24],[23,27],[24,26],[26,25]] },
+      { name: "اسد", lines: [[28,30],[30,33],[30,31],[31,29],[29,32],[32,28]] },
+      { name: "عقرب", lines: [[38,37],[37,34],[34,39],[39,36],[36,35]] },
+      { name: "ماکیان", lines: [[40,41],[41,44],[42,41],[41,43]] },
+      { name: "شلیاق", lines: [[45,46],[46,47],[47,45]] },
+      { name: "عقاب", lines: [[49,48],[48,50]] },
+      { name: "سگ بزرگ", lines: [[54,51],[51,53],[53,52],[53,55]] },
+      { name: "فرس اعظم", lines: [[56,57],[57,59],[59,58],[58,56]] }
+    ];
+
+    const PLANETS_DEF = [
+      { key: "Sun", fa: "خورشید", color: "#fde047", r: 11, glow: "rgba(253, 224, 71, 0.55)" },
+      { key: "Moon", fa: "ماه", color: "#e2e8f0", r: 9, glow: "rgba(226, 232, 240, 0.45)" },
+      { key: "Mercury", fa: "عطارد", color: "#cbd5e1", r: 4.2, glow: "rgba(203,213,225,0.3)" },
+      { key: "Venus", fa: "زهره", color: "#fef08a", r: 6.2, glow: "rgba(254,240,138,0.5)" },
+      { key: "Mars", fa: "مریخ", color: "#f87171", r: 5.2, glow: "rgba(248,113,113,0.45)" },
+      { key: "Jupiter", fa: "مشتری", color: "#fdba74", r: 6.5, glow: "rgba(253,186,116,0.45)" },
+      { key: "Saturn", fa: "زحل", color: "#fcd34d", r: 5.5, glow: "rgba(252,211,77,0.4)", ring: true }
+    ];
+
+    function resizeCanvas() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    window.addEventListener("resize", resizeCanvas);
+    resizeCanvas();
+
+    function deg2rad(d) { return d * Math.PI / 180; }
+    function rad2deg(r) { return r * 180 / Math.PI; }
+
+    // تبدیل سمت و ارتفاع به بردار سه‌بعدی (East, North, Up)
+    function azAltToVec(azDeg, altDeg) {
+      const az = deg2rad(azDeg);
+      const alt = deg2rad(altDeg);
+      const cAlt = Math.cos(alt);
+      return {
+        e: cAlt * Math.sin(az),
+        n: cAlt * Math.cos(az),
+        u: Math.sin(alt)
+      };
+    }
+
+    function dot(a, b) { return a.e * b.e + a.n * b.n + a.u * b.u; }
+    function cross(a, b) {
+      return {
+        e: a.n * b.u - a.u * b.n,
+        n: a.u * b.e - a.e * b.u,
+        u: a.e * b.n - a.n * b.e
+      };
+    }
+    function normalize(v) {
+      const len = Math.hypot(v.e, v.n, v.u) || 1;
+      return { e: v.e / len, n: v.n / len, u: v.u / len };
+    }
+
+    // تصویرسازی نقطه سه‌بعدی روی دایره‌ی تلسکوپ
+    function projectPoint(vec, camBasis, cx, cy, radius) {
+      const z = dot(vec, camBasis.fwd);
+      if (z <= 0.05) return null; // پشت دوربین
+      const x = dot(vec, camBasis.right);
+      const y = dot(vec, camBasis.up);
+      const scale = radius / Math.tan(deg2rad(state.fovDeg / 2));
+      const sx = cx + (x / z) * scale;
+      const sy = cy - (y / z) * scale;
+      return { x: sx, y: sy, dist: Math.hypot(sx - cx, sy - cy) };
+    }
+
+    function computeSkyObjects() {
+      if (!window.Astronomy) return { stars: [], planets: [], ecliptic: [] };
+      const A = window.Astronomy;
+      const now = new Date();
+      const obs = new A.Observer(state.lat, state.lon, 0);
+
+      const stars = STARS.map(s => {
+        const hor = A.Horizon(now, obs, s.ra, s.dec, "normal");
+        return { ...s, az: hor.azimuth, alt: hor.altitude, vec: azAltToVec(hor.azimuth, hor.altitude) };
+      });
+
+      const planets = PLANETS_DEF.map(p => {
+        const eq = A.Equator(A.Body[p.key], now, obs, true, true);
+        const hor = A.Horizon(now, obs, eq.ra, eq.dec, "normal");
+        return { ...p, az: hor.azimuth, alt: hor.altitude, vec: azAltToVec(hor.azimuth, hor.altitude) };
+      });
+
+      // نقاط دایرةالبروج (هر ۱۵ درجه)
+      const ecliptic = [];
+      const obliq = deg2rad(23.439);
+      for (let lon = 0; lon < 360; lon += 10) {
+        const lRad = deg2rad(lon);
+        const raRad = Math.atan2(Math.sin(lRad) * Math.cos(obliq), Math.cos(lRad));
+        const decRad = Math.asin(Math.sin(obliq) * Math.sin(lRad));
+        const raH = ((rad2deg(raRad) / 15) + 24) % 24;
+        const decD = rad2deg(decRad);
+        const hor = A.Horizon(now, obs, raH, decD, "normal");
+        ecliptic.push(azAltToVec(hor.azimuth, hor.altitude));
+      }
+
+      return { stars, planets, ecliptic };
+    }
+
+    let cachedSky = computeSkyObjects();
+    setInterval(() => { cachedSky = computeSkyObjects(); }, 15000);
+
+    function drawFrame() {
+      const rect = canvas.getBoundingClientRect();
+      const w = rect.width;
+      const h = rect.height;
+      const cx = w / 2;
+      const cy = h / 2;
+      const radius = Math.min(cx, cy) - 2;
+
+      ctx.clearRect(0, 0, w, h);
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+      ctx.clip();
+
+      // پس‌زمینه آسمان (گرادیان عمیق کیهانی)
+      const bgGrad = ctx.createRadialGradient(cx, cy, radius * 0.1, cx, cy, radius);
+      bgGrad.addColorStop(0, "#0b132b");
+      bgGrad.addColorStop(1, "#020617");
+      ctx.fillStyle = bgGrad;
+      ctx.fillRect(0, 0, w, h);
+
+      // ساخت پایه دوربین
+      const fwd = azAltToVec(state.viewAz, state.viewAlt);
+      const worldUp = { e: 0, n: 0, u: 1 };
+      let right = cross(fwd, worldUp);
+      if (Math.hypot(right.e, right.n, right.u) < 0.001) {
+        right = { e: 1, n: 0, u: 0 };
+      } else {
+        right = normalize(right);
+      }
+      const up = cross(right, fwd);
+      const cam = { fwd, right, up };
+
+      // رسم خط افق و جهات اصلی
+      ctx.strokeStyle = "rgba(56, 189, 248, 0.25)";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      let started = false;
+      for (let a = 0; a <= 360; a += 5) {
+        const pt = projectPoint(azAltToVec(a, 0), cam, cx, cy, radius);
+        if (pt && pt.dist < radius * 1.4) {
+          if (!started) { ctx.moveTo(pt.x, pt.y); started = true; }
+          else ctx.lineTo(pt.x, pt.y);
+        } else {
+          started = false;
+        }
+      }
+      ctx.stroke();
+
+      // جهات جغرافیایی روی افق
+      const cardinals = [
+        { az: 0, lbl: "شمال N" }, { az: 90, lbl: "شرق E" },
+        { az: 180, lbl: "جنوب S" }, { az: 270, lbl: "غرب W" }
+      ];
+      ctx.font = "700 10px Vazirmatn, sans-serif";
+      ctx.fillStyle = "rgba(125, 211, 252, 0.8)";
+      ctx.textAlign = "center";
+      cardinals.forEach(c => {
+        const pt = projectPoint(azAltToVec(c.az, 2), cam, cx, cy, radius);
+        if (pt && pt.dist < radius - 14) {
+          ctx.fillText(c.lbl, pt.x, pt.y);
+        }
+      });
+
+      // رسم خط دایرةالبروج
+      if (state.opts.ecliptic && cachedSky.ecliptic.length > 0) {
+        ctx.strokeStyle = "rgba(245, 197, 107, 0.28)";
+        ctx.setLineDash([4, 4]);
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        let ecStart = false;
+        for (let i = 0; i <= cachedSky.ecliptic.length; i++) {
+          const v = cachedSky.ecliptic[i % cachedSky.ecliptic.length];
+          const pt = projectPoint(v, cam, cx, cy, radius);
+          if (pt && pt.dist < radius * 1.5) {
+            if (!ecStart) { ctx.moveTo(pt.x, pt.y); ecStart = true; }
+            else ctx.lineTo(pt.x, pt.y);
+          } else {
+            ecStart = false;
+          }
+        }
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      // تصویرسازی ستاره‌ها
+      const projStars = cachedSky.stars.map(s => ({
+        s,
+        pt: projectPoint(s.vec, cam, cx, cy, radius)
+      }));
+
+      // خطوط صور فلکی
+      if (state.opts.constellations) {
+        ctx.strokeStyle = "rgba(148, 163, 184, 0.38)";
+        ctx.lineWidth = 1.1;
+        CONSTELLATIONS.forEach(c => {
+          let sumX = 0, sumY = 0, count = 0;
+          c.lines.forEach(([i1, i2]) => {
+            const p1 = projStars[i1]?.pt;
+            const p2 = projStars[i2]?.pt;
+            if (p1 && p2 && p1.dist < radius * 1.5 && p2.dist < radius * 1.5) {
+              ctx.beginPath();
+              ctx.moveTo(p1.x, p1.y);
+              ctx.lineTo(p2.x, p2.y);
+              ctx.stroke();
+              sumX += (p1.x + p2.x) / 2;
+              sumY += (p1.y + p2.y) / 2;
+              count++;
+            }
+          });
+          if (state.opts.labels && count > 0) {
+            const mx = sumX / count;
+            const my = sumY / count;
+            if (Math.hypot(mx - cx, my - cy) < radius - 22) {
+              ctx.font = "700 9.5px Vazirmatn, sans-serif";
+              ctx.fillStyle = "rgba(148, 163, 184, 0.72)";
+              ctx.fillText(c.name, mx, my);
+            }
+          }
+        });
+      }
+
+      // رسم ستاره‌ها
+      projStars.forEach(({ s, pt }) => {
+        if (!pt || pt.dist > radius) return;
+        const size = Math.max(1.3, 3.6 - s.mag * 0.55);
+        ctx.fillStyle = s.c || "#ffffff";
+        ctx.beginPath();
+        ctx.arc(pt.x, pt.y, size, 0, Math.PI * 2);
+        ctx.fill();
+
+        if (state.opts.labels && s.fa && s.mag <= 2.1) {
+          ctx.font = "600 9px Vazirmatn, sans-serif";
+          ctx.fillStyle = "rgba(226, 232, 240, 0.85)";
+          ctx.fillText(s.fa, pt.x, pt.y - size - 4);
+        }
+      });
+
+      // رسم خورشید، ماه و سیارات
+      cachedSky.planets.forEach(p => {
+        const pt = projectPoint(p.vec, cam, cx, cy, radius);
+        if (!pt || pt.dist > radius) return;
+
+        // هاله نورانی
+        const g = ctx.createRadialGradient(pt.x, pt.y, 1, pt.x, pt.y, p.r * 2.4);
+        g.addColorStop(0, p.glow);
+        g.addColorStop(1, "rgba(0,0,0,0)");
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(pt.x, pt.y, p.r * 2.4, 0, Math.PI * 2);
+        ctx.fill();
+
+        // حلقه زحل
+        if (p.ring) {
+          ctx.strokeStyle = "rgba(252, 211, 77, 0.75)";
+          ctx.lineWidth = 1.4;
+          ctx.beginPath();
+          ctx.ellipse(pt.x, pt.y, p.r * 1.9, p.r * 0.6, -0.35, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+
+        // جسم سیاره
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(pt.x, pt.y, p.r, 0, Math.PI * 2);
+        ctx.fill();
+
+        if (state.opts.labels) {
+          ctx.font = "800 10.5px Vazirmatn, sans-serif";
+          ctx.fillStyle = p.color;
+          ctx.fillText(p.fa, pt.x, pt.y - p.r - 6);
+        }
+      });
+
+      // نشانه‌گر مرکز تلسکوپ (Crosshair)
+      ctx.strokeStyle = "rgba(245, 197, 107, 0.3)";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(cx - 10, cy); ctx.lineTo(cx - 3, cy);
+      ctx.moveTo(cx + 3, cy);  ctx.lineTo(cx + 10, cy);
+      ctx.moveTo(cx, cy - 10); ctx.lineTo(cx, cy - 3);
+      ctx.moveTo(cx, cy + 3);  ctx.lineTo(cx, cy + 10);
+      ctx.stroke();
+
+      ctx.restore();
+
+      // به‌روزرسانی اعداد نمایشگر
+      document.getElementById("azVal").textContent = Math.round((state.viewAz + 360) % 360) + "°";
+      document.getElementById("altVal").textContent = (state.viewAlt >= 0 ? "+" : "") + Math.round(state.viewAlt) + "°";
+
+      requestAnimationFrame(drawFrame);
+    }
+
+    // چرخش لمسی (دستی)
+    let isDragging = false, lastX = 0, lastY = 0;
+    canvas.addEventListener("pointerdown", e => {
+      if (state.sensorActive) return;
+      isDragging = true;
+      lastX = e.clientX;
+      lastY = e.clientY;
+    });
+    window.addEventListener("pointermove", e => {
+      if (!isDragging || state.sensorActive) return;
+      const dx = e.clientX - lastX;
+      const dy = e.clientY - lastY;
+      lastX = e.clientX;
+      lastY = e.clientY;
+      const sens = state.fovDeg / 260;
+      state.viewAz = (state.viewAz - dx * sens + 360) % 360;
+      state.viewAlt = Math.max(-85, Math.min(89, state.viewAlt + dy * sens));
+    });
+    window.addEventListener("pointerup", () => { isDragging = false; });
+
+    // پردازش سنسور ژیرسکوپ و قطب‌نما (مختصات سه‌بعدی بدون قفل گیمبال)
+    function handleOrientation(ev) {
+      if (!state.sensorActive) return;
+      if (ev.alpha === null || ev.beta === null || ev.gamma === null) return;
+
+      const a = deg2rad(ev.alpha);
+      const b = deg2rad(ev.beta);
+      const g = deg2rad(ev.gamma);
+
+      // بردار پشت گوشی در مختصات شرق-شمال-بالا
+      const rawE = -Math.cos(a) * Math.sin(g) - Math.sin(a) * Math.sin(b) * Math.cos(g);
+      const rawN = -Math.sin(a) * Math.sin(g) + Math.cos(a) * Math.sin(b) * Math.cos(g);
+      const rawU = -Math.cos(b) * Math.cos(g);
+
+      if (!state.smoothVec) {
+        state.smoothVec = { e: rawE, n: rawN, u: rawU };
+      } else {
+        const k = 0.22; // فیلتر نرم‌کننده ضدلرزش
+        state.smoothVec.e += (rawE - state.smoothVec.e) * k;
+        state.smoothVec.n += (rawN - state.smoothVec.n) * k;
+        state.smoothVec.u += (rawU - state.smoothVec.u) * k;
+      }
+
+      const v = normalize(state.smoothVec);
+      state.viewAz = (rad2deg(Math.atan2(v.e, v.n)) + 360) % 360;
+      state.viewAlt = rad2deg(Math.asin(Math.max(-1, Math.min(1, v.u))));
+    }
+
+    async function toggleSensorMode() {
+      const btn = document.getElementById("sensorToggleBtn");
+      const note = document.getElementById("statusNote");
+
+      if (state.sensorActive) {
+        state.sensorActive = false;
+        window.removeEventListener("deviceorientationabsolute", handleOrientation, true);
+        window.removeEventListener("deviceorientation", handleOrientation, true);
+        btn.classList.remove("active");
+        btn.textContent = "📡 فعال‌سازی سنسور قطب‌نما و GPS (رصد زنده)";
+        note.textContent = "حالت لمسی فعال شد؛ با انگشت روی دایره بکشید تا آسمان را بچرخانید.";
+        return;
+      }
+
+      // درخواست مجوز برای iOS در صورت نیاز
+      if (typeof DeviceOrientationEvent !== "undefined" && typeof DeviceOrientationEvent.requestPermission === "function") {
+        try {
+          const perm = await DeviceOrientationEvent.requestPermission();
+          if (perm !== "granted") {
+            note.textContent = "اجازه دسترسی به سنسور جهت‌یابی داده نشد.";
+            return;
+          }
+        } catch (e) {}
+      }
+
+      // دریافت GPS
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          pos => {
+            state.lat = pos.coords.latitude;
+            state.lon = pos.coords.longitude;
+            state.gpsLocked = true;
+            document.getElementById("gpsVal").textContent = `${state.lat.toFixed(2)}, ${state.lon.toFixed(2)}`;
+            cachedSky = computeSkyObjects();
+          },
+          () => {
+            document.getElementById("gpsVal").textContent = "تهران (پیش‌فرض)";
+          },
+          { enableHighAccuracy: false, timeout: 6000 }
+        );
+      }
+
+      state.sensorActive = true;
+      state.smoothVec = null;
+      if ("ondeviceorientationabsolute" in window) {
+        window.addEventListener("deviceorientationabsolute", handleOrientation, true);
+      } else {
+        window.addEventListener("deviceorientation", handleOrientation, true);
+      }
+
+      btn.classList.add("active");
+      btn.textContent = "🟢 سنسور زنده فعال است (لمس برای توقف)";
+      note.textContent = "گوشی را به سمت آسمان بگیرید. اگر جهت قطب‌نما کمی انحراف داشت، گوشی را یک بار به شکل عدد ۸ در هوا بچرخانید.";
+    }
+
+    function toggleOpt(key, btnEl) {
+      state.opts[key] = !state.opts[key];
+      btnEl.classList.toggle("on", state.opts[key]);
+    }
+
+    function updateFov(val) {
+      state.fovDeg = Number(val);
+      document.getElementById("fovLbl").textContent = val + "°";
+    }
+
+    requestAnimationFrame(drawFrame);
+  </script>
+</body>
+</html>
