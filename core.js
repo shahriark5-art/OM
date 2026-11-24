@@ -299,7 +299,6 @@ window.calcPlanets = function(dt) {
   });
 };
 
-
 function matchChannelBidirectional(ch, pls) {
   const transitGatesSet = new Set(pls.map(p => p.gate));
   const hasG1 = transitGatesSet.has(ch.g1) || window.MY_GATES.has(ch.g1);
@@ -684,29 +683,131 @@ window.askOldmanAboutChannel = async function(ev, idx, chId, planetName, hoursLe
   const chObj = window.DB.find(c => c.id === chId);
   if (!chObj) return;
 
+  // خواندن تنظیمات مشترک با صفحه خلوتگاه پیرمرد (oracle.html)
+  const savedProv = localStorage.getItem("oldman_sage_provider_v1") || (window.getStore ? window.getStore("prov", "gemini") : "gemini");
+  const activeProv = savedProv === "openrouter" ? "openrouter" : "gemini";
+
+  const apiKey = activeProv === "openrouter"
+    ? (localStorage.getItem("oldman_sage_openrouter_key_v1") || "").trim()
+    : (
+        (localStorage.getItem("oldman_sage_gemini_key_v1") || "").trim() ||
+        (localStorage.getItem("oldman_sage_custom_api_key_v1") || "").trim() ||
+        (window.getStore ? window.getStore("key", "") : "").trim()
+      );
+
+  if (!apiKey) {
+    replyBox.style.display = "block";
+    replyBox.innerHTML = "<span style='color:#fca5a5'>⚠️ کلید هوش مصنوعی یافت نشد. لطفاً یک بار در صفحه «پیرمرد» (بخش تنظیمات) کلید را ذخیره کن.</span>";
+    return;
+  }
+
   replyBox.style.display = "block";
-  replyBox.innerHTML = "🧙‍♂️ پیرمرد در حال سنجش نحوه استفاده از این موج انرژی...";
+  replyBox.innerHTML = "🧙‍♂️ پیرمرد در حال تأمل روی این موج انرژی...";
   btn.disabled = true;
 
-  const apiKey = window.getStore ? window.getStore("key", "") : "";
-  const prompt =
-    "تو «پیرمرد» حکیم هستی و با شهریار صحبت می‌کنی. " +
-    "در این لحظه در چارت شهریار «" + chObj.name + "» توسط سیاره «" + planetName + "» به مدت «" + hoursLeftStr + "» روشن شده است. " +
-    "حس و حال این کانال: «" + chObj.mood + "»؛ سایه آن «" + chObj.shadow + "» و هدیه آن «" + chObj.gift + "» است. " +
-    "در ۳ جمله بسیار کاربردی، گرم و دقیق به شهریار بگو در این ساعاتی که این موتور انرژی در وجودش روشن است، دقیقاً چه کاری انجام دهد تا بیشترین بهره مادی، روحی یا ارتباطی را ببرد و از چه تله‌ای پرهیز کند.";
+  const systemPrompt = [
+    "شما «پیرمرد» هستید؛ یک حکیم و راهنمای عمیق‌بین، گرم، دقیق و آگاه به مکانیک هیومن دیزاین (چارت رفلکتور ۶/۲).",
+    "کل پاسخ باید کاملاً به زبان فارسی روان و مستقیم از زبان پیرمرد باشد؛ بدون هیچ مقدمه یا متن انگلیسی.",
+    "در ۳ تا ۴ جمله‌ی بسیار کاربردی، عمیق و ملموس راهنمایی کن که شهریار در این ساعاتِ حضورِ این موج انرژی، دقیقاً چه اقدام یا رویکردی داشته باشد و از چه تله‌ای پرهیز کند.",
+    "از ذکر اعداد فنی، شماره دروازه یا اصطلاحات خشک خودداری کن و حکیمانه و صمیمی سخن بگو."
+  ].join("\n");
 
-  let txt = "";
-  if (window.OldmanOracleModule && window.OldmanOracleModule.askInternalDirect) {
-    const res = await window.OldmanOracleModule.askInternalDirect(apiKey, prompt);
-    if (res && res.ok) txt = res.text;
+  const userPrompt = [
+    `[بافت پنهان لحظه]`,
+    `کانال فعال: ${chObj.name}`,
+    `سیاره فعال‌کننده: ${planetName} (مدت باقی‌مانده: ${hoursLeftStr})`,
+    `کیفیت و حال‌وهوا: ${chObj.mood}`,
+    `سایه و تله: ${chObj.shadow || chObj.dontT}`,
+    `هدیه و اوج: ${chObj.gift || chObj.doT}`,
+    ``,
+    `پرسش شهریار: پیرمرد، با این موج انرژی که الان در وجودم روشن شده دقیقاً چکار کنم تا بهترین بهره را ببرم؟`
+  ].join("\n");
+
+  const cleanPersian = (rawText) => {
+    const txt = String(rawText || "").trim();
+    if (!txt) return "";
+    const lines = txt.split(/\r?\n/);
+    const persianRegex = /[\u0600-\u06FF]/;
+    const firstIdx = lines.findIndex(l => persianRegex.test(l));
+    if (firstIdx > 0 && !persianRegex.test(lines.slice(0, firstIdx).join("\n"))) {
+      return lines.slice(firstIdx).join("\n").trim();
+    }
+    return txt;
+  };
+
+  try {
+    let aiText = "";
+    let usedLabel = "";
+
+    if (activeProv === "openrouter") {
+      const orModel = (localStorage.getItem("oldman_sage_openrouter_model_v1") || "openai/gpt-4o-mini").trim();
+      const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + apiKey,
+          "HTTP-Referer": location.origin || "https://shahriark5-art.github.io",
+          "X-Title": "OLDMAN Active Channel"
+        },
+        body: JSON.stringify({
+          model: orModel,
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userPrompt }
+          ],
+          temperature: 0.8,
+          max_tokens: 4096
+        })
+      });
+      if (!res.ok) {
+        const errT = await res.text().catch(() => "");
+        throw new Error(`خطای OpenRouter (${res.status}): ${errT.slice(0, 140)}`);
+      }
+      const data = await res.json();
+      aiText = cleanPersian(data?.choices?.[0]?.message?.content || "");
+      usedLabel = "OpenRouter • " + orModel;
+    } else {
+      const gemModel = (localStorage.getItem("oldman_sage_gemini_model_v3") || "gemini-3.6-flash").trim().replace(/^models\//, "");
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(gemModel)}:generateContent?key=${encodeURIComponent(apiKey)}`;
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: systemPrompt }] },
+          contents: [{ parts: [{ text: userPrompt }] }],
+          generationConfig: {
+            temperature: 0.8,
+            maxOutputTokens: 8192
+          }
+        })
+      });
+      if (!res.ok) {
+        const errT = await res.text().catch(() => "");
+        throw new Error(`خطای Gemini (${gemModel} - ${res.status}): ${errT.slice(0, 160)}`);
+      }
+      const data = await res.json();
+      const rawOut = data?.candidates?.[0]?.content?.parts
+        ?.filter(p => !p.thought)
+        ?.map(p => p.text || "")
+        .join("\n")
+        .trim() || "";
+      aiText = cleanPersian(rawOut);
+      usedLabel = "Gemini • " + gemModel;
+    }
+
+    if (!aiText) {
+      throw new Error("پاسخ خالی از هوش مصنوعی دریافت شد.");
+    }
+
+    replyBox.innerHTML =
+      `<b>🧙‍♂️ نسخه پیرمرد برای این کانال:</b><br/>` +
+      aiText.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\n/g, "<br/>") +
+      `<div style="margin-top:6px;font-size:0.65rem;color:#94a3b8;text-align:left">${usedLabel}</div>`;
+  } catch (err) {
+    replyBox.innerHTML = `<span style="color:#fca5a5">⚠️ خطا در دریافت پاسخ از هوش مصنوعی:<br/>${err.message || "ارتباط برقرار نشد."}</span>`;
+  } finally {
+    btn.disabled = false;
   }
-
-  if (!txt) {
-    txt = "شهریار جان، تا زمانی که این موج توسط " + planetName + " در وجودت روشن است، روی «" + chObj.gift + "» تمرکز کن و کارهای مرتبط با «" + chObj.doT + "» را جلو ببر. فقط مراقب تله «" + chObj.shadow + "» باش.";
-  }
-
-  replyBox.innerHTML = "<b>🧙‍♂️ نسخه پیرمرد برای این کانال:</b><br/>" + txt.replace(/\n/g, "<br/>");
-  btn.disabled = false;
 };
 
 function renderActiveChannelsSection(now, pls, act) {
