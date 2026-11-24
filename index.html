@@ -101,10 +101,10 @@
 
     <div id="timerBar" class="timer">⏱️ در حال محاسبه...</div>
 
-    <!-- جایگاه ماژول کانال‌های فعال (منتقل‌شده به بالا) -->
+    <!-- جایگاه ماژول کانال‌های فعال -->
     <div id="activeChannelsMount"></div>
 
-    <!-- جایگاه ماژول رادار آب‌وهوا و فالگیر (منتقل‌شده به پایینِ کانال‌های فعال) -->
+    <!-- جایگاه ماژول رادار آب‌وهوا و فالگیر -->
     <div id="weatherFortuneMount"></div>
 
     <!-- تقویم آینده -->
@@ -125,6 +125,7 @@
     <button class="n-btn" onclick="location.href='oracle.html'"><span>🧙‍♂️</span><span>پیرمرد</span></button>
     <button class="n-btn" onclick="location.href='dreams.html'"><span>🌙</span><span>رویاها</span></button>
     <button class="n-btn" onclick="scrollToId('lunarTrackerMount')"><span>🌕</span><span>قطب‌نما</span></button>
+    <button class="n-btn" onclick="location.href='sky.html'"><span>🔭</span><span>تلسکوپ</span></button>
     <button class="n-btn" onclick="openSetModal()"><span>⚙️</span><span>تنظیمات</span></button>
   </nav>
 
@@ -175,9 +176,10 @@
   <script src="channels.js?v=1.7"></script>
   <script src="fortune.js?v=1.7"></script>
 
+  <!-- کتابخانه نجومی دقیق برای محاسبه سیارات -->
+  <script src="https://cdn.jsdelivr.net/npm/astronomy-engine@2.1.19/astronomy.browser.min.js"></script>
+
   <!-- بارگذاری فایل‌های ماژولار نسخه 1.7 با ضد کش -->
-    <script src="https://cdn.jsdelivr.net/npm/astronomy-engine@2.1.19/astronomy.browser.min.js"></script>
-  
   <script src="core.js?v=1.7"></script>
   <script src="gems.js?v=1.7"></script>
   <script src="luck.js?v=1.7"></script>
