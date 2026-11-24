@@ -376,7 +376,7 @@
   <div class="sanctuary-wrap">
     <div class="top-bar">
       <a class="back-link" href="index.html">← بازگشت به داشبورد</a>
-      <div id="oraclePulsePill" class="pulse-pill">✨ خلوتگاه فعال هوش مصنوعی</div>
+      <div id="oraclePulsePill" class="pulse-pill">✨ مدل فعال: gemini-3.5-flash-lite</div>
     </div>
 
     <div class="sanctuary-card">
@@ -425,8 +425,8 @@
           </div>
         </div>
         <div style="margin-top:8px">
-          <label style="display:block;margin-bottom:4px">مدل Gemini (اختیاری - مثلاً gemini-2.0-flash یا gemini-2.5-flash):</label>
-          <input id="geminiCustomModelInp" class="engine-input" type="text" placeholder="خالی بماند تا مدل متنی مناسب خودکار انتخاب شود" />
+          <label style="display:block;margin-bottom:4px">مدل Gemini:</label>
+          <input id="geminiCustomModelInp" class="engine-input" type="text" value="gemini-3.5-flash-lite" placeholder="gemini-3.5-flash-lite" />
         </div>
         <div style="margin-top:8px">
           <label id="oracleKeyLabel" style="display:block;margin-bottom:4px">کلید API:</label>
@@ -451,11 +451,12 @@
     const ORACLE_GEMINI_KEY = "oldman_sage_gemini_key_v1";
     const ORACLE_OR_KEY = "oldman_sage_openrouter_key_v1";
 
-    const GEMINI_PREFERRED_MODELS = [
+    const DEFAULT_GEMINI_MODEL = "gemini-3.5-flash-lite";
+    const GEMINI_FALLBACK_MODELS = [
+      "gemini-3.5-flash-lite",
       "gemini-2.0-flash",
       "gemini-2.5-flash",
-      "gemini-2.5-flash-lite",
-      "gemini-2.0-flash-lite"
+      "gemini-2.5-flash-lite"
     ];
 
     let threadsList = [];
@@ -553,8 +554,12 @@
       if (provSel) provSel.value = savedProv === "openrouter" ? "openrouter" : "gemini";
       if (orModelInp) orModelInp.value = localStorage.getItem(ORACLE_OR_MODEL_KEY) || "openai/gpt-4o-mini";
 
-      const savedGemModel = localStorage.getItem(ORACLE_GEMINI_MODEL_KEY) || "";
-      if (gemModelInp) gemModelInp.value = isNonTextOnlyModel(savedGemModel) ? "" : savedGemModel;
+      const savedGemModel = (localStorage.getItem(ORACLE_GEMINI_MODEL_KEY) || DEFAULT_GEMINI_MODEL).trim();
+      const activeGemModel = isNonTextOnlyModel(savedGemModel) ? DEFAULT_GEMINI_MODEL : savedGemModel;
+      if (gemModelInp) gemModelInp.value = activeGemModel;
+
+      const pill = document.getElementById("oraclePulsePill");
+      if (pill) pill.textContent = "✨ مدل فعال: " + activeGemModel;
 
       onProviderChanged();
       renderStarterPrompts();
@@ -564,12 +569,12 @@
     function saveOracleEngineSettings() {
       const prov = document.getElementById("oracleProviderSel")?.value || "gemini";
       const model = (document.getElementById("openRouterModelInp")?.value || "").trim() || "openai/gpt-4o-mini";
-      const gemModel = (document.getElementById("geminiCustomModelInp")?.value || "").trim().replace(/^models\//, "");
+      const gemModel = (document.getElementById("geminiCustomModelInp")?.value || "").trim().replace(/^models\//, "") || DEFAULT_GEMINI_MODEL;
       const key = (document.getElementById("oracleApiKeyInp")?.value || "").trim();
 
       localStorage.setItem(ORACLE_PROVIDER_KEY, prov);
       localStorage.setItem(ORACLE_OR_MODEL_KEY, model);
-      localStorage.setItem(ORACLE_GEMINI_MODEL_KEY, isNonTextOnlyModel(gemModel) ? "" : gemModel);
+      localStorage.setItem(ORACLE_GEMINI_MODEL_KEY, isNonTextOnlyModel(gemModel) ? DEFAULT_GEMINI_MODEL : gemModel);
 
       if (key) {
         if (prov === "openrouter") {
@@ -581,6 +586,9 @@
         }
       }
       if (window.setStore) window.setStore("prov", prov);
+
+      const pill = document.getElementById("oraclePulsePill");
+      if (pill) pill.textContent = "✨ مدل فعال: " + gemModel;
 
       const msg = document.getElementById("oracleEngineSavedMsg");
       if (msg) msg.textContent = "ذخیره شد ✓";
@@ -623,7 +631,6 @@
       }
     }
 
-    // استخراج اطلاعات لحظه‌ای چارت فقط به‌عنوان پیش‌فرضِ پنهان در پس‌زمینه (بدون چاپ مستقیم اعداد/درصدها در پاسخ)
     function collectHiddenSkyAssumptions() {
       const now = new Date();
       let pls = [];
@@ -672,14 +679,14 @@
         "شما «پیرمرد» هستید؛ یک حکیم و راهنمای عمیق‌بین، شاعرانه، دقیق و آگاه به مکانیک هیومن دیزاین (چارت رفلکتور ۶/۲ با مراکز باز).",
         "بسیار مهم: کلِ پاسخ شما باید کاملاً به زبان فارسی و مستقیماً به زبانِ پیرمردِ حکیم باشد؛ بدون هیچ یادداشت یا متن انگلیسی.",
         "قانونِ طلاییِ بیان: اطلاعاتِ ترانزیت‌ها، کانال‌های فعال و شاخص‌های شانس که در بخش «پیش‌فرض‌های پنهانِ لحظه» به شما داده می‌شوند را حتماً به‌عنوان پیش‌فرضِ درونی و بافتِ پنهان در درکِ وضعیت و جهت‌دهیِ پاسخ در نظر بگیر، اما هرگز در متنِ پاسخ از کلمات یا اعداد فنی مثل «شانس چند درصده»، «دروازه فلان»، «خط فلان»، «کانال شماره...» یا آمار و درصد استفاده نکن.",
-        "پاسخ‌هایت را حکیمانه، چندلایه، عمیق و تعاملی بنویس؛ لایه‌های پنهانِ معنا، ناخودآگاه، سایه و هدیه، و تلهِ ذهن را باز کن و در پایان یک پرسشِ بازتابیِ عمیق بگذار تا شهریار بتواند لایه‌ای عمیق‌تر را کاود."
+        "پاسخ‌هایت را حکیمانه، چندلایه، عمیق و تعاملی بنویس؛ لایه‌های پنهانِ معنا، ناخودآگاه، سایه و هدیه، و تلهِ ذهن را باز کن و در پایان یک پرسشِ بازتابیِ عمیق بگذار تا شهریار بتواند لایه‌ای عمیق‌تر را بکاود."
       ].join("\n");
     }
 
     async function callGeminiRealAI(apiKey, customModel, systemPrompt, userPrompt) {
-      const queue = [];
-      if (customModel && !isNonTextOnlyModel(customModel)) queue.push(customModel);
-      for (const m of GEMINI_PREFERRED_MODELS) {
+      const primaryModel = (customModel && !isNonTextOnlyModel(customModel)) ? customModel : DEFAULT_GEMINI_MODEL;
+      const queue = [primaryModel];
+      for (const m of GEMINI_FALLBACK_MODELS) {
         if (!queue.includes(m)) queue.push(m);
       }
 
@@ -721,37 +728,6 @@
           throw new Error(lastErrMsg);
         }
       }
-
-      // تلاش با مدل‌های متنیِ موجود در لیست حساب در صورت نیاز
-      try {
-        const liveModels = await fetchTextGenerateModelsList(apiKey);
-        for (const lm of liveModels.slice(0, 4)) {
-          if (queue.includes(lm)) continue;
-          const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(lm)}:generateContent?key=${encodeURIComponent(apiKey)}`;
-          const res = await fetch(url, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              systemInstruction: { parts: [{ text: systemPrompt }] },
-              contents: [{ parts: [{ text: userPrompt }] }],
-              generationConfig: { temperature: 0.82, maxOutputTokens: 1700 }
-            })
-          });
-          if (res.ok) {
-            const data = await res.json();
-            const rawOut =
-              data?.candidates?.[0]?.content?.parts
-                ?.map(p => p.text || "")
-                .join("\n")
-                .trim() || "";
-            const cleaned = cleanPersianSageOutput(rawOut);
-            if (cleaned) {
-              localStorage.setItem(ORACLE_GEMINI_MODEL_KEY, lm);
-              return { text: cleaned, usedModel: "Gemini • " + lm };
-            }
-          }
-        }
-      } catch (e) {}
 
       throw new Error(lastErrMsg || "ارتباط با سرویس Gemini برقرار نشد.");
     }
