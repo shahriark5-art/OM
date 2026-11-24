@@ -121,25 +121,16 @@
       margin-top: 3px;
     }
 
-    .sky-context-strip {
-      padding: 9px 12px;
-      border-radius: 13px;
-      background: rgba(4, 7, 16, 0.72);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      font-size: 0.73rem;
-      color: #cbd5e1;
-      margin-bottom: 13px;
-    }
-
     .status-banner {
       display: none;
       margin-bottom: 12px;
-      padding: 8px 12px;
+      padding: 9px 12px;
       border-radius: 11px;
-      font-size: 0.73rem;
-      background: rgba(245, 197, 107, 0.1);
-      border: 1px solid rgba(245, 197, 107, 0.28);
-      color: var(--gold-soft);
+      font-size: 0.74rem;
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      color: #fecaca;
+      white-space: pre-line;
     }
 
     .status-banner.visible {
@@ -366,13 +357,26 @@
       font-weight: 700;
       cursor: pointer;
     }
+
+    .models-list-box {
+      margin-top: 8px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      background: rgba(4, 7, 16, 0.85);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      color: #bae6fd;
+      font-size: 0.7rem;
+      line-height: 1.7;
+      display: none;
+      white-space: pre-line;
+    }
   </style>
 </head>
 <body>
   <div class="sanctuary-wrap">
     <div class="top-bar">
       <a class="back-link" href="index.html">← بازگشت به داشبورد</a>
-      <div id="oraclePulsePill" class="pulse-pill">✨ در حال هم‌گام‌سازی با نبض لحظه...</div>
+      <div id="oraclePulsePill" class="pulse-pill">✨ خلوتگاه فعال هوش مصنوعی</div>
     </div>
 
     <div class="sanctuary-card">
@@ -380,18 +384,17 @@
         <div class="sage-orb">🧙‍♂️</div>
         <div>
           <h1 class="sage-title">خلوتگاه «پیرمرد»</h1>
-          <div class="sage-sub">«شهریار جان، از لایه‌های پنهانِ ترانزیت، کانال‌ها و آینه رفلکتورِ تو می‌نگرم؛ بپرس تا عمیق‌تر ببینیم.»</div>
+          <div class="sage-sub">«شهریار جان، از پسِ لایه‌های پنهان و حکمتِ لحظه می‌نگرم؛ بپرس تا عمیق‌تر دریابیم.»</div>
         </div>
       </div>
 
-      <div id="skyContextStrip" class="sky-context-strip">در حال خواندن ترانزیت‌ها، کانال‌های فعال و شاخص شانس...</div>
       <div id="oracleStatusBanner" class="status-banner"></div>
 
-      <div class="prompts-label">🌱 پرسش‌های آغازینِ هم‌نوا با همین لحظه:</div>
+      <div class="prompts-label">🌱 پرسش‌های آغازینِ الهام‌بخش:</div>
       <div id="starterPromptsBox" class="starter-prompts-grid"></div>
 
       <label class="prompts-label" for="oracleQuestionBox">پرسش یا تأمل خود را با پیرمرد در میان بگذار:</label>
-      <textarea id="oracleQuestionBox" class="question-textarea" placeholder="از چه لایه‌ای در زندگی، تصمیم، رابطه یا مسیرت می‌پرسی؟"></textarea>
+      <textarea id="oracleQuestionBox" class="question-textarea" placeholder="از چه لایه‌ای در معنا، وجود، تصمیم یا مسیرت می‌پرسی؟"></textarea>
 
       <div class="action-btns">
         <button id="askSageBtn" type="button" class="ask-main-btn" onclick="askOldmanDeep()">✨ پرسش عمیق از پیرمرد</button>
@@ -406,11 +409,11 @@
 
       <div id="threadsContainer"></div>
 
-      <details class="ai-engine-box">
-        <summary style="cursor:pointer;font-weight:700;color:#cbd5e1">⚙️ تنظیمات موتور ابری (اختیاری - Gemini / OpenRouter)</summary>
+      <details class="ai-engine-box" open>
+        <summary style="cursor:pointer;font-weight:700;color:#cbd5e1">⚙️ تنظیمات موتور هوش مصنوعی (Google Gemini / OpenRouter)</summary>
         <div class="engine-grid">
           <div>
-            <label style="display:block;margin-bottom:4px">موتور بیرونی:</label>
+            <label style="display:block;margin-bottom:4px">موتور هوش مصنوعی:</label>
             <select id="oracleProviderSel" class="engine-input" onchange="onProviderChanged()">
               <option value="gemini">Google Gemini API</option>
               <option value="openrouter">OpenRouter API</option>
@@ -418,19 +421,23 @@
           </div>
           <div>
             <label style="display:block;margin-bottom:4px">مدل OpenRouter:</label>
-            <input id="openRouterModelInp" class="engine-input" type="text" placeholder="openai/gpt-4o-mini" />
+            <input id="openRouterModelInp" class="engine-input" type="text" placeholder="openai/gpt-4o-mini یا openrouter/free" />
           </div>
         </div>
         <div style="margin-top:8px">
-          <label style="display:block;margin-bottom:4px">مدل Gemini (اختیاری):</label>
-          <input id="geminiCustomModelInp" class="engine-input" type="text" placeholder="gemini-2.0-flash" />
+          <label style="display:block;margin-bottom:4px">مدل Gemini (اختیاری - مثلاً gemini-2.0-flash یا gemini-2.5-flash):</label>
+          <input id="geminiCustomModelInp" class="engine-input" type="text" placeholder="خالی بماند تا مدل متنی مناسب خودکار انتخاب شود" />
         </div>
         <div style="margin-top:8px">
           <label id="oracleKeyLabel" style="display:block;margin-bottom:4px">کلید API:</label>
-          <input id="oracleApiKeyInp" class="engine-input" type="password" placeholder="در صورت خالی بودن، از موتور تحلیلی پیرمرد استفاده می‌شود" />
+          <input id="oracleApiKeyInp" class="engine-input" type="password" placeholder="کلید Gemini یا OpenRouter را وارد کن" />
         </div>
-        <button type="button" class="save-engine-btn" onclick="saveOracleEngineSettings()">ذخیره تنظیمات</button>
-        <span id="oracleEngineSavedMsg" style="margin-right:8px;color:#4ade80"></span>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <button type="button" class="save-engine-btn" onclick="saveOracleEngineSettings()">ذخیره تنظیمات موتور</button>
+          <button type="button" class="save-engine-btn" style="border-color:rgba(56,189,248,0.45);background:rgba(56,189,248,0.14);color:#bae6fd" onclick="listAvailableGeminiModels()">🔍 بررسی مدل‌های فعال Gemini</button>
+          <span id="oracleEngineSavedMsg" style="color:#4ade80"></span>
+        </div>
+        <div id="geminiModelsOutput" class="models-list-box"></div>
       </details>
     </div>
   </div>
@@ -444,9 +451,28 @@
     const ORACLE_GEMINI_KEY = "oldman_sage_gemini_key_v1";
     const ORACLE_OR_KEY = "oldman_sage_openrouter_key_v1";
 
+    const GEMINI_PREFERRED_MODELS = [
+      "gemini-2.0-flash",
+      "gemini-2.5-flash",
+      "gemini-2.5-flash-lite",
+      "gemini-2.0-flash-lite"
+    ];
+
     let threadsList = [];
     let activeThreadFilter = "all";
-    let currentSkySnapshot = null;
+
+    function isNonTextOnlyModel(modelName) {
+      const lower = String(modelName || "").toLowerCase();
+      return (
+        lower.includes("-tts") ||
+        lower.includes("tts-") ||
+        lower.includes("audio") ||
+        lower.includes("imagen") ||
+        lower.includes("veo") ||
+        lower.includes("live") ||
+        lower.includes("embedding")
+      );
+    }
 
     function showBanner(msg) {
       const el = document.getElementById("oracleStatusBanner");
@@ -490,11 +516,24 @@
       const keyInp = document.getElementById("oracleApiKeyInp");
       const lbl = document.getElementById("oracleKeyLabel");
       if (lbl) {
-        lbl.textContent = prov === "openrouter" ? "کلید OpenRouter API:" : "کلید Google Gemini API:";
+        lbl.textContent = prov === "openrouter" ? "کلید OpenRouter API (sk-or-...):" : "کلید Google Gemini API:";
       }
       if (keyInp) {
         keyInp.value = getStoredKeyForProvider(prov);
       }
+    }
+
+    function renderStarterPrompts() {
+      const box = document.getElementById("starterPromptsBox");
+      if (!box) return;
+      const prompts = [
+        "پیرمرد، در پسِ تصمیم یا تردیدِ این روزهای من چه لایه پنهانی دارد شکل می‌گیرد؟",
+        "چه حقیقتی در سکوتِ این روزها در حال پخته شدن است که هنوز با عجله ندیده‌ام؟",
+        "کجا دارم بیش از حد تلاش می‌کنم کنترل را نگه دارم و کجا باید به جریانِ عمیق‌تر اعتماد کنم؟"
+      ];
+      box.innerHTML = prompts.map(q =>
+        `<button type="button" class="starter-chip" onclick="useStarterPrompt(this)">${escapeHtml(q)}</button>`
+      ).join("");
     }
 
     (function initSanctuary() {
@@ -513,10 +552,12 @@
       const savedProv = localStorage.getItem(ORACLE_PROVIDER_KEY) || (window.getStore ? window.getStore("prov", "gemini") : "gemini");
       if (provSel) provSel.value = savedProv === "openrouter" ? "openrouter" : "gemini";
       if (orModelInp) orModelInp.value = localStorage.getItem(ORACLE_OR_MODEL_KEY) || "openai/gpt-4o-mini";
-      if (gemModelInp) gemModelInp.value = localStorage.getItem(ORACLE_GEMINI_MODEL_KEY) || "gemini-2.0-flash";
+
+      const savedGemModel = localStorage.getItem(ORACLE_GEMINI_MODEL_KEY) || "";
+      if (gemModelInp) gemModelInp.value = isNonTextOnlyModel(savedGemModel) ? "" : savedGemModel;
 
       onProviderChanged();
-      refreshSkyContextAndPrompts();
+      renderStarterPrompts();
       renderThreads();
     })();
 
@@ -528,7 +569,7 @@
 
       localStorage.setItem(ORACLE_PROVIDER_KEY, prov);
       localStorage.setItem(ORACLE_OR_MODEL_KEY, model);
-      localStorage.setItem(ORACLE_GEMINI_MODEL_KEY, gemModel || "gemini-2.0-flash");
+      localStorage.setItem(ORACLE_GEMINI_MODEL_KEY, isNonTextOnlyModel(gemModel) ? "" : gemModel);
 
       if (key) {
         if (prov === "openrouter") {
@@ -543,198 +584,232 @@
 
       const msg = document.getElementById("oracleEngineSavedMsg");
       if (msg) msg.textContent = "ذخیره شد ✓";
+      showBanner("");
     }
 
-    function buildLiveSkySnapshot() {
+    async function fetchTextGenerateModelsList(apiKey) {
+      const url = "https://generativelanguage.googleapis.com/v1beta/models?key=" + encodeURIComponent(apiKey);
+      const res = await fetch(url);
+      if (!res.ok) {
+        const errT = await res.text().catch(() => "");
+        throw new Error("خطا در دریافت لیست مدل‌ها (" + res.status + "): " + errT.slice(0, 140));
+      }
+      const data = await res.json();
+      const models = Array.isArray(data.models) ? data.models : [];
+      return models
+        .filter(m => Array.isArray(m.supportedGenerationMethods) && m.supportedGenerationMethods.includes("generateContent"))
+        .map(m => (m.name || "").replace(/^models\//, ""))
+        .filter(name => Boolean(name) && !isNonTextOnlyModel(name));
+    }
+
+    async function listAvailableGeminiModels() {
+      const inputKey = (document.getElementById("oracleApiKeyInp")?.value || "").trim();
+      const gKey = inputKey || getStoredKeyForProvider("gemini");
+      const box = document.getElementById("geminiModelsOutput");
+      if (!box) return;
+      box.style.display = "block";
+      if (!gKey) {
+        box.textContent = "ابتدا کلید Gemini را در کادر بالا وارد کن.";
+        return;
+      }
+      box.textContent = "در حال دریافت لیست مدل‌های فعال از گوگل...";
+      try {
+        const textModels = await fetchTextGenerateModelsList(gKey);
+        box.textContent = textModels.length > 0
+          ? "مدل‌های فعال با قابلیت generateContent:\n• " + textModels.join("\n• ")
+          : "مدل متنی فعالی در خروجی یافت نشد.";
+      } catch (e) {
+        box.textContent = "خطا در بررسی مدل‌ها: " + e.message;
+      }
+    }
+
+    // استخراج اطلاعات لحظه‌ای چارت فقط به‌عنوان پیش‌فرضِ پنهان در پس‌زمینه (بدون چاپ مستقیم اعداد/درصدها در پاسخ)
+    function collectHiddenSkyAssumptions() {
       const now = new Date();
       let pls = [];
       let act = [];
-      let lk = { total: 50, wealth: 50, love: 50, action: 50 };
+      let lk = null;
 
-      if (typeof window.calcPlanets === "function") {
-        pls = window.calcPlanets(now);
-      }
-      if (Array.isArray(pls) && pls.length > 0 && Array.isArray(window.DB)) {
-        const tSet = new Set(pls.map(p => p.gate));
-        window.DB.forEach(ch => {
-          const hasG1 = tSet.has(ch.g1) || (window.MY_GATES && window.MY_GATES.has(ch.g1));
-          const hasG2 = tSet.has(ch.g2) || (window.MY_GATES && window.MY_GATES.has(ch.g2));
-          if (hasG1 && hasG2) {
-            const moon = pls[2];
-            const trigger = (moon && (moon.gate === ch.g1 || moon.gate === ch.g2))
-              ? moon
-              : (pls.find(p => p.gate === ch.g2) || pls.find(p => p.gate === ch.g1) || { n: "تولد", gate: ch.g2, line: 1, h: 24 });
-            act.push({ ch, p: trigger });
-          }
-        });
-      }
-      if (typeof window.calcGalacticLuck === "function" && pls.length > 0) {
-        lk = window.calcGalacticLuck(pls, act, now);
-      }
+      try {
+        if (typeof window.calcPlanets === "function") {
+          pls = window.calcPlanets(now);
+        }
+        if (Array.isArray(pls) && pls.length > 0 && Array.isArray(window.DB)) {
+          const tSet = new Set(pls.map(p => p.gate));
+          window.DB.forEach(ch => {
+            const hasG1 = tSet.has(ch.g1) || (window.MY_GATES && window.MY_GATES.has(ch.g1));
+            const hasG2 = tSet.has(ch.g2) || (window.MY_GATES && window.MY_GATES.has(ch.g2));
+            if (hasG1 && hasG2) {
+              const moon = pls[2];
+              const trigger = (moon && (moon.gate === ch.g1 || moon.gate === ch.g2))
+                ? moon
+                : (pls.find(p => p.gate === ch.g2) || pls.find(p => p.gate === ch.g1) || { n: "تولد", gate: ch.g2, line: 1 });
+              act.push({ ch, p: trigger });
+            }
+          });
+        }
+        if (typeof window.calcGalacticLuck === "function" && pls.length > 0) {
+          lk = window.calcGalacticLuck(pls, act, now);
+        }
+      } catch (e) {}
 
       const moon = pls && pls[2] ? pls[2] : null;
-      const sun = pls && pls[0] ? pls[0] : null;
-      const fastTransits = (pls || [])
-        .filter(p => p.fast)
-        .slice(0, 6)
-        .map(p => `${p.n} (${p.gate}.${p.line})`);
-
-      const activeChannelNames = act.map(x => `${x.ch.name} [${x.p.n}]`);
-      const moonTheme = (moon && window.GATE_THEMES && window.GATE_THEMES[moon.gate]) || "مشاهده و حضور";
+      const moonTheme = (moon && window.GATE_THEMES && window.GATE_THEMES[moon.gate]) || "";
+      const channels = act.map(x => x.ch.name);
+      const transits = (pls || []).filter(p => p.fast).slice(0, 5).map(p => `${p.n} (دروازه ${p.gate})`);
 
       return {
         timeStr: now.toLocaleTimeString("fa-IR", { hour: "2-digit", minute: "2-digit" }),
-        moon,
-        sun,
         moonTheme,
-        fastTransits,
-        activeChannelNames,
+        channels,
+        transits,
         luck: lk
       };
     }
 
-    function refreshSkyContextAndPrompts() {
-      const snap = buildLiveSkySnapshot();
-      currentSkySnapshot = snap;
-
-      const pill = document.getElementById("oraclePulsePill");
-      const strip = document.getElementById("skyContextStrip");
-      const promptsBox = document.getElementById("starterPromptsBox");
-
-      const moonTxt = snap.moon ? `ماه در ${snap.moon.gate}.${snap.moon.line} («${snap.moonTheme}»)` : "ماه در حال رصد";
-      const chTxt = snap.activeChannelNames.length > 0 ? snap.activeChannelNames.join(" | ") : "میدان باز آینه‌ای (بدون کانال قفل‌شده)";
-      const luckTxt = `شانس کل ${snap.luck.total}% | مالی ${snap.luck.wealth}% | روابط ${snap.luck.love}% | اقدام ${snap.luck.action}%`;
-
-      if (pill) {
-        pill.textContent = `🌙 ${snap.moon ? snap.moon.gate + "." + snap.moon.line : "--"} • شانس ${snap.luck.total}%`;
-      }
-
-      if (strip) {
-        strip.innerHTML =
-          `<div><b>📡 نبض لحظه (${snap.timeStr}):</b> ${moonTxt}</div>` +
-          `<div style="margin-top:3px"><b>⚡ کانال‌ها:</b> ${chTxt}</div>` +
-          `<div style="margin-top:3px;color:#fde68a"><b>🧭 شاخص‌ها:</b> ${luckTxt}</div>`;
-      }
-
-      const starters = [
-        snap.activeChannelNames.length > 0
-          ? `در حضور «${snap.activeChannelNames[0]}» و شانس ${snap.luck.total}%، چه لایه پنهانی در تصمیم امروز من نهفته است؟`
-          : `در این میدان بازِ آینه‌ای با ماه در دروازه ${snap.moon ? snap.moon.gate : "-"} («${snap.moonTheme}»)، چه حقیقتی در سکوت دارد به من نزدیک می‌شود؟`,
-        `با توجه به شاخص مالی ${snap.luck.wealth}% و اقدام ${snap.luck.action}%، کجا باید گام بردارم و کجا در نقش شاهدِ رفلکتور بمانم؟`,
-        `پیرمرد، زیر پوستِ اضطراب یا تردیدِ این روزهای من چه پیام پنهانیِ تکاملی خوابیده است؟`
-      ];
-
-      if (promptsBox) {
-        promptsBox.innerHTML = starters.map(q =>
-          `<button type="button" class="starter-chip" onclick="useStarterPrompt(this)">${escapeHtml(q)}</button>`
-        ).join("");
-      }
-    }
-
-    function buildLocalLayeredSageReply(question, snap) {
-      const moonGate = snap.moon ? `${snap.moon.gate}.${snap.moon.line}` : "لحظه";
-      const chSummary = snap.activeChannelNames.length > 0
-        ? `کانال‌های فعالِ «${snap.activeChannelNames.join(" و ")}»`
-        : "میدان بازِ آینه‌ایِ یک رفلکتور که بدون قفل‌شدگیِ دائمی، طعمِ گذرای محیط را مزه می‌کند";
-
-      const highestLuck = [
-        { name: "اقدام", val: snap.luck.action },
-        { name: "مالی", val: snap.luck.wealth },
-        { name: "روابط", val: snap.luck.love },
-        { name: "کل", val: snap.luck.total }
-      ].sort((a, b) => b.val - a.val)[0];
-
+    function buildSageSystemPrompt() {
       return [
-        `شهریار جان، در سکوتِ ساعت ${snap.timeStr} که ماه در ${moonGate} («${snap.moonTheme}») نشسته و ${chSummary} در جریان است، پرسش تو بیش از آنکه به دنبال یک جوابِ بیرونی باشد، به دنبال «آشکار شدنِ لایه‌ای است که زیرِ سطحِ روزمرگی پنهان مانده است».`,
-        "",
-        `۱. لایه پنهانِ وضعیت فعلی: وقتی شاخص ${highestLuck.name} در محدوده ${highestLuck.val}% قرار می‌گیرد و ترانزیت‌های ${snap.fastTransits.slice(0, 3).join("، ") || "آسمان"} رنگِ خود را به فضا می‌پاشند، بخشِ هشیارِ ذهن معمولاً می‌خواهد فوراً «نتیجه» بگیرد؛ اما لایه‌ی عمیق‌تر این است که در چارتِ بازِ یک رفلکتور ۶/۲، آنچه اکنون در تو می‌گذرد لزوماً «مالِ تو» نیست، بلکه بازتابِ دقیقِ میدانِ پیرامون است که آمده تا ببینی چه چیزی تو را می‌کشد و چه چیزی فقط سروصدای گذراست.`,
-        "",
-        `۲. تله و پیام درونیِ نهفته: اگر در پسِ این پرسشِ «${question.slice(0, 80)}${question.length > 80 ? "..." : ""}» کمی عجله، وسواس برای «درست بودن» یا سنگینیِ مسئولیتِ دیگران هست، بدان که ذهن دارد نقشِ داور را بازی می‌کند. پیامِ پنهان این است که در همین فضا بمانی، بدون اینکه با عجله حکم صادر کنی، تا ببینی با گذرِ زمان و تغییرِ جایِ ماه، کدام احساس واقعاً در استخوان‌هایت ته‌نشین می‌شود.`,
-        "",
-        `🔍 پرسش بازتابی برای لایه عمیق‌تر: اگر امروز از عجله برای «حل کردنِ فوری» دست برداری و فقط مانند یک آینه شفاف ببینی چه چیزی در این موقعیت بی‌معنا یا تحمیلی است، اولین چیزی که رها می‌کنی چیست؟`
+        "شما «پیرمرد» هستید؛ یک حکیم و راهنمای عمیق‌بین، شاعرانه، دقیق و آگاه به مکانیک هیومن دیزاین (چارت رفلکتور ۶/۲ با مراکز باز).",
+        "بسیار مهم: کلِ پاسخ شما باید کاملاً به زبان فارسی و مستقیماً به زبانِ پیرمردِ حکیم باشد؛ بدون هیچ یادداشت یا متن انگلیسی.",
+        "قانونِ طلاییِ بیان: اطلاعاتِ ترانزیت‌ها، کانال‌های فعال و شاخص‌های شانس که در بخش «پیش‌فرض‌های پنهانِ لحظه» به شما داده می‌شوند را حتماً به‌عنوان پیش‌فرضِ درونی و بافتِ پنهان در درکِ وضعیت و جهت‌دهیِ پاسخ در نظر بگیر، اما هرگز در متنِ پاسخ از کلمات یا اعداد فنی مثل «شانس چند درصده»، «دروازه فلان»، «خط فلان»، «کانال شماره...» یا آمار و درصد استفاده نکن.",
+        "پاسخ‌هایت را حکیمانه، چندلایه، عمیق و تعاملی بنویس؛ لایه‌های پنهانِ معنا، ناخودآگاه، سایه و هدیه، و تلهِ ذهن را باز کن و در پایان یک پرسشِ بازتابیِ عمیق بگذار تا شهریار بتواند لایه‌ای عمیق‌تر را کاود."
       ].join("\n");
     }
 
-    async function tryExternalProvider(question, snap, parentContextText) {
-      const prov = localStorage.getItem(ORACLE_PROVIDER_KEY) || (window.getStore ? window.getStore("prov", "gemini") : "gemini");
-      const activeProv = prov === "openrouter" ? "openrouter" : "gemini";
-      const inputKey = (document.getElementById("oracleApiKeyInp")?.value || "").trim();
-      const apiKey = inputKey || getStoredKeyForProvider(activeProv);
-      if (!apiKey) return null;
-
-      const systemPrompt = [
-        "شما «پیرمرد» هستید؛ یک راهنما و حکیمِ عمیق‌بین، شاعرانه، دقیق و آگاه به مکانیک هیومن دیزاین (به‌ویژه چارت یک Reflector 6/2 با مراکز باز).",
-        "کلِ پاسخ شما باید کاملاً به زبان فارسی و مستقیماً از زبان پیرمرد باشد؛ بدون هیچ مقدمه یا یادداشت انگلیسی.",
-        "لایه‌های پنهانِ ناخودآگاه، سایه و هدیه، تله شرطی‌شدن، و پیوند آن را با ترانزیت‌ها، کانال‌های فعال و شاخص‌های شانسِ لحظه تحلیل کن و در پایان یک پرسش بازتابیِ عمیق بگذار."
-      ].join("\n");
-
-      const contextBlock = [
-        `زمان لحظه: ${snap.timeStr}`,
-        `ماه لحظه: ${snap.moon ? `${snap.moon.gate}.${snap.moon.line} (${snap.moonTheme})` : "نامشخص"}`,
-        `ترانزیت‌های فعال: ${snap.fastTransits.join("، ") || "در حال رصد"}`,
-        `کانال‌های فعال: ${snap.activeChannelNames.join(" | ") || "میدان باز آینه‌ای"}`,
-        `شانس‌ها: کل ${snap.luck.total}% | مالی ${snap.luck.wealth}% | روابط ${snap.luck.love}% | اقدام ${snap.luck.action}%`,
-        parentContextText ? `بافت گفت‌وگوی پیشین:\n${parentContextText}` : ""
-      ].filter(Boolean).join("\n");
-
-      const fullPrompt = `${contextBlock}\n\nپرسش شهریار:\n${question}`;
-
-      if (activeProv === "openrouter") {
-        const model = (document.getElementById("openRouterModelInp")?.value || "").trim() || "openai/gpt-4o-mini";
-        const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer " + apiKey,
-            "HTTP-Referer": location.origin || "https://shahriark5-art.github.io",
-            "X-Title": "OLDMAN Sanctuary"
-          },
-          body: JSON.stringify({
-            model,
-            messages: [
-              { role: "system", content: systemPrompt },
-              { role: "user", content: fullPrompt }
-            ],
-            temperature: 0.8,
-            max_tokens: 1500
-          })
-        });
-        if (!res.ok) throw new Error("OR_" + res.status);
-        const data = await res.json();
-        const out = cleanPersianSageOutput(data?.choices?.[0]?.message?.content?.trim() || "");
-        if (!out) throw new Error("OR_EMPTY");
-        return { text: out, sourceLabel: "OpenRouter" };
+    async function callGeminiRealAI(apiKey, customModel, systemPrompt, userPrompt) {
+      const queue = [];
+      if (customModel && !isNonTextOnlyModel(customModel)) queue.push(customModel);
+      for (const m of GEMINI_PREFERRED_MODELS) {
+        if (!queue.includes(m)) queue.push(m);
       }
 
-      const gemModel = (document.getElementById("geminiCustomModelInp")?.value || "").trim().replace(/^models\//, "") || "gemini-2.0-flash";
-      const candidates = Array.from(new Set([gemModel, "gemini-2.0-flash", "gemini-2.5-flash-lite"]));
-      for (const m of candidates) {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(m)}:generateContent?key=${encodeURIComponent(apiKey)}`;
+      let lastErrMsg = "";
+
+      for (const modelName of queue) {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modelName)}:generateContent?key=${encodeURIComponent(apiKey)}`;
         const res = await fetch(url, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             systemInstruction: { parts: [{ text: systemPrompt }] },
-            contents: [{ parts: [{ text: fullPrompt }] }],
-            generationConfig: { temperature: 0.8, maxOutputTokens: 1500 }
+            contents: [{ parts: [{ text: userPrompt }] }],
+            generationConfig: {
+              temperature: 0.82,
+              maxOutputTokens: 1700
+            }
           })
         });
+
         if (res.ok) {
           const data = await res.json();
-          const out = cleanPersianSageOutput(
-            data?.candidates?.[0]?.content?.parts?.map(p => p.text || "").join("\n").trim() || ""
-          );
-          if (out) return { text: out, sourceLabel: "Gemini (" + m + ")" };
+          const rawOut =
+            data?.candidates?.[0]?.content?.parts
+              ?.map(p => p.text || "")
+              .join("\n")
+              .trim() || "";
+          const cleaned = cleanPersianSageOutput(rawOut);
+          if (cleaned) {
+            return { text: cleaned, usedModel: "Gemini • " + modelName };
+          }
+          lastErrMsg = `پاسخ خالی از مدل ${modelName}`;
+          continue;
+        }
+
+        const errTxt = await res.text().catch(() => "");
+        lastErrMsg = `Gemini (${modelName} - ${res.status}): ${errTxt.slice(0, 140)}`;
+        if (res.status !== 404 && res.status !== 429 && res.status !== 503 && res.status !== 500) {
+          throw new Error(lastErrMsg);
         }
       }
-      return null;
+
+      // تلاش با مدل‌های متنیِ موجود در لیست حساب در صورت نیاز
+      try {
+        const liveModels = await fetchTextGenerateModelsList(apiKey);
+        for (const lm of liveModels.slice(0, 4)) {
+          if (queue.includes(lm)) continue;
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(lm)}:generateContent?key=${encodeURIComponent(apiKey)}`;
+          const res = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              systemInstruction: { parts: [{ text: systemPrompt }] },
+              contents: [{ parts: [{ text: userPrompt }] }],
+              generationConfig: { temperature: 0.82, maxOutputTokens: 1700 }
+            })
+          });
+          if (res.ok) {
+            const data = await res.json();
+            const rawOut =
+              data?.candidates?.[0]?.content?.parts
+                ?.map(p => p.text || "")
+                .join("\n")
+                .trim() || "";
+            const cleaned = cleanPersianSageOutput(rawOut);
+            if (cleaned) {
+              localStorage.setItem(ORACLE_GEMINI_MODEL_KEY, lm);
+              return { text: cleaned, usedModel: "Gemini • " + lm };
+            }
+          }
+        }
+      } catch (e) {}
+
+      throw new Error(lastErrMsg || "ارتباط با سرویس Gemini برقرار نشد.");
+    }
+
+    async function callOpenRouterRealAI(apiKey, modelName, systemPrompt, userPrompt) {
+      const m = (modelName || "openai/gpt-4o-mini").trim();
+      const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + apiKey,
+          "HTTP-Referer": location.origin || "https://shahriark5-art.github.io",
+          "X-Title": "OLDMAN Sanctuary"
+        },
+        body: JSON.stringify({
+          model: m,
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userPrompt }
+          ],
+          temperature: 0.82,
+          max_tokens: 1700
+        })
+      });
+
+      if (!res.ok) {
+        const errTxt = await res.text().catch(() => "");
+        throw new Error(`OpenRouter (${res.status}): ${errTxt.slice(0, 140)}`);
+      }
+
+      const data = await res.json();
+      const rawOut = data?.choices?.[0]?.message?.content?.trim() || "";
+      const cleaned = cleanPersianSageOutput(rawOut);
+      if (!cleaned) {
+        throw new Error("پاسخ خالی از OpenRouter دریافت شد.");
+      }
+      return { text: cleaned, usedModel: "OpenRouter • " + m };
     }
 
     async function askOldmanDeep(overrideQuestion, parentContext) {
       const qBox = document.getElementById("oracleQuestionBox");
       const question = (typeof overrideQuestion === "string" ? overrideQuestion : (qBox?.value || "")).trim();
       if (!question) {
-        showBanner("لطفاً ابتدا پرسش خود را در کادر بالا بنویس.");
+        showBanner("لطفاً ابتدا پرسش خود را بنویس.");
+        return;
+      }
+
+      const prov = localStorage.getItem(ORACLE_PROVIDER_KEY) || (window.getStore ? window.getStore("prov", "gemini") : "gemini");
+      const activeProv = prov === "openrouter" ? "openrouter" : "gemini";
+      const inputKey = (document.getElementById("oracleApiKeyInp")?.value || "").trim();
+      const apiKey = inputKey || getStoredKeyForProvider(activeProv);
+
+      if (!apiKey) {
+        showBanner(
+          activeProv === "openrouter"
+            ? "کلید OpenRouter وارد نشده است. در بخش «تنظیمات موتور هوش مصنوعی» کلید را وارد و ذخیره کن."
+            : "کلید Gemini وارد نشده است. در بخش «تنظیمات موتور هوش مصنوعی» کلید را وارد و ذخیره کن."
+        );
         return;
       }
 
@@ -742,45 +817,45 @@
       const btn = document.getElementById("askSageBtn");
       if (btn) {
         btn.disabled = true;
-        btn.textContent = "🧙‍♂️ پیرمرد در حال کاوش لایه‌ها...";
+        btn.textContent = "🧙‍♂️ پیرمرد در حال تأمل و پاسخ‌گویی...";
       }
 
-      refreshSkyContextAndPrompts();
-      const snap = currentSkySnapshot || buildLiveSkySnapshot();
+      const assumptions = collectHiddenSkyAssumptions();
+      const systemPrompt = buildSageSystemPrompt();
+      const hiddenContextNote = [
+        "[پیش‌فرض‌های پنهانِ لحظه - در متن جوابِ نهایی اصلاً عدد، درصد، ساعت یا نام فنی نیاور؛ فقط در درکِ عمقِ فضا به‌کار ببر]",
+        assumptions.moonTheme ? `کیفیت جاری ماه: ${assumptions.moonTheme}` : "",
+        assumptions.channels.length ? `جریان‌های فعالِ زمینه: ${assumptions.channels.join("، ")}` : "جریان زمینه: میدان بازِ آینه‌ای",
+        assumptions.transits.length ? `حرکت‌های فعال: ${assumptions.transits.join("، ")}` : "",
+        assumptions.luck ? `برآیند درونی شانس/اقدام: کل ${assumptions.luck.total}%، مالی ${assumptions.luck.wealth}%، روابط ${assumptions.luck.love}%، اقدام ${assumptions.luck.action}%` : "",
+        parentContext ? `بافت گفت‌وگوی پیشین:\n${parentContext}` : ""
+      ].filter(Boolean).join("\n");
 
-      let finalAnswer = "";
-      let modeTag = "موتور تحلیلی پیرمرد";
+      const fullUserPrompt = `${hiddenContextNote}\n\nپرسش شهریار:\n${question}`;
 
       try {
-        const extRes = await tryExternalProvider(question, snap, parentContext || "");
-        if (extRes && extRes.text) {
-          finalAnswer = extRes.text;
-          modeTag = extRes.sourceLabel;
-        } else {
-          finalAnswer = buildLocalLayeredSageReply(question, snap);
-          modeTag = "موتور تحلیلی پیرمرد";
+        const result = activeProv === "openrouter"
+          ? await callOpenRouterRealAI(apiKey, document.getElementById("openRouterModelInp")?.value, systemPrompt, fullUserPrompt)
+          : await callGeminiRealAI(apiKey, document.getElementById("geminiCustomModelInp")?.value, systemPrompt, fullUserPrompt);
+
+        const item = {
+          id: "t_" + Date.now(),
+          question,
+          answer: result.text,
+          starred: false,
+          meta: `${assumptions.timeStr} • ${result.usedModel}`
+        };
+        threadsList.unshift(item);
+        saveThreads();
+        if (!overrideQuestion && qBox) qBox.value = "";
+        renderThreads();
+      } catch (err) {
+        showBanner("خطا در ارتباط با هوش مصنوعی:\n" + (err.message || "پاسخ دریافت نشد."));
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = "✨ پرسش عمیق از پیرمرد";
         }
-      } catch (e) {
-        finalAnswer = buildLocalLayeredSageReply(question, snap);
-        modeTag = "موتور تحلیلی پیرمرد";
-        showBanner("سرویس بیرونی در لحظه پاسخ نداد؛ پیرمرد از تحلیلِ لایه‌ایِ مستقیمِ چارت و لحظه پاسخ داد.");
-      }
-
-      const item = {
-        id: "t_" + Date.now(),
-        question,
-        answer: finalAnswer,
-        starred: false,
-        meta: `${snap.timeStr} • ${modeTag} • شانس ${snap.luck.total}%`
-      };
-      threadsList.unshift(item);
-      saveThreads();
-      if (!overrideQuestion && qBox) qBox.value = "";
-      renderThreads();
-
-      if (btn) {
-        btn.disabled = false;
-        btn.textContent = "✨ پرسش عمیق از پیرمرد";
       }
     }
 
@@ -802,7 +877,7 @@
       threadsList = [];
       localStorage.removeItem(ORACLE_HISTORY_KEY);
       renderThreads();
-      showBanner("تاریخچه مکالمات پاک شد.");
+      showBanner("");
     }
 
     function saveThreads() {
@@ -831,7 +906,7 @@
       if (!target) return;
       const payload = `پرسش: ${target.question}\n\nپیرمرد:\n${target.answer}`;
       if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(payload).then(() => showBanner("پاسخ در کلیپ‌بورد کپی شد ✓")).catch(() => {});
+        navigator.clipboard.writeText(payload).catch(() => {});
       }
     }
 
