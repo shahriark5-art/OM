@@ -272,6 +272,7 @@
       color: #f1f5f9;
       white-space: pre-line;
       text-align: justify;
+      word-break: break-word;
     }
 
     .thread-footer {
@@ -380,7 +381,7 @@
   <div class="sanctuary-wrap">
     <div class="top-bar">
       <a class="back-link" href="index.html">← بازگشت به داشبورد</a>
-      <div id="oraclePulsePill" class="pulse-pill">✨ مدل فعال: gemini-3.5-flash-lite</div>
+      <div id="oraclePulsePill" class="pulse-pill">✨ مدل فعال: gemini-3.6-flash</div>
     </div>
 
     <div class="sanctuary-card">
@@ -413,7 +414,7 @@
 
       <div id="threadsContainer"></div>
 
-      <details class="ai-engine-box" open>
+      <details class="ai-engine-box">
         <summary style="cursor:pointer;font-weight:700;color:#cbd5e1">⚙️ تنظیمات موتور هوش مصنوعی (Google Gemini / OpenRouter)</summary>
         <div class="engine-grid">
           <div>
@@ -430,7 +431,7 @@
         </div>
         <div style="margin-top:8px">
           <label style="display:block;margin-bottom:4px">مدل Gemini (دقیقاً همین مدل صدا زده می‌شود):</label>
-          <input id="geminiCustomModelInp" class="engine-input" type="text" value="gemini-3.5-flash-lite" placeholder="gemini-3.5-flash-lite" />
+          <input id="geminiCustomModelInp" class="engine-input" type="text" value="gemini-3.6-flash" placeholder="gemini-3.6-flash" />
         </div>
         <div style="margin-top:8px">
           <label id="oracleKeyLabel" style="display:block;margin-bottom:4px">کلید API:</label>
@@ -451,11 +452,11 @@
     const ORACLE_HISTORY_KEY = "oldman_sage_threads_v1";
     const ORACLE_PROVIDER_KEY = "oldman_sage_provider_v1";
     const ORACLE_OR_MODEL_KEY = "oldman_sage_openrouter_model_v1";
-    const ORACLE_GEMINI_MODEL_KEY = "oldman_sage_gemini_model_v2";
+    const ORACLE_GEMINI_MODEL_KEY = "oldman_sage_gemini_model_v3";
     const ORACLE_GEMINI_KEY = "oldman_sage_gemini_key_v1";
     const ORACLE_OR_KEY = "oldman_sage_openrouter_key_v1";
 
-    const DEFAULT_GEMINI_MODEL = "gemini-3.5-flash-lite";
+    const DEFAULT_GEMINI_MODEL = "gemini-3.6-flash";
 
     let threadsList = [];
     let activeThreadFilter = "all";
@@ -693,7 +694,7 @@
           contents: [{ parts: [{ text: userPrompt }] }],
           generationConfig: {
             temperature: 0.82,
-            maxOutputTokens: 1700
+            maxOutputTokens: 8192
           }
         })
       });
@@ -706,6 +707,7 @@
       const data = await res.json();
       const rawOut =
         data?.candidates?.[0]?.content?.parts
+          ?.filter(p => !p.thought)
           ?.map(p => p.text || "")
           .join("\n")
           .trim() || "";
@@ -733,7 +735,7 @@
             { role: "user", content: userPrompt }
           ],
           temperature: 0.82,
-          max_tokens: 1700
+          max_tokens: 4096
         })
       });
 
