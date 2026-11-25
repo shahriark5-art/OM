@@ -99,6 +99,14 @@
       </div>
     </div>
 
+    <!-- دکمه اشتراک‌گذاری چارت لحظه‌ای با هوش مصنوعی‌های دیگر -->
+    <div style="margin: 10px 0 12px;">
+      <button id="shareChartAiBtn" type="button" onclick="shareCurrentChartToAI()" style="width:100%;padding:10px 14px;border-radius:14px;border:1px solid rgba(56,189,248,0.45);background:linear-gradient(135deg, rgba(56,189,248,0.16), rgba(245,197,107,0.14));color:#e0f2fe;font-family:inherit;font-size:0.8rem;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+        <span>📤</span>
+        <span id="shareChartBtnTxt">اشتراک‌گذاری وضعیت فعلی چارت با هوش مصنوعی‌های دیگر</span>
+      </button>
+    </div>
+
     <div id="timerBar" class="timer">⏱️ در حال محاسبه...</div>
 
     <!-- جایگاه ماژول کانال‌های فعال -->
@@ -169,6 +177,47 @@
       if (provSel && window.getStore) provSel.value = window.getStore("prov", "gemini");
       if (keyInp && window.getStore) keyInp.value = window.getStore("key", "");
       window.openModal('setModal');
+    };
+
+    window.shareCurrentChartToAI = async function() {
+      const btnTxt = document.getElementById("shareChartBtnTxt");
+      const st = window.OLDMAN_STATE;
+      if (!st) return;
+
+      const act = Array.isArray(st.act) ? st.act : [];
+      const moon = (st.pls && st.pls[2]) ? st.pls[2] : null;
+      const moonStr = moon ? ` (ماه لحظه در دروازه ${moon.gate}.${moon.line})` : "";
+
+      let shareText = "";
+      if (act.length > 0) {
+        const chNames = act.map(x => x.ch.name).join("، ");
+        shareText = `من در هیومن دیزاین یک رفلکتور ۶/۲ هستم. در حال حاضر در نمودار هیومن دیزاین من کانال‌های «${chNames}» به‌صورت ترانزیت لحظه‌ای فعال هستند${moonStr}. در مورد این کانال‌ها، تأثیر هم‌زمان آن‌ها بر یک رفلکتور و بهترین کارهایی که الان می‌توانم انجام دهم بیشتر توضیح بده.`;
+      } else {
+        shareText = `من در هیومن دیزاین یک رفلکتور ۶/۲ هستم. در حال حاضر هیچ کانالی در نمودار من قفل نیست و در حالت میدان باز آینه‌ای هستم${moonStr}. در مورد حال‌وهوای این لحظه و بهترین رویکرد برای من توضیح بده.`;
+      }
+
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: "تحلیل لحظه‌ای چارت هیومن دیزاین",
+            text: shareText
+          });
+          return;
+        } catch (err) {
+          if (err && err.name === "AbortError") return;
+        }
+      }
+
+      try {
+        await navigator.clipboard.writeText(shareText);
+        if (btnTxt) {
+          const orig = btnTxt.textContent;
+          btnTxt.textContent = "✅ متن پرامپت کپی شد! در هوش مصنوعی دلخواهت پیست کن";
+          setTimeout(() => { btnTxt.textContent = orig; }, 3000);
+        }
+      } catch (e) {
+        alert(shareText);
+      }
     };
   </script>
 
